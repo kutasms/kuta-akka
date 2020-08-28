@@ -15,10 +15,10 @@ import com.kuta.base.util.KutaUtil;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;
 
-public abstract class KSFMapBiz<T extends KutaDBEntity, TKey extends Number> extends KutaAbstractBiz<T, TKey>{
+public abstract class KutaMapBiz<T extends KutaDBEntity, TKey extends Number> extends KutaAbstractBiz<T, TKey>{
 
 
-	public KSFMapBiz(String cacheName) {
+	public KutaMapBiz(String cacheName) {
 		super(cacheName);
 		// TODO Auto-generated constructor stub
 	}
