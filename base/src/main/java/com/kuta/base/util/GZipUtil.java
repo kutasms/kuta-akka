@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-import com.kuta.base.entity.KSFConstants;
+import com.kuta.base.entity.KutaConstants;
 
 /**
  * gzip工具类
@@ -40,7 +40,7 @@ public class GZipUtil {
 	 * @return 压缩后的byte数组
 	 * */
     public static byte[] compress(String str) throws IOException {  
-        return compress(str, KSFConstants.ENCODE_UTF_8);  
+        return compress(str, KutaConstants.ENCODE_UTF_8);  
     }
     
     /**
@@ -101,6 +101,6 @@ public class GZipUtil {
      * @return 解压后的字符串
      * */
     public static String uncompressToString(byte[] bytes) {  
-        return uncompressToString(bytes, KSFConstants.ENCODE_UTF_8);  
+        return uncompressToString(bytes, KutaConstants.ENCODE_UTF_8);  
     } 
 }

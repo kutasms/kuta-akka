@@ -19,13 +19,13 @@ public class PlayerVerifyUtil {
 	 * @return true:是玩家自己的操作 false:非法操作
 	 * */
 	public static boolean self(Jedis jedis, Long pid, int uid) {
-		String md5 = KSFUtil.intToBase64(uid);
+		String md5 = KutaUtil.intToBase64(uid);
 		String val = jedis.hget("map_player_channel", md5);
 		if(val == null) {
 			System.out.println("未查到相关链接的映射信息");
 			return false;
 		}
-		if(val.equals(KSFUtil.intToBase64(pid.intValue()))) {
+		if(val.equals(KutaUtil.intToBase64(pid.intValue()))) {
 			return true;
 		}
 		return false;
@@ -72,7 +72,7 @@ public class PlayerVerifyUtil {
 		Jedis jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
-			jedis.hset("map_player_channel",KSFUtil.intToBase64(uid),KSFUtil.intToBase64(pid));
+			jedis.hset("map_player_channel",KutaUtil.intToBase64(uid),KutaUtil.intToBase64(pid));
 		}
 		finally {
 			JedisPoolUtil.release(jedis);
@@ -85,7 +85,7 @@ public class PlayerVerifyUtil {
 	 * @param uid actor编号
 	 * */
 	public static void mapping(Jedis jedis,Integer pid, int uid) {
-		jedis.hset("map_player_channel",KSFUtil.intToBase64(uid),KSFUtil.intToBase64(pid));
+		jedis.hset("map_player_channel",KutaUtil.intToBase64(uid),KutaUtil.intToBase64(pid));
 	}
 	
 	/**
@@ -98,7 +98,7 @@ public class PlayerVerifyUtil {
 		Jedis jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
-			jedis.hdel("map_player_channel", KSFUtil.intToBase64(uid));
+			jedis.hdel("map_player_channel", KutaUtil.intToBase64(uid));
 		}
 		finally {
 			JedisPoolUtil.release(jedis);

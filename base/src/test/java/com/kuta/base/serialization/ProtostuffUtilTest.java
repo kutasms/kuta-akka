@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.kuta.base.util.KSFConsoleUtil;
+import com.kuta.base.util.KutaConsoleUtil;
 
 import junit.framework.TestCase;
 

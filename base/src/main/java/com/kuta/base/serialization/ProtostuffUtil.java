@@ -17,8 +17,8 @@ import java.util.TreeMap;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
-import com.kuta.base.exception.KSFIllegalArgumentException;
-import com.kuta.base.util.KSFUtil;
+import com.kuta.base.exception.KutaIllegalArgumentException;
+import com.kuta.base.util.KutaUtil;
 
 import akka.actor.ActorRef;
 import akka.actor.ExtendedActorSystem;
@@ -158,7 +158,7 @@ public class ProtostuffUtil {
 	 * @return byte数组
 	 */
 	public static <T> byte[] serialize(T t, final ExtendedActorSystem extendedSystem) {
-		if (KSFUtil.isValueNull(actorSystem)) {
+		if (KutaUtil.isValueNull(actorSystem)) {
 			actorSystem = extendedSystem;
 		}
 		return serialize(t);
@@ -181,7 +181,7 @@ public class ProtostuffUtil {
 	 */
 	public static <T> T deserialize(byte[] data, Class<T> clazz, final ExtendedActorSystem extendedSystem)
 			throws IllegalStateException {
-		if (KSFUtil.isValueNull(actorSystem)) {
+		if (KutaUtil.isValueNull(actorSystem)) {
 			actorSystem = extendedSystem;
 		}
 		return deserialize(data, clazz);
@@ -259,13 +259,13 @@ public class ProtostuffUtil {
 	 * @return byte数组
 	 * @throws IOException
 	 *             发生IO异常时抛出
-	 * @throws KSFIllegalArgumentException
+	 * @throws KutaIllegalArgumentException
 	 *             参数错误时抛出
 	 */
 
-	public static <T> byte[] serializeList(List<T> list) throws KSFIllegalArgumentException, IOException {
+	public static <T> byte[] serializeList(List<T> list) throws KutaIllegalArgumentException, IOException {
 		if (list == null || list.size() == 0) {
-			throw new KSFIllegalArgumentException("集合不能为空!");
+			throw new KutaIllegalArgumentException("集合不能为空!");
 		}
 
 		@SuppressWarnings("unchecked")
@@ -305,14 +305,14 @@ public class ProtostuffUtil {
 	 * @return List集合
 	 * @throws IOException
 	 *             当发生IO异常时抛出
-	 * @throws KSFIllegalArgumentException
+	 * @throws KutaIllegalArgumentException
 	 *             参数错误时抛出
 	 */
 	@SuppressWarnings("unchecked")
 	public static <T> List<T> deserializeList(byte[] data, Class<T> targetClass)
-			throws IOException, KSFIllegalArgumentException {
+			throws IOException, KutaIllegalArgumentException {
 		if (data == null || data.length == 0) {
-			throw new KSFIllegalArgumentException("byte数组不能为空!");
+			throw new KutaIllegalArgumentException("byte数组不能为空!");
 		}
 		Schema<T> schema = RuntimeSchema.getSchema(targetClass);
 		List<T> result = null;
@@ -334,12 +334,12 @@ public class ProtostuffUtil {
 	 * @param map
 	 *            需要序列化为byte数组的哈希map
 	 * @return key和value都为byte数组类型的哈希map
-	 * @throws KSFIllegalArgumentException
+	 * @throws KutaIllegalArgumentException
 	 *             参数错误时抛出
 	 */
-	public static <K, V> Map<byte[], byte[]> serializeMap(Map<K, V> map) throws KSFIllegalArgumentException {
+	public static <K, V> Map<byte[], byte[]> serializeMap(Map<K, V> map) throws KutaIllegalArgumentException {
 		if (map == null || map.size() == 0) {
-			throw new KSFIllegalArgumentException("集合不能为空!");
+			throw new KutaIllegalArgumentException("集合不能为空!");
 		}
 		Map<byte[], byte[]> mapX = new HashMap<byte[], byte[]>();
 		for (Map.Entry<K, V> entry : map.entrySet()) {
@@ -362,13 +362,13 @@ public class ProtostuffUtil {
 	 * @param vClass
 	 *            map-value类型
 	 * @return 哈希map
-	 * @throws KSFIllegalArgumentException
+	 * @throws KutaIllegalArgumentException
 	 *             参数错误时抛出
 	 */
 	public static <K, V> Map<K, V> deserializerMap(Map<byte[], byte[]> data, Class<K> kClass, Class<V> vClass)
-			throws KSFIllegalArgumentException {
+			throws KutaIllegalArgumentException {
 		if (data == null || data.size() == 0) {
-			throw new KSFIllegalArgumentException("集合不能为空!");
+			throw new KutaIllegalArgumentException("集合不能为空!");
 		}
 		Map<K, V> map = new HashMap<>();
 		for (Map.Entry<byte[], byte[]> entry : data.entrySet()) {

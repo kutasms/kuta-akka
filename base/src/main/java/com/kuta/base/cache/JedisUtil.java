@@ -11,10 +11,10 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-import com.kuta.base.collection.KSFHashSet;
-import com.kuta.base.entity.KSFScanResult;
+import com.kuta.base.collection.KutaHashSet;
+import com.kuta.base.entity.KutaScanResult;
 import com.kuta.base.serialization.ProtostuffUtil;
-import com.kuta.base.util.KSFUtil;
+import com.kuta.base.util.KutaUtil;
 
 import akka.actor.Scheduler;
 import redis.clients.jedis.Jedis;
@@ -35,7 +35,7 @@ public class JedisUtil {
 	 * @deprecated
 	 * */
 	public static Map<String, Map<String, String>> getAllValsByPipeline(String key) {
-		if (KSFUtil.isValueNull(key)) {
+		if (KutaUtil.isValueNull(key)) {
 			return null;
 		}
 		Map<String, Map<String, String>> map = new HashMap<String, Map<String, String>>();
@@ -61,7 +61,7 @@ public class JedisUtil {
 	 * @return 包含所有数据的结果
 	 * */
 	public static Map<String, Map<String, String>> getAllValsByPipeline(Set<String> keys) {
-		if (KSFUtil.isValueNull(keys)) {
+		if (KutaUtil.isValueNull(keys)) {
 			return null;
 		}
 		Map<String, Map<String, String>> map = new HashMap<String, Map<String, String>>();
@@ -91,7 +91,7 @@ public class JedisUtil {
 	 * @return 包含所有数据的结果
 	 * */
 	public static Map<String, Map<String, String>> getAllValsByPipeline(Jedis jedis, Set<String> keys) {
-		if (KSFUtil.isValueNull(keys, jedis)) {
+		if (KutaUtil.isValueNull(keys, jedis)) {
 			return null;
 		}
 		Map<String, Map<String, String>> map = new HashMap<String, Map<String, String>>();
@@ -116,7 +116,7 @@ public class JedisUtil {
 	 * @return 包含所有数据的结果
 	 * */
 	public static Map<String, Map<String, String>> getAllValsByPipeline(Pipeline pipeline, Set<String> keys) {
-		if (KSFUtil.isValueNull(keys, pipeline)) {
+		if (KutaUtil.isValueNull(keys, pipeline)) {
 			return null;
 		}
 		Map<String, Map<String, String>> map = new HashMap<String, Map<String, String>>();
@@ -145,7 +145,7 @@ public class JedisUtil {
 	 */
 	public static void scanKeys(Jedis jedis, String pattern, Integer scanCount, Integer consumerSize,
 			long sleep,Consumer<Set<String>> consumer) {
-		KSFHashSet<String> keySet = new KSFHashSet<>();
+		KutaHashSet<String> keySet = new KutaHashSet<>();
 		ScanParams params = new ScanParams();
 		params.count(scanCount);
 		params.match(pattern);
@@ -183,13 +183,13 @@ public class JedisUtil {
 	 * @param pattern 模糊查找的key 
 	 * @param scanCount 每次模糊查找的数量，推荐不大于10万
 	 */
-	public static KSFHashSet<String> scanKeys(Jedis jedis, String pattern,Integer scanCount) {
+	public static KutaHashSet<String> scanKeys(Jedis jedis, String pattern,Integer scanCount) {
 		
 		String cursor = "0";
 		ScanParams params = new ScanParams();
 		params.count(scanCount);
 		params.match(pattern);
-		KSFHashSet<String> set = new KSFHashSet<>();
+		KutaHashSet<String> set = new KutaHashSet<>();
 		ScanResult<String> result = jedis.scan(cursor,params);
 		
 		cursor = result.getCursor();
@@ -213,15 +213,15 @@ public class JedisUtil {
 	 * @param consumerSize 当查找到的数据量大于consumerSize值时调用consumer表达式 
 	 * @param consumer 处理函数，可以是lamda表达式，如 x->{}
 	 */
-	public static KSFScanResult scanKeys(Jedis jedis, String pattern,String cursor,Integer scanCount) {
+	public static KutaScanResult scanKeys(Jedis jedis, String pattern,String cursor,Integer scanCount) {
 		ScanParams params = new ScanParams();
 		params.count(scanCount);
 		params.match(pattern);
-		KSFHashSet<String> set = new KSFHashSet<>();
+		KutaHashSet<String> set = new KutaHashSet<>();
 		ScanResult<String> result = jedis.scan(cursor,params);
 		cursor = result.getCursor();
 		set.addAll(result.getResult());
-		KSFScanResult scanResult = new KSFScanResult();
+		KutaScanResult scanResult = new KutaScanResult();
 		scanResult.setCursor(cursor);
 		scanResult.setSet(set);
 		return scanResult;
@@ -243,7 +243,7 @@ public class JedisUtil {
 			ExecutionContext executor,
 			Integer consumerSize,
 			Consumer<Set<String>> consumer) {
-		KSFHashSet<String> keySet = new KSFHashSet<>();
+		KutaHashSet<String> keySet = new KutaHashSet<>();
 		ScanParams params = new ScanParams();
 		params.count(scanCount);
 		params.match(pattern);
@@ -284,7 +284,7 @@ public class JedisUtil {
 	 * @return 成功返回1,失败返回0
 	 */
 	public static int set(String key, String value) {
-		if (KSFUtil.isValueNull(key, value)) {
+		if (KutaUtil.isValueNull(key, value)) {
 			return 0;
 		}
 		Jedis jedis = null;
@@ -308,7 +308,7 @@ public class JedisUtil {
 	 * @return 成功返回1,失败返回0
 	 */
 	public static int setEx(String key, String value) {
-		if (KSFUtil.isValueNull(key, value)) {
+		if (KutaUtil.isValueNull(key, value)) {
 			return 0;
 		}
 		Jedis jedis = null;
@@ -333,7 +333,7 @@ public class JedisUtil {
 	 * @return 成功返回1,失败返回0
 	 */
 	public static int setEx(String key, String value, int timeout) {
-		if (KSFUtil.isValueNull(key, value)) {
+		if (KutaUtil.isValueNull(key, value)) {
 			return 0;
 		}
 		Jedis jedis = null;
@@ -357,7 +357,7 @@ public class JedisUtil {
 	 * @return 成功返回1,失败返回0
 	 */
 	public static <T> int set(String key, T value) {
-		if (KSFUtil.isValueNull(key, value)) {
+		if (KutaUtil.isValueNull(key, value)) {
 			return 0;
 		}
 		Jedis jedis = null;
@@ -382,7 +382,7 @@ public class JedisUtil {
 	 * @return 成功返回1,失败返回0
 	 */
 	public static <T> int setEx(String key, T value) {
-		if (KSFUtil.isValueNull(key, value)) {
+		if (KutaUtil.isValueNull(key, value)) {
 			return 0;
 		}
 		Jedis jedis = null;
@@ -408,7 +408,7 @@ public class JedisUtil {
 	 * @return 成功返回1,失败返回0
 	 */
 	public static <T> int setEx(String key, T value, int timeout) {
-		if (KSFUtil.isValueNull(key, value)) {
+		if (KutaUtil.isValueNull(key, value)) {
 			return 0;
 		}
 		Jedis jedis = null;
@@ -433,7 +433,7 @@ public class JedisUtil {
 	 * @throws JedisDataException 出现数据异常时抛出
 	 */
 	public static Long incr(String key) throws JedisDataException {
-		if (KSFUtil.isValueNull(key)) {
+		if (KutaUtil.isValueNull(key)) {
 			return null;
 		}
 		Jedis jedis = null;
@@ -454,7 +454,7 @@ public class JedisUtil {
 	 * @throws JedisDataException 出现数据异常时抛出
 	 */
 	public static Long incrBy(String key, long n) throws JedisDataException {
-		if (KSFUtil.isValueNull(key)) {
+		if (KutaUtil.isValueNull(key)) {
 			return null;
 		}
 		Jedis jedis = null;
@@ -474,7 +474,7 @@ public class JedisUtil {
 	 * @throws JedisDataException 出现数据异常时抛出
 	 */
 	public static Long decr(String key) throws JedisDataException {
-		if (KSFUtil.isValueNull(key)) {
+		if (KutaUtil.isValueNull(key)) {
 			return null;
 		}
 		Jedis jedis = null;
@@ -495,7 +495,7 @@ public class JedisUtil {
 	 * @throws JedisDataException 出现数据异常时抛出
 	 */
 	public static Long decrBy(String key, long n) throws JedisDataException {
-		if (KSFUtil.isValueNull(key)) {
+		if (KutaUtil.isValueNull(key)) {
 			return null;
 		}
 		Jedis jedis = null;
@@ -515,7 +515,7 @@ public class JedisUtil {
 	 * @return 成功返回1,失败返回0
 	 */
 	public static int setList(String key, String... value) {
-		if (KSFUtil.isValueNull(key, value)) {
+		if (KutaUtil.isValueNull(key, value)) {
 			return 0;
 		}
 		Jedis jedis = null;
@@ -540,7 +540,7 @@ public class JedisUtil {
 	 * @return 成功返回1,失败返回0
 	 */
 	public static int setExList(String key, String... value) {
-		if (KSFUtil.isValueNull(key, value)) {
+		if (KutaUtil.isValueNull(key, value)) {
 			return 0;
 		}
 		Jedis jedis = null;
@@ -568,7 +568,7 @@ public class JedisUtil {
 	 * @return 成功返回1,失败返回0
 	 */
 	public static int setExList(String key, int timeOut, String... value) {
-		if (KSFUtil.isValueNull(key, value)) {
+		if (KutaUtil.isValueNull(key, value)) {
 			return 0;
 		}
 		Jedis jedis = null;
@@ -596,7 +596,7 @@ public class JedisUtil {
 	 */
 	@SafeVarargs
 	public static <T> int setList(String key, T... value) {
-		if (KSFUtil.isValueNull(key, value)) {
+		if (KutaUtil.isValueNull(key, value)) {
 			return 0;
 		}
 		Jedis jedis = null;
@@ -628,7 +628,7 @@ public class JedisUtil {
 	 */
 	@SafeVarargs
 	public static <T> int setExList(String key, T... value) {
-		if (KSFUtil.isValueNull(key, value)) {
+		if (KutaUtil.isValueNull(key, value)) {
 			return 0;
 		}
 		Jedis jedis = null;
@@ -661,7 +661,7 @@ public class JedisUtil {
 	 */
 	@SafeVarargs
 	public static <T> int setExList(String key, int timeOut, T... value) {
-		if (KSFUtil.isValueNull(key, value)) {
+		if (KutaUtil.isValueNull(key, value)) {
 			return 0;
 		}
 		Jedis jedis = null;
@@ -695,7 +695,7 @@ public class JedisUtil {
 	 * @throws RuntimeException 当序列化出现异常时抛出
 	 */
 	public static <T> int setList(String key, List<T> value) throws RuntimeException, IOException {
-		if (KSFUtil.isValueNull(key, value)) {
+		if (KutaUtil.isValueNull(key, value)) {
 			return 0;
 		}
 		Jedis jedis = null;
@@ -723,7 +723,7 @@ public class JedisUtil {
 	 */
 
 	public static <T> int setExList(String key, List<T> value) throws RuntimeException, IOException {
-		if (KSFUtil.isValueNull(key, value)) {
+		if (KutaUtil.isValueNull(key, value)) {
 			return 0;
 		}
 		Jedis jedis = null;
@@ -751,7 +751,7 @@ public class JedisUtil {
 	 * @throws RuntimeException 当序列化出现异常时抛出
 	 */
 	public static <T> int setExList(String key, List<T> value, int timeout) throws RuntimeException, IOException {
-		if (KSFUtil.isValueNull(key, value)) {
+		if (KutaUtil.isValueNull(key, value)) {
 			return 0;
 		}
 		Jedis jedis = null;
@@ -776,7 +776,7 @@ public class JedisUtil {
 	 * @return 成功返回1,失败或者没有受影响返回0
 	 */
 	public static int setSet(String key, String... value) {
-		if (KSFUtil.isValueNull(key, value)) {
+		if (KutaUtil.isValueNull(key, value)) {
 			return 0;
 		}
 		Jedis jedis = null;
@@ -801,7 +801,7 @@ public class JedisUtil {
 	 * @return 成功返回1,失败或者没有受影响返回0
 	 */
 	public static int setExSet(String key, String... value) {
-		if (KSFUtil.isValueNull(key, value)) {
+		if (KutaUtil.isValueNull(key, value)) {
 			return 0;
 		}
 		Jedis jedis = null;
@@ -828,7 +828,7 @@ public class JedisUtil {
 	 * @return 成功返回1,失败或者没有受影响返回0
 	 */
 	public static int setExSet(String key, int timeOut, String... value) {
-		if (KSFUtil.isValueNull(key, value)) {
+		if (KutaUtil.isValueNull(key, value)) {
 			return 0;
 		}
 		Jedis jedis = null;
@@ -855,7 +855,7 @@ public class JedisUtil {
 	 */
 	@SafeVarargs
 	public static <T> int setSet(String key, T... value) {
-		if (KSFUtil.isValueNull(key, value)) {
+		if (KutaUtil.isValueNull(key, value)) {
 			return 0;
 		}
 		Jedis jedis = null;
@@ -889,7 +889,7 @@ public class JedisUtil {
 	 */
 	@SafeVarargs
 	public static <T> int setExSet(String key, T... value) {
-		if (KSFUtil.isValueNull(key, value)) {
+		if (KutaUtil.isValueNull(key, value)) {
 			return 0;
 		}
 		Jedis jedis = null;
@@ -925,7 +925,7 @@ public class JedisUtil {
 	 */
 	@SafeVarargs
 	public static <T> int setExSet(String key, int timeOut, T... value) {
-		if (KSFUtil.isValueNull(key, value)) {
+		if (KutaUtil.isValueNull(key, value)) {
 			return 0;
 		}
 		Jedis jedis = null;
@@ -959,7 +959,7 @@ public class JedisUtil {
 	 * @return 设置结果
 	 */
 	public static long mapSet(String key, String field, String value) {
-		if (KSFUtil.isValueNull(key, field, value)) {
+		if (KutaUtil.isValueNull(key, field, value)) {
 			return 0L;
 		}
 		Jedis jedis = null;
@@ -981,7 +981,7 @@ public class JedisUtil {
 	 * @return 设置结果
 	 */
 	public static <K, V> Long mapSet(String key, K field, V value) {
-		if (KSFUtil.isValueNull(key, field, value)) {
+		if (KutaUtil.isValueNull(key, field, value)) {
 			return 0L;
 		}
 		Jedis jedis = null;
@@ -1003,7 +1003,7 @@ public class JedisUtil {
 	 * @return 设置结果
 	 */
 	public static Long mapSet(String key, byte[] field, byte[] value) {
-		if (KSFUtil.isValueNull(key, field, value)) {
+		if (KutaUtil.isValueNull(key, field, value)) {
 			return 0L;
 		}
 		Jedis jedis = null;
@@ -1023,7 +1023,7 @@ public class JedisUtil {
 	 * @return 查询的结果
 	 */
 	public static String mapValGet(String key, String field) {
-		if (KSFUtil.isValueNull(key, field)) {
+		if (KutaUtil.isValueNull(key, field)) {
 			return null;
 		}
 		Jedis jedis = null;
@@ -1042,7 +1042,7 @@ public class JedisUtil {
 	 * @return 查询的结果
 	 */
 	public static List<String> mapValsGet(String key, String... fields) {
-		if (KSFUtil.isValueNull(key, fields)) {
+		if (KutaUtil.isValueNull(key, fields)) {
 			return null;
 		}
 		Jedis jedis = null;
@@ -1061,7 +1061,7 @@ public class JedisUtil {
 	 * @return 删除的结果
 	 */
 	public static long mapValDel(String key, String... fields) {
-		if (KSFUtil.isValueNull(key, fields)) {
+		if (KutaUtil.isValueNull(key, fields)) {
 			return 0L;
 		}
 		Jedis jedis = null;
@@ -1080,7 +1080,7 @@ public class JedisUtil {
 	 * @return 删除的结果
 	 */
 	public static boolean mapExists(String key, String field) {
-		if (KSFUtil.isValueNull(key, field)) {
+		if (KutaUtil.isValueNull(key, field)) {
 			return false;
 		}
 		Jedis jedis = null;
@@ -1098,7 +1098,7 @@ public class JedisUtil {
 	 * @return key集合
 	 */
 	public static Set<String> mapKeySet(String key) {
-		if (KSFUtil.isValueNull(key)) {
+		if (KutaUtil.isValueNull(key)) {
 			return null;
 		}
 		Jedis jedis = null;
@@ -1116,7 +1116,7 @@ public class JedisUtil {
 	 * @return value集合
 	 */
 	public static List<String> mapValueSet(String key) {
-		if (KSFUtil.isValueNull(key)) {
+		if (KutaUtil.isValueNull(key)) {
 			return null;
 		}
 		Jedis jedis = null;
@@ -1134,7 +1134,7 @@ public class JedisUtil {
 	 * @param map map-key,map-value的集合
 	 */
 	public static void mapBatchSet(String key, Map<String, String> map) {
-		if (KSFUtil.isValueNull(key, map)) {
+		if (KutaUtil.isValueNull(key, map)) {
 			return;
 		}
 		Jedis jedis = null;
@@ -1151,7 +1151,7 @@ public class JedisUtil {
 	 * @param map map-key,map-value的集合
 	 */
 	public static void mapBatchSet(byte[] key, Map<byte[], byte[]> map) {
-		if (KSFUtil.isValueNull(key, map)) {
+		if (KutaUtil.isValueNull(key, map)) {
 			return;
 		}
 		Jedis jedis = null;
@@ -1169,7 +1169,7 @@ public class JedisUtil {
 	 * @return 获取的数据
 	 */
 	public static Map<String, String> mapGetAll(String key) {
-		if (KSFUtil.isValueNull(key)) {
+		if (KutaUtil.isValueNull(key)) {
 			return null;
 		}
 		Jedis jedis = null;
@@ -1187,7 +1187,7 @@ public class JedisUtil {
 	 * @return map的长度
 	 */
 	public static long mapLen(String key) {
-		if (KSFUtil.isValueNull(key)) {
+		if (KutaUtil.isValueNull(key)) {
 			return 0L;
 		}
 		Jedis jedis = null;
@@ -1228,7 +1228,7 @@ public class JedisUtil {
 	 * @return String类型的值
 	 */
 	public static String get(String key) {
-		if (KSFUtil.isValueNull(key)) {
+		if (KutaUtil.isValueNull(key)) {
 			return null;
 		}
 		Jedis jedis = null;
@@ -1248,7 +1248,7 @@ public class JedisUtil {
 	 * @return 实体对象
 	 */
 	public static <T> T get(String key, Class<T> clazz) {
-		if (KSFUtil.isValueNull(key)) {
+		if (KutaUtil.isValueNull(key)) {
 			return null;
 		}
 		Jedis jedis = null;
@@ -1273,7 +1273,7 @@ public class JedisUtil {
 	 * @return 查询结果
 	 */
 	public static List<String> getList(String key, long start, long end) {
-		if (KSFUtil.isValueNull(key)) {
+		if (KutaUtil.isValueNull(key)) {
 			return null;
 		}
 		Jedis jedis = null;
@@ -1297,7 +1297,7 @@ public class JedisUtil {
 	 * @return 查询结果
 	 */
 	public static <T> List<T> getList(String key, long start, long end, Class<T> clazz) {
-		if (KSFUtil.isValueNull(key)) {
+		if (KutaUtil.isValueNull(key)) {
 			return null;
 		}
 		Jedis jedis = null;
@@ -1325,7 +1325,7 @@ public class JedisUtil {
 	 * @return 值的数量
 	 */
 	public static long getListCount(String key) {
-		if (KSFUtil.isValueNull(key)) {
+		if (KutaUtil.isValueNull(key)) {
 			return 0;
 		}
 		Jedis jedis = null;
@@ -1345,7 +1345,7 @@ public class JedisUtil {
 	 * @throws IOException 发生IO异常时抛出
 	 */
 	public static <T> List<T> getList(String key, Class<T> clazz) throws IOException {
-		if (KSFUtil.isValueNull(key)) {
+		if (KutaUtil.isValueNull(key)) {
 			return null;
 		}
 		Jedis jedis = null;
@@ -1366,7 +1366,7 @@ public class JedisUtil {
 	 * @return 查询结果
 	 */
 	public static Set<String> getSet(String key) {
-		if (KSFUtil.isValueNull(key)) {
+		if (KutaUtil.isValueNull(key)) {
 			return null;
 		}
 		Jedis jedis = null;
@@ -1387,7 +1387,7 @@ public class JedisUtil {
 	 * @return 查询结果
 	 */
 	public static <T> Set<T> getSet(String key, Class<T> clazz) {
-		if (KSFUtil.isValueNull(key)) {
+		if (KutaUtil.isValueNull(key)) {
 			return null;
 		}
 		Jedis jedis = null;
@@ -1416,7 +1416,7 @@ public class JedisUtil {
 	 * @return 获取Set中包含多少个值
 	 */
 	public static long getSetCount(String key) {
-		if (KSFUtil.isValueNull(key)) {
+		if (KutaUtil.isValueNull(key)) {
 			return 0;
 		}
 		Jedis jedis = null;

@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
-import com.kuta.base.entity.KSFConstants;
+import com.kuta.base.entity.KutaConstants;
 
 /**
  * http工具类
@@ -328,7 +328,7 @@ public class HttpUtil {
 	public static String streamToString(InputStream in) throws IOException {
 		StringBuffer out = new StringBuffer();
 
-		BufferedReader br = new BufferedReader(new InputStreamReader(in, KSFConstants.ENCODE_UTF_8));
+		BufferedReader br = new BufferedReader(new InputStreamReader(in, KutaConstants.ENCODE_UTF_8));
 		String line;
 		while ((line = br.readLine()) != null) {
 			out.append(line);

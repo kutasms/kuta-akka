@@ -4,7 +4,7 @@ import java.lang.reflect.Type;
 
 import com.alibaba.fastjson.parser.DefaultJSONParser;
 import com.alibaba.fastjson.parser.deserializer.ObjectDeserializer;
-import com.kuta.base.util.KSFUtil;
+import com.kuta.base.util.KutaUtil;
 
 /**
  * Bson数据long类型解析器

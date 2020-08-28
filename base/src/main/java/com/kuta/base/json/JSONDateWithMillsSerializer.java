@@ -8,7 +8,7 @@ import java.util.Date;
 import com.alibaba.fastjson.serializer.JSONSerializer;
 import com.alibaba.fastjson.serializer.ObjectSerializer;
 import com.alibaba.fastjson.serializer.SerializeWriter;
-import com.kuta.base.util.KSFTimeUtil;
+import com.kuta.base.util.KutaTimeUtil;
 
 public class JSONDateWithMillsSerializer implements ObjectSerializer {
 

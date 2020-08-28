@@ -11,8 +11,8 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
 
-import com.kuta.base.util.KSFStringUtil;
-import com.kuta.base.util.KSFUtil;
+import com.kuta.base.util.KutaStringUtil;
+import com.kuta.base.util.KutaUtil;
 
 /**
  * MYSQL数据导入REDIS的SQL文件生成工具
@@ -80,7 +80,7 @@ public class RedisImportSqlFileGenerator {
 		builder.append(String.format("CONCAT('%s_',%s) AS redis_key,\r\n", clazz.getSimpleName().toLowerCase(), cacheKey));
 		
 		for(int i=0;i<fieldNames.size();i++) {
-			String underLineName = KSFStringUtil.humpToUnderline(fieldNames.get(i));
+			String underLineName = KutaStringUtil.humpToUnderline(fieldNames.get(i));
 			if(i < fieldNames.size()-1) {
 				builder.append(String.format("'%s' AS k_%s,`%s` AS v_%s,\r\n", 
 						fieldNames.get(i),
@@ -159,7 +159,7 @@ public class RedisImportSqlFileGenerator {
 		builder.append(String.format("CONCAT('%s_',%s) AS redis_key,\r\n", clazz.getSimpleName().toLowerCase(), cacheKey));
 		
 		for(int i=0;i<fieldNames.size();i++) {
-			String underLineName = KSFStringUtil.humpToUnderline(fieldNames.get(i));
+			String underLineName = KutaStringUtil.humpToUnderline(fieldNames.get(i));
 			if(i < fieldNames.size()-1) {
 				builder.append(String.format("'%s' AS k_%s,`%s` AS v_%s,\r\n", 
 						fieldNames.get(i),
