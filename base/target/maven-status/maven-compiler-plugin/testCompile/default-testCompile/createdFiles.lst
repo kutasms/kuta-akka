@@ -1,0 +1,5 @@
+com\kuta\base\AppTest.class
+com\kuta\base\util\JedisUtilTest.class
+com\kuta\base\collection\KutaHashSetTest.class
+com\kuta\base\database\entity\KutaDocumentTest.class
+com\kuta\base\util\KutaTimeUtilTest.class
