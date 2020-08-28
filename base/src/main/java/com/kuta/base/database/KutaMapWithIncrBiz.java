@@ -7,7 +7,7 @@ import redis.clients.jedis.Jedis;
 /**
  * 附带原子增加功能的数据处理器
  * */
-public abstract class KutaMapWithIncrBiz<T extends KSFDBEntity, TKey extends Number> extends KSFMapBiz<T, TKey>{
+public abstract class KutaMapWithIncrBiz<T extends KutaDBEntity, TKey extends Number> extends KSFMapBiz<T, TKey>{
 	/**
 	 * 构造函数
 	 * @param cacheKey 缓存键

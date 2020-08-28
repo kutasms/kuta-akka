@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-import com.kuta.base.exception.KSFError;
+import com.kuta.base.exception.KutaError;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -42,7 +42,7 @@ public class JedisPoolUtil {
             pro.load(in);
         } catch (IOException e) {
             e.printStackTrace();	
-            System.out.println(KSFError.FILE_LOAD_ERROR.getDesc());
+            System.out.println(KutaError.FILE_LOAD_ERROR.getDesc());
         }
         JedisPoolConfig poolConfig = new JedisPoolConfig();
         //最大连接数

@@ -21,7 +21,7 @@ import com.kuta.base.json.BsonLong2JSONDeserializer;
 import com.kuta.base.json.DateWithMills2JSONDeserializer;
 import com.kuta.base.json.JSON2BsonLongSerializer;
 import com.kuta.base.json.JSONDateWithMillsSerializer;
-import com.kuta.base.util.KSFUtil;
+import com.kuta.base.util.KutaUtil;
 import com.kuta.common.config.utils.PropertyUtil;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
@@ -158,7 +158,7 @@ public class KutaMongoUtil {
 	 * @return 文档集合
 	 * */
 	public static <T> List<Document> toDocList(List<T> list){
-		if(KSFUtil.isEmptyColl(list)) {
+		if(KutaUtil.isEmptyColl(list)) {
 			return null;
 		}
 		List<Document> docs = new ArrayList<>();
