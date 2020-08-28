@@ -13,16 +13,16 @@ import com.aliyuncs.IAcsClient;
 import com.aliyuncs.exceptions.ClientException;
 import com.aliyuncs.profile.DefaultProfile;
 import com.google.gson.Gson;
-import com.kuta.common.config.utils.PropertyUtils;
+import com.kuta.common.config.utils.PropertyUtil;
 
 public class AliyunEmailUtil {
 	
 	
 	// 设置鉴权参数，初始化客户端
     private DefaultProfile profile = DefaultProfile.getProfile(
-    		PropertyUtils.getProperty("email", "aliyun.area"),// 地域ID
-    		PropertyUtils.getProperty("email", "aliyun.access.key.id"),// 您的AccessKey ID
-    		PropertyUtils.getProperty("email", "aliyun.access.key.secret"));// 您的AccessKey Secret
+    		PropertyUtil.getProperty("email", "aliyun.area"),// 地域ID
+    		PropertyUtil.getProperty("email", "aliyun.access.key.id"),// 您的AccessKey ID
+    		PropertyUtil.getProperty("email", "aliyun.access.key.secret"));// 您的AccessKey Secret
     private IAcsClient client = new DefaultAcsClient(profile);
     
     /**
@@ -41,10 +41,10 @@ public class AliyunEmailUtil {
         String tempStr = null;
         switch(type) {
         case "0":
-        	tempStr = PropertyUtils.getProperty("email", "aliyun.template.checkcode");
+        	tempStr = PropertyUtil.getProperty("email", "aliyun.template.checkcode");
         	break;
         case "1":
-        	tempStr = PropertyUtils.getProperty("email", "aliyun.template.notice");
+        	tempStr = PropertyUtil.getProperty("email", "aliyun.template.notice");
         	break;
         case "2":
         	tempStr = templateStr;
@@ -80,14 +80,14 @@ public class AliyunEmailUtil {
      * @throws ClientException 
      * */
     public JSONObject send(String code,String phoneNum) throws ClientException {
-    	String templateCode = PropertyUtils.getProperty("email", "aliyun.template.checkcode.id");
+    	String templateCode = PropertyUtil.getProperty("email", "aliyun.template.checkcode.id");
     	if(templateCode == null || templateCode.equals("")) {
     		templateCode = addSmsTemplate("短信验证码", 
     				"0",
-    				PropertyUtils.getProperty("email", "aliyun.template.checkcode"),
+    				PropertyUtil.getProperty("email", "aliyun.template.checkcode"),
     				"登陆短信验证码");
     		
-    		PropertyUtils.updateProperty("email", "aliyun.template.checkcode.id", templateCode);
+    		PropertyUtil.updateProperty("email", "aliyun.template.checkcode.id", templateCode);
     	}
     	JSONObject param = new JSONObject();
     	param.put("code", code);
@@ -101,10 +101,10 @@ public class AliyunEmailUtil {
     	String templateCode = null;
     	switch (type) {
 		case 0:
-			templateCode = PropertyUtils.getProperty("email", "aliyun.template.checkcode.id");
+			templateCode = PropertyUtil.getProperty("email", "aliyun.template.signup.checkcode.id");
 			break;
 		case 1:
-			templateCode = PropertyUtils.getProperty("email", "aliyun.template.signup.checkcode.id");
+			templateCode = PropertyUtil.getProperty("email", "aliyun.template.signin.checkcode.id");
 			break;
 		default:
 			break;
@@ -113,10 +113,10 @@ public class AliyunEmailUtil {
     	if(templateCode == null || templateCode.equals("")) {
     		templateCode = addSmsTemplate("短信验证码", 
     				"0",
-    				PropertyUtils.getProperty("email", "aliyun.template.checkcode"),
+    				PropertyUtil.getProperty("email", "aliyun.template.checkcode"),
     				"登陆短信验证码");
     		
-    		PropertyUtils.updateProperty("email", "aliyun.template.checkcode.id", templateCode);
+    		PropertyUtil.updateProperty("email", "aliyun.template.checkcode.id", templateCode);
     	}
     	JSONObject param = new JSONObject();
     	param.put("code", code);
@@ -134,7 +134,7 @@ public class AliyunEmailUtil {
         // 接收短信的手机号码
         request.putQueryParameter("PhoneNumbers", phoneNum);
         // 短信签名名称。请在控制台签名管理页面签名名称一列查看（必须是已添加、并通过审核的短信签名）。
-        String signName = PropertyUtils.getProperty("email", "aliyun.sign.name");
+        String signName = PropertyUtil.getProperty("email", "aliyun.sign.name");
         request.putQueryParameter("SignName", signName);
         // 短信模板ID
         request.putQueryParameter("TemplateCode", templateCode);
@@ -170,7 +170,7 @@ public class AliyunEmailUtil {
         // 短信发送日期，支持查询最近30天的记录。格式为yyyyMMdd，例如20191010。
         request.putQueryParameter("SendDate", formatter.format(sendDate));
         // 分页记录数量
-        request.putQueryParameter("PageSize", PropertyUtils.getProperty("email", "aliyun.query.pagesize"));
+        request.putQueryParameter("PageSize", PropertyUtil.getProperty("email", "aliyun.query.pagesize"));
         // 分页当前页码
         request.putQueryParameter("CurrentPage", currentPage);
         // 发送回执ID，即发送流水号。

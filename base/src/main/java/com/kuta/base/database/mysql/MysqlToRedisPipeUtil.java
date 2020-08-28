@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.kuta.common.config.utils.PropertyUtils;
+import com.kuta.common.config.utils.PropertyUtil;
 
 /**
  * 以linux管线将mysql数据导入redis的工具类
@@ -35,7 +35,7 @@ public class MysqlToRedisPipeUtil {
 		command.add("-c");
 		arguments.add("mysql");
 		arguments.add("-uroot");
-		arguments.add("-p" + PropertyUtils.getProperty("jdbc", "jdbc.password"));
+		arguments.add("-p" + PropertyUtil.getProperty("jdbc", "jdbc.password"));
 		arguments.add("-DtbSimCity");
 		arguments.add("--default-character-set=utf8");
 		// commandList.add("-h");
@@ -47,9 +47,9 @@ public class MysqlToRedisPipeUtil {
 		arguments.add("|");
 		arguments.add("redis-cli");
 		arguments.add("-p");
-		arguments.add(PropertyUtils.getProperty("redis", "redis.port"));
+		arguments.add(PropertyUtil.getProperty("redis", "redis.port"));
 		arguments.add("-a");
-		arguments.add(PropertyUtils.getProperty("redis", "redis.pwd"));
+		arguments.add(PropertyUtil.getProperty("redis", "redis.pwd"));
 		arguments.add("--pipe");
 		command.add(StringUtils.join(arguments, " "));
 		ProcessBuilder pb = new ProcessBuilder(command);

@@ -22,7 +22,7 @@ import com.kuta.base.json.DateWithMills2JSONDeserializer;
 import com.kuta.base.json.JSON2BsonLongSerializer;
 import com.kuta.base.json.JSONDateWithMillsSerializer;
 import com.kuta.base.util.KSFUtil;
-import com.kuta.common.config.utils.PropertyUtils;
+import com.kuta.common.config.utils.PropertyUtil;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
 import com.mongodb.MongoCredential;
@@ -42,23 +42,23 @@ public class KutaMongoUtil {
 	/**
 	 * mongodb-host
 	 * */
-	private static final String MONGO_HOST = PropertyUtils.getProperty("mongo", "mongo.host");
+	private static final String MONGO_HOST = PropertyUtil.getProperty("mongo", "mongo.host");
 	/**
 	 * mongodb-user
 	 * */
-	private static final String MONGO_USER = PropertyUtils.getProperty("mongo", "mongo.user");
+	private static final String MONGO_USER = PropertyUtil.getProperty("mongo", "mongo.user");
 	/**
 	 * mongodb-password
 	 * */
-	private static final String MONGO_PSWD = PropertyUtils.getProperty("mongo", "mongo.pswd");
+	private static final String MONGO_PSWD = PropertyUtil.getProperty("mongo", "mongo.pswd");
 	/**
 	 * mongodb-port
 	 * */
-	private static final Integer MONGO_PORT = PropertyUtils.getInteger("mongo", "mongo.port");
+	private static final Integer MONGO_PORT = PropertyUtil.getInteger("mongo", "mongo.port");
 	/**
 	 * mongodb-dbname
 	 * */
-	private static final String MONGO_DBNM = PropertyUtils.getProperty("mongo", "mongo.dbname");
+	private static final String MONGO_DBNM = PropertyUtil.getProperty("mongo", "mongo.dbname");
 	/**
 	 * alibaba fastjson的序列化相关配置
 	 * <p>用于bson与fastjson的兼容处理</p>
