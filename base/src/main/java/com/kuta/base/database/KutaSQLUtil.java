@@ -1,5 +1,7 @@
 package com.kuta.base.database;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -7,6 +9,7 @@ import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.TransactionIsolationLevel;
 
+import com.kuta.base.annotation.PrimaryKey;
 import com.kuta.base.util.ThrowingConsumer;
 import com.kuta.base.util.ThrowingFunction;
 
@@ -14,6 +17,24 @@ import com.kuta.base.util.ThrowingFunction;
  * 数据库连接池应用工具类，自动回收连接
  * */
 public class KutaSQLUtil {
+	
+	
+	/**
+	 * 判断当前字段是否为主键字段
+	 * @param field 通过反射获取的Field对象
+	 * @return true:是主键,false:非主键
+	 * */
+	public static boolean isPrimaryKey(Field field) {
+		Annotation[] anns = field.getAnnotations();
+		if(anns!=null && anns.length > 0) {
+			for(int i=0;i<anns.length;i++) {
+				if(anns[i].getClass().equals(PrimaryKey.class)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 	
 	/**
 	 * 执行数据库相关操作
