@@ -1,4 +1,4 @@
-# Kuta Service Framwork (KSF)
+# Kuta Service Framework
 ![](https://img.shields.io/badge/license-Apache%202-blue)
 ![](https://img.shields.io/badge/akka-2.6%2B-orange)
 ![](https://img.shields.io/badge/java-1.8%2B-green)
