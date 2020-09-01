@@ -1,16 +1,19 @@
 package com.kuta.base.database;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSONObject;
+import com.kuta.base.annotation.PrimaryKey;
 import com.kuta.base.exception.KutaError;
 import com.kuta.base.exception.KutaIllegalArgumentException;
 import com.kuta.base.exception.KutaRuntimeException;
@@ -371,7 +374,7 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 	 * */
 	public int insertCache(SqlSession session,Jedis jedis, T entity, Object... args) throws Exception {
 		int result = insert(session, entity);
-		cache(entity,jedis, args);
+		cache(entity,jedis,args);
 		return result;
 	}
 	/**
@@ -387,6 +390,9 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 		cache(entity,jedis, formatCacheKeyByTKey(getKey(entity)));
 		return result;
 	}
+	
+	
+	
 	/**
 	 * 使用json键值对查询数据
 	 * @param param json键值对(当使用field无法从redis中查询数据时使用此条件从数据库中加载数据)
@@ -490,6 +496,9 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 			if (KutaUtil.isValueNull(fieldObj)) {
 				continue;
 			}
+			if(KutaSQLUtil.isPrimaryKey(field)) {
+				continue;
+			}
 			Class<?> fieldType = field.getType();
 			if (fieldType.equals(Integer.class) || fieldType.equals(Long.class)
 					|| fieldType.equals(Short.class) || fieldType.equals(Byte.class)
@@ -510,6 +519,8 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 		}
 	}
 	
+	
+	
 	/**
 	 * 缓存中的数据增加指定的值(值设置为负数即为减法操作)
 	 * @param jedis redis连接
@@ -527,12 +538,10 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 
 		String cacheKey = CACHE_KEY;
 		if (!KutaUtil.isValueNull(key)) {
-			if (fieldClazz.equals(Integer.class) || fieldClazz.equals(int.class)
-					|| fieldClazz.equals(Short.class) || fieldClazz.equals(short.class)
-					|| fieldClazz.equals(Byte.class) || fieldClazz.equals(byte.class)) {
-				cacheKey = formatCacheKey(KutaUtil.intToBase64(key.intValue()));
-			} else {
+			if(fieldClazz.equals(Long.class) || fieldClazz.equals(long.class)) {
 				cacheKey = formatCacheKey(KutaUtil.longToBase64(key.longValue()));
+			} else {
+				cacheKey = formatCacheKey(KutaUtil.intToBase64(key.intValue()));
 			}
 		}
 		Pipeline pipe = jedis.pipelined();
@@ -543,6 +552,10 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 			if (KutaUtil.isValueNull(fieldObj)) {
 				continue;
 			}
+			if(KutaSQLUtil.isPrimaryKey(field)) {
+				continue;
+			}
+			
 			Class<?> fieldType = field.getType();
 			if (fieldType.equals(Integer.class) || fieldType.equals(Long.class)
 					|| fieldType.equals(Short.class) || fieldType.equals(Byte.class)
