@@ -10,6 +10,18 @@ import org.mybatis.generator.api.dom.java.TopLevelClass;
 
 import com.kuta.base.annotation.PrimaryKey;
 
+/**
+ * 主键注解插件
+ * <pre>
+ * 请在generatorConfig.xml配置文件中增加对此插件的配置
+ * {@code
+ * <context>
+ *    <plugin type="com.kuta.base.mybatis.KutaBatchUpdatePlugin"/>
+ * </context>
+ * }
+
+ * </pre>
+ * */
 public class PrimaryKeyPlugin extends org.mybatis.generator.api.PluginAdapter {
 
 	private FullyQualifiedJavaType primaryKey;
