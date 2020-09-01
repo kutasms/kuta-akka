@@ -47,8 +47,8 @@ public class ProtostuffUtil {
 	/**
 	 * actor代理
 	 */
-	// private final static Delegate<ActorRef> ACTORREF_DELEGATE = new
-	// ActorRefDelegate();
+	 private final static Delegate<ActorRef> ACTORREF_DELEGATE = new
+	 ActorRefDelegate();
 	/**
 	 * actor system
 	 */
@@ -83,7 +83,7 @@ public class ProtostuffUtil {
 		wrapperSet.add(SortedMap.class);
 		wrapperSet.add(Map.class);
 		wrapperSet.add(Object.class);
-		// idStrategy.registerDelegate(ACTORREF_DELEGATE);
+		 idStrategy.registerDelegate(ACTORREF_DELEGATE);
 	}
 
 	/**
