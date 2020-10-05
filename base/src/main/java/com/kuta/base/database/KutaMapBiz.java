@@ -86,6 +86,52 @@ public abstract class KutaMapBiz<T extends KutaDBEntity, TKey extends Number> ex
 	}
 
 	@Override
+	protected int remove(SqlSession session, TKey key) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public void cacheByKey(T entity, Jedis jedis) throws KutaRuntimeException {
+		// TODO Auto-generated method stub
+		TKey key = getKey(entity);
+		Map<String, String> map = KutaBeanUtil.bean2Map(entity);
+		if (!KutaUtil.isEmptyMap(map)) {
+			jedis.hset(formatCacheKeyByTKey(key), map);
+		}
+	}
+
+	@Override
+	public TKey getKey(T t) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public T get(SqlSession session, TKey key) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public int insert(SqlSession session, T entity) throws Exception {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public int update(SqlSession session, T entity) throws Exception {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public List<T> select(SqlSession session, JSONObject param) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
 	public T getOne(SqlSession session, TKey key, Jedis jedis, String cacheKey) throws Exception{
 		
 		Map<String, String> map = jedis.hgetAll(cacheKey);
