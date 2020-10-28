@@ -8,21 +8,32 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+
+import org.apache.commons.lang3.builder.StandardToStringStyle;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.kuta.base.collection.KutaHashSet;
 import com.kuta.base.entity.KutaScanResult;
 import com.kuta.base.serialization.ProtostuffUtil;
 import com.kuta.base.util.KutaUtil;
+import com.kuta.base.util.ThrowingConsumer;
+import com.kuta.base.util.ThrowingFunction;
 
 import akka.actor.Scheduler;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
+import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.exceptions.JedisMovedDataException;
+import scala.annotation.meta.param;
 import scala.concurrent.ExecutionContext;
 
 public class JedisUtil {
@@ -39,19 +50,17 @@ public class JedisUtil {
 			return null;
 		}
 		Map<String, Map<String, String>> map = new HashMap<String, Map<String, String>>();
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			Set<String> keys = jedis.keys(key);
-			Pipeline pipe = jedis.pipelined();
 			for (String k : keys) {
-				Response<Map<String, String>> response = pipe.hgetAll(k);
-				map.put(k, response.get());
+				Map<String, String> response = jedis.hgetAll(k);
+				map.put(k, response);
 			}
-			pipe.sync();
 			return map;
 		} finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 
@@ -65,24 +74,28 @@ public class JedisUtil {
 			return null;
 		}
 		Map<String, Map<String, String>> map = new HashMap<String, Map<String, String>>();
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
-			Pipeline pipe = jedis.pipelined();
-			Map<String, Response<Map<String, String>>> result = new HashMap<>();
+			Map<String, Map<String, String>> result = new HashMap<>();
 			for (String k : keys) {
-				result.put(k, pipe.hgetAll(k));
-				System.out.println(String.format("已加载%s数据,当前写入%s", result.size(),k));
+				result.put(k, jedis.hgetAll(k));
+//				System.out.println(String.format("已加载%s数据,当前写入%s", result.size(),k));
 			}
-			pipe.sync();
-			for(Map.Entry<String, Response<Map<String, String>>> entry : result.entrySet()) {
-				map.put(entry.getKey(), entry.getValue().get());
+			for(Map.Entry<String, Map<String, String>> entry : result.entrySet()) {
+				map.put(entry.getKey(), entry.getValue());
 			}
 			return map;
 		} finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
+	
+//	public static Map<String, Map<String, String>> getAllValsByCluster(JedisClient jedis,Set<String> keys){
+//		Map<String, Map<String, String>> map = new HashMap<String, Map<String, String>>();
+//		jedis.hgetAll(key)
+//	}
+	
 	/**
 	 * 根据键集合通过管线加载所有数据
 	 * <p>使用外部创建的jedis连接</p>
@@ -90,50 +103,170 @@ public class JedisUtil {
 	 * @param keys 键集合
 	 * @return 包含所有数据的结果
 	 * */
-	public static Map<String, Map<String, String>> getAllValsByPipeline(Jedis jedis, Set<String> keys) {
+	public static Map<String, Map<String, String>> getAllValsByPipeline(JedisClient jedis, Set<String> keys) {
 		if (KutaUtil.isValueNull(keys, jedis)) {
 			return null;
 		}
 		Map<String, Map<String, String>> map = new HashMap<String, Map<String, String>>();
-		Map<String, Response<Map<String, String>>> result = new HashMap<>();
-		Pipeline pipe = jedis.pipelined();
+		Map<String, Map<String, String>> result = new HashMap<>();
+		
 		for (String k : keys) {
-			result.put(k, pipe.hgetAll(k));
+//			logger.info("查询Key:{}",k);
+			result.put(k, jedis.hgetAll(k));
 		}
-		pipe.sync();
-		for(Map.Entry<String, Response<Map<String, String>>> entry : result.entrySet()) {
-			map.put(entry.getKey(), entry.getValue().get());
+		for(Map.Entry<String, Map<String, String>> entry : result.entrySet()) {
+			map.put(entry.getKey(), entry.getValue());
 		}
 		
 		return map;
 	}
 	
-	/**
-	 * 根据键集合通过管线加载所有数据
-	 * <p>使用外部创建的jedis连接管线</p>
-	 * @param pipeline redis连接管线
-	 * @param keys 键集合
-	 * @return 包含所有数据的结果
-	 * */
-	public static Map<String, Map<String, String>> getAllValsByPipeline(Pipeline pipeline, Set<String> keys) {
-		if (KutaUtil.isValueNull(keys, pipeline)) {
-			return null;
-		}
-		Map<String, Map<String, String>> map = new HashMap<String, Map<String, String>>();
-		Map<String, Response<Map<String, String>>> result = new HashMap<>();
-		
-		for (String k : keys) {
-			result.put(k, pipeline.hgetAll(k));
-//			System.out.println(String.format("已加载%s数据,当前写入%s", result.size(),k));
-		}
-		pipeline.sync();
-		for(Map.Entry<String, Response<Map<String, String>>> entry : result.entrySet()) {
-			map.put(entry.getKey(), entry.getValue().get());
-		}
-		
-		return map;
-	}
+//	/**
+//	 * 根据键集合通过管线加载所有数据
+//	 * <p>使用外部创建的jedis连接管线</p>
+//	 * @param pipeline redis连接管线
+//	 * @param keys 键集合
+//	 * @return 包含所有数据的结果
+//	 * */
+//	public static Map<String, Map<String, String>> getAllValsByPipeline(JedisClient jedis, Set<String> keys) {
+//		if (KutaUtil.isValueNull(keys, jedis)) {
+//			return null;
+//		}
+//		Map<String, Map<String, String>> map = new HashMap<String, Map<String, String>>();
+//		Map<String, Response<Map<String, String>>> result = new HashMap<>();
+//		
+//		for (String k : keys) {
+//			result.put(k, pipeline.hgetAll(k));
+////			System.out.println(String.format("已加载%s数据,当前写入%s", result.size(),k));
+//		}
+//		for(Map.Entry<String, Response<Map<String, String>>> entry : result.entrySet()) {
+//			map.put(entry.getKey(), entry.getValue().get());
+//		}
+//		
+//		return map;
+//	}
 
+	public static <R> void commandByClusterMasterNodes(ThrowingFunction<Jedis, R, Exception> func) {
+		Map<String, JedisPool> clusterNodes = JedisPoolUtil.getCluster().getClusterNodes();
+		for(Entry<String, JedisPool> entry : clusterNodes.entrySet()) {
+			Jedis jedis = entry.getValue().getResource();
+			jedis.getClient().sendCommand(new ProtocolCommand() {
+				@Override
+				public byte[] getRaw() {
+					// TODO Auto-generated method stub
+					return "role".getBytes();
+				}
+			});
+			List<byte[]> binaryMultiBulkReply = jedis.getClient().getBinaryMultiBulkReply();
+			byte[] bs = binaryMultiBulkReply.get(0);
+			String roleString = new String(bs);
+			if(roleString.equals("slave")) {
+//				logger.info("此节点为从节点，飘过.");
+				continue;
+			}
+			try {
+				func.apply(jedis);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			finally {
+				jedis.close();
+			}
+		}
+	}
+	public static void commandByClusterMasterNodes(ThrowingConsumer<Jedis, Exception> func) {
+		Map<String, JedisPool> clusterNodes = JedisPoolUtil.getCluster().getClusterNodes();
+		for(Entry<String, JedisPool> entry : clusterNodes.entrySet()) {
+			Jedis jedis = entry.getValue().getResource();
+			jedis.getClient().sendCommand(new ProtocolCommand() {
+				@Override
+				public byte[] getRaw() {
+					// TODO Auto-generated method stub
+					return "role".getBytes();
+				}
+			});
+			List<byte[]> binaryMultiBulkReply = jedis.getClient().getBinaryMultiBulkReply();
+			byte[] bs = binaryMultiBulkReply.get(0);
+			String roleString = new String(bs);
+			if(roleString.equals("slave")) {
+//				logger.info("此节点为从节点，飘过.");
+				continue;
+			}
+			try {
+				func.accept(jedis);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			finally {
+				jedis.close();
+			}
+		}
+	}
+	public static void scanKeyByCluster(String pattern, Integer scanCount, Integer consumerSize,
+			long sleep,Consumer<Set<String>> consumer) {
+		Map<String, JedisPool> clusterNodes = JedisPoolUtil.getCluster().getClusterNodes();
+		
+		KutaHashSet<String> keySet = new KutaHashSet<>();
+		for (Entry<String, JedisPool> entry : clusterNodes.entrySet()) {
+			
+			Jedis jedis = entry.getValue().getResource();
+			jedis.getClient().sendCommand(new ProtocolCommand() {
+				@Override
+				public byte[] getRaw() {
+					// TODO Auto-generated method stub
+					return "role".getBytes();
+				}
+			});
+			List<byte[]> binaryMultiBulkReply = jedis.getClient().getBinaryMultiBulkReply();
+			byte[] bs = binaryMultiBulkReply.get(0);
+			String roleString = new String(bs);
+			if(roleString.equals("slave")) {
+//				logger.info("此节点为从节点，飘过.");
+				continue;
+			}
+			try {
+				ScanParams params = new ScanParams();
+				params.count(scanCount);
+				params.match(pattern);
+				String cursor = "0";
+				ScanResult<String> result = jedis.scan(cursor, params);
+				keySet.addAll(result.getResult());
+				while (keySet.size() >= consumerSize.intValue()) {
+					consumer.accept(keySet.pop(consumerSize));
+				}
+				while (!cursor.equals("0")) {
+					result = jedis.scan(cursor, params);
+					cursor = result.getCursor();
+					keySet.addAll(result.getResult());
+					while (keySet.size() >= consumerSize.intValue()) {
+						consumer.accept(keySet.pop(consumerSize));
+					}
+					if(sleep > 0) {
+						try {
+							TimeUnit.MILLISECONDS.sleep(sleep);
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							logger.error(String.format("从%s:%s节点读取数据失败,Moved Data.", jedis.getClient().getHost(),jedis.getClient().getPort()),e);
+							e.printStackTrace();
+						}
+					}
+				}
+				if (keySet.size() > 0) {
+					consumer.accept(keySet.pop(keySet.size()));
+				}
+			} catch (Exception e) {
+				// TODO: handle exception
+				logger.error(jedis.getClient().getHost() + ":" + jedis.getClient().getPort(),e);
+				continue;
+			} finally {
+				jedis.close();
+			}
+		}
+		
+	}
+	private static final Logger logger = LoggerFactory.getLogger(JedisUtil.class);
 	/**
 	 * 模糊扫描redis键 
 	 * @param jedis redis的java对象 
@@ -143,8 +276,13 @@ public class JedisUtil {
 	 * @param consumerSize 当查找到的数据量大于consumerSize值时调用consumer表达式 
 	 * @param consumer 处理函数，可以是lamda表达式，如 x->{}
 	 */
-	public static void scanKeys(Jedis jedis, String pattern, Integer scanCount, Integer consumerSize,
+	public static void scanKeys(JedisClient jedis, String pattern, Integer scanCount, Integer consumerSize,
 			long sleep,Consumer<Set<String>> consumer) {
+		if(JedisPoolUtil.useCluster()) {
+			scanKeyByCluster(pattern,scanCount,consumerSize,sleep, consumer);
+			return;
+		}
+		
 		KutaHashSet<String> keySet = new KutaHashSet<>();
 		ScanParams params = new ScanParams();
 		params.count(scanCount);
@@ -177,15 +315,37 @@ public class JedisUtil {
 		}
 	}
 	
+	public static KutaHashSet<String> scanKeysByCluster(String pattern,Integer scanCount){
+		KutaHashSet<String> set = new KutaHashSet<String>();
+		commandByClusterMasterNodes(jedis->{
+			String cursor = "";
+			ScanParams params = new ScanParams();
+			params.count(scanCount);
+			params.match(pattern);
+			ScanResult<String> result = jedis.scan(cursor,params);
+			set.addAll(result.getResult());
+			cursor = result.getCursor();
+			while(!cursor.equals("0")) {
+				result = jedis.scan(cursor);
+				set.addAll(result.getResult());
+				cursor = result.getCursor();
+			}
+			return null;
+		});
+		return set;
+	}
+	
 	/**
 	 * 模糊扫描redis键 
 	 * @param jedis redis的java对象 
 	 * @param pattern 模糊查找的key 
 	 * @param scanCount 每次模糊查找的数量，推荐不大于10万
 	 */
-	public static KutaHashSet<String> scanKeys(Jedis jedis, String pattern,Integer scanCount) {
-		
-		String cursor = "0";
+	public static KutaHashSet<String> scanKeys(JedisClient jedis, String pattern,Integer scanCount) {
+		if(JedisPoolUtil.useCluster()) {
+			return scanKeysByCluster(pattern,scanCount);
+		}
+		String cursor = "";
 		ScanParams params = new ScanParams();
 		params.count(scanCount);
 		params.match(pattern);
@@ -287,7 +447,7 @@ public class JedisUtil {
 		if (KutaUtil.isValueNull(key, value)) {
 			return 0;
 		}
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			if (jedis.set(key, value).equalsIgnoreCase("ok")) {
@@ -296,7 +456,7 @@ public class JedisUtil {
 				return 0;
 			}
 		} finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 
@@ -311,7 +471,7 @@ public class JedisUtil {
 		if (KutaUtil.isValueNull(key, value)) {
 			return 0;
 		}
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			if (jedis.setex(key, DEFAULT_SETEX_TIMEOUT, value).equalsIgnoreCase("ok")) {
@@ -320,7 +480,7 @@ public class JedisUtil {
 				return 0;
 			}
 		} finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 
@@ -336,7 +496,7 @@ public class JedisUtil {
 		if (KutaUtil.isValueNull(key, value)) {
 			return 0;
 		}
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			if (jedis.setex(key, timeout, value).equalsIgnoreCase("ok")) {
@@ -345,7 +505,7 @@ public class JedisUtil {
 				return 0;
 			}
 		} finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 
@@ -360,7 +520,7 @@ public class JedisUtil {
 		if (KutaUtil.isValueNull(key, value)) {
 			return 0;
 		}
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			byte[] data = ProtostuffUtil.serialize(value);
@@ -370,7 +530,7 @@ public class JedisUtil {
 				return 0;
 			}
 		} finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 
@@ -385,7 +545,7 @@ public class JedisUtil {
 		if (KutaUtil.isValueNull(key, value)) {
 			return 0;
 		}
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			byte[] data = ProtostuffUtil.serialize(value);
@@ -395,7 +555,7 @@ public class JedisUtil {
 				return 0;
 			}
 		} finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 
@@ -411,7 +571,7 @@ public class JedisUtil {
 		if (KutaUtil.isValueNull(key, value)) {
 			return 0;
 		}
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			byte[] data = ProtostuffUtil.serialize(value);
@@ -421,7 +581,7 @@ public class JedisUtil {
 				return 0;
 			}
 		} finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 
@@ -436,12 +596,12 @@ public class JedisUtil {
 		if (KutaUtil.isValueNull(key)) {
 			return null;
 		}
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			return jedis.incr(key);
 		} finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 
@@ -457,12 +617,12 @@ public class JedisUtil {
 		if (KutaUtil.isValueNull(key)) {
 			return null;
 		}
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			return jedis.incrBy(key, n);
 		} finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 
@@ -477,12 +637,12 @@ public class JedisUtil {
 		if (KutaUtil.isValueNull(key)) {
 			return null;
 		}
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			return jedis.decr(key);
 		} finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 
@@ -498,12 +658,12 @@ public class JedisUtil {
 		if (KutaUtil.isValueNull(key)) {
 			return null;
 		}
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			return jedis.decrBy(key, n);
 		} finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 
@@ -518,7 +678,7 @@ public class JedisUtil {
 		if (KutaUtil.isValueNull(key, value)) {
 			return 0;
 		}
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			Long result = jedis.rpush(key, value);
@@ -528,7 +688,7 @@ public class JedisUtil {
 				return 0;
 			}
 		} finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 
@@ -543,7 +703,7 @@ public class JedisUtil {
 		if (KutaUtil.isValueNull(key, value)) {
 			return 0;
 		}
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			Long result = jedis.rpush(key, value);
@@ -555,7 +715,7 @@ public class JedisUtil {
 			}
 
 		} finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 
@@ -571,7 +731,7 @@ public class JedisUtil {
 		if (KutaUtil.isValueNull(key, value)) {
 			return 0;
 		}
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			Long result = jedis.rpush(key, value);
@@ -583,7 +743,7 @@ public class JedisUtil {
 			}
 
 		} finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 
@@ -599,7 +759,7 @@ public class JedisUtil {
 		if (KutaUtil.isValueNull(key, value)) {
 			return 0;
 		}
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			List<byte[]> list = new ArrayList<>();
@@ -615,7 +775,7 @@ public class JedisUtil {
 				return 0;
 			}
 		} finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 
@@ -631,7 +791,7 @@ public class JedisUtil {
 		if (KutaUtil.isValueNull(key, value)) {
 			return 0;
 		}
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			List<byte[]> list = new ArrayList<>();
@@ -647,7 +807,7 @@ public class JedisUtil {
 				return 0;
 			}
 		} finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 
@@ -664,7 +824,7 @@ public class JedisUtil {
 		if (KutaUtil.isValueNull(key, value)) {
 			return 0;
 		}
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			int res = 0;
@@ -681,7 +841,7 @@ public class JedisUtil {
 				return 0;
 			}
 		} finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 
@@ -698,7 +858,7 @@ public class JedisUtil {
 		if (KutaUtil.isValueNull(key, value)) {
 			return 0;
 		}
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			byte[] data = ProtostuffUtil.serializeList(value);
@@ -708,7 +868,7 @@ public class JedisUtil {
 				return 0;
 			}
 		} finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 
@@ -726,7 +886,7 @@ public class JedisUtil {
 		if (KutaUtil.isValueNull(key, value)) {
 			return 0;
 		}
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			byte[] data = ProtostuffUtil.serializeList(value);
@@ -736,7 +896,7 @@ public class JedisUtil {
 				return 0;
 			}
 		} finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 
@@ -754,7 +914,7 @@ public class JedisUtil {
 		if (KutaUtil.isValueNull(key, value)) {
 			return 0;
 		}
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			byte[] data = ProtostuffUtil.serializeList(value);
@@ -764,7 +924,7 @@ public class JedisUtil {
 				return 0;
 			}
 		} finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 
@@ -779,7 +939,7 @@ public class JedisUtil {
 		if (KutaUtil.isValueNull(key, value)) {
 			return 0;
 		}
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			Long result = jedis.sadd(key, value);
@@ -789,7 +949,7 @@ public class JedisUtil {
 				return 0;
 			}
 		} finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 
@@ -804,7 +964,7 @@ public class JedisUtil {
 		if (KutaUtil.isValueNull(key, value)) {
 			return 0;
 		}
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			Long result = jedis.sadd(key, value);
@@ -815,7 +975,7 @@ public class JedisUtil {
 				return 0;
 			}
 		} finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 
@@ -831,7 +991,7 @@ public class JedisUtil {
 		if (KutaUtil.isValueNull(key, value)) {
 			return 0;
 		}
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			Long result = jedis.sadd(key, value);
@@ -842,7 +1002,7 @@ public class JedisUtil {
 				return 0;
 			}
 		} finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 
@@ -858,7 +1018,7 @@ public class JedisUtil {
 		if (KutaUtil.isValueNull(key, value)) {
 			return 0;
 		}
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			List<byte[]> list = new ArrayList<>();
@@ -875,7 +1035,7 @@ public class JedisUtil {
 				return 0;
 			}
 		} finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 
@@ -892,7 +1052,7 @@ public class JedisUtil {
 		if (KutaUtil.isValueNull(key, value)) {
 			return 0;
 		}
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			List<byte[]> list = new ArrayList<>();
@@ -910,7 +1070,7 @@ public class JedisUtil {
 				return 0;
 			}
 		} finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 
@@ -928,7 +1088,7 @@ public class JedisUtil {
 		if (KutaUtil.isValueNull(key, value)) {
 			return 0;
 		}
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			List<byte[]> list = new ArrayList<>();
@@ -946,7 +1106,7 @@ public class JedisUtil {
 				return 0;
 			}
 		} finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 
@@ -962,12 +1122,12 @@ public class JedisUtil {
 		if (KutaUtil.isValueNull(key, field, value)) {
 			return 0L;
 		}
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			return jedis.hset(key, field, value);
 		} finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 
@@ -984,13 +1144,13 @@ public class JedisUtil {
 		if (KutaUtil.isValueNull(key, field, value)) {
 			return 0L;
 		}
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			return jedis.hset(key.getBytes(), ProtostuffUtil.serialize(field),
 					ProtostuffUtil.serialize(value));
 		} finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 
@@ -1006,12 +1166,12 @@ public class JedisUtil {
 		if (KutaUtil.isValueNull(key, field, value)) {
 			return 0L;
 		}
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			return jedis.hset(key.getBytes(), field, value);
 		} finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 
@@ -1026,12 +1186,12 @@ public class JedisUtil {
 		if (KutaUtil.isValueNull(key, field)) {
 			return null;
 		}
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			return jedis.hget(key, field);
 		} finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 
@@ -1045,12 +1205,12 @@ public class JedisUtil {
 		if (KutaUtil.isValueNull(key, fields)) {
 			return null;
 		}
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			return jedis.hmget(key, fields);
 		} finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 
@@ -1064,12 +1224,12 @@ public class JedisUtil {
 		if (KutaUtil.isValueNull(key, fields)) {
 			return 0L;
 		}
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			return jedis.hdel(key, fields);
 		} finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 
@@ -1083,12 +1243,12 @@ public class JedisUtil {
 		if (KutaUtil.isValueNull(key, field)) {
 			return false;
 		}
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			return jedis.hexists(key, field);
 		} finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 
@@ -1101,12 +1261,12 @@ public class JedisUtil {
 		if (KutaUtil.isValueNull(key)) {
 			return null;
 		}
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			return jedis.hkeys(key);
 		} finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 
@@ -1119,12 +1279,12 @@ public class JedisUtil {
 		if (KutaUtil.isValueNull(key)) {
 			return null;
 		}
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			return jedis.hvals(key);
 		} finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 
@@ -1137,12 +1297,12 @@ public class JedisUtil {
 		if (KutaUtil.isValueNull(key, map)) {
 			return;
 		}
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			jedis.hmset(key, map);
 		} finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 	/**
@@ -1154,12 +1314,12 @@ public class JedisUtil {
 		if (KutaUtil.isValueNull(key, map)) {
 			return;
 		}
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			jedis.hmset(key, map);
 		} finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 
@@ -1172,12 +1332,12 @@ public class JedisUtil {
 		if (KutaUtil.isValueNull(key)) {
 			return null;
 		}
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			return jedis.hgetAll(key);
 		} finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 
@@ -1190,12 +1350,12 @@ public class JedisUtil {
 		if (KutaUtil.isValueNull(key)) {
 			return 0L;
 		}
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			return jedis.hlen(key);
 		} finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 
@@ -1211,13 +1371,13 @@ public class JedisUtil {
 		if (value == null || key == null || "".equals(key)) {
 			return 0L;
 		}
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			Map<byte[], byte[]> org = ProtostuffUtil.serializeMap(value);
 			return jedis.hset(key.getBytes(), org);
 		} finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 
@@ -1231,12 +1391,12 @@ public class JedisUtil {
 		if (KutaUtil.isValueNull(key)) {
 			return null;
 		}
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			return jedis.get(key);
 		} finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 
@@ -1251,7 +1411,7 @@ public class JedisUtil {
 		if (KutaUtil.isValueNull(key)) {
 			return null;
 		}
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 
@@ -1259,7 +1419,7 @@ public class JedisUtil {
 			T result = ProtostuffUtil.deserialize(data, clazz);
 			return result;
 		} finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 
@@ -1276,13 +1436,13 @@ public class JedisUtil {
 		if (KutaUtil.isValueNull(key)) {
 			return null;
 		}
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			List<String> result = jedis.lrange(key, start, end);
 			return result;
 		} finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 
@@ -1300,7 +1460,7 @@ public class JedisUtil {
 		if (KutaUtil.isValueNull(key)) {
 			return null;
 		}
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			List<byte[]> lrange = jedis.lrange(key.getBytes(), start, end);
@@ -1315,7 +1475,7 @@ public class JedisUtil {
 			}
 			return result;
 		} finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 
@@ -1328,12 +1488,12 @@ public class JedisUtil {
 		if (KutaUtil.isValueNull(key)) {
 			return 0;
 		}
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			return jedis.llen(key);
 		} finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 
@@ -1348,14 +1508,14 @@ public class JedisUtil {
 		if (KutaUtil.isValueNull(key)) {
 			return null;
 		}
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			byte[] data = jedis.get(key.getBytes());
 			List<T> result = ProtostuffUtil.deserializeList(data,clazz);
 			return result;
 		} finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 
@@ -1369,13 +1529,13 @@ public class JedisUtil {
 		if (KutaUtil.isValueNull(key)) {
 			return null;
 		}
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			Set<String> result = jedis.smembers(key);
 			return result;
 		} finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 
@@ -1390,7 +1550,7 @@ public class JedisUtil {
 		if (KutaUtil.isValueNull(key)) {
 			return null;
 		}
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			Set<byte[]> smembers = jedis.smembers(key.getBytes());
@@ -1405,7 +1565,7 @@ public class JedisUtil {
 			}
 			return result;
 		} finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 
@@ -1419,12 +1579,12 @@ public class JedisUtil {
 		if (KutaUtil.isValueNull(key)) {
 			return 0;
 		}
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			return jedis.scard(key);
 		} finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 
@@ -1441,13 +1601,13 @@ public class JedisUtil {
 		if (key == null || "".equals(key)) {
 			return null;
 		}
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			Map<byte[], byte[]> map = jedis.hgetAll(key.getBytes());
 			return ProtostuffUtil.deserializerMap(map, k, v);
 		} finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 
@@ -1458,12 +1618,12 @@ public class JedisUtil {
 	 * @return 是否存在
 	 */
 	public static boolean exists(String key) {
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			return jedis.exists(key);
 		} finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 
@@ -1474,12 +1634,12 @@ public class JedisUtil {
 	 * @return 是否存在
 	 */
 	public static Long exists(String... keys) {
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			return jedis.exists(keys);
 		} finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 
@@ -1488,12 +1648,12 @@ public class JedisUtil {
 	 * @param keys 展开的键数组
 	 */
 	public static void del(String... keys) {
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			jedis.del(keys);
 		} finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 }
