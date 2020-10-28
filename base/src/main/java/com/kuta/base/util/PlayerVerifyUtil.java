@@ -1,5 +1,6 @@
 package com.kuta.base.util;
 
+import com.kuta.base.cache.JedisClient;
 import com.kuta.base.cache.JedisPoolUtil;
 import com.kuta.base.util.MD5Util;
 
@@ -18,7 +19,7 @@ public class PlayerVerifyUtil {
 	 * @param uid actor编号
 	 * @return true:是玩家自己的操作 false:非法操作
 	 * */
-	public static boolean self(Jedis jedis, Long pid, int uid) {
+	public static boolean self(JedisClient jedis, Long pid, int uid) {
 		String md5 = KutaUtil.intToBase64(uid);
 		String val = jedis.hget("map_player_channel", md5);
 		if(val == null) {
@@ -37,13 +38,13 @@ public class PlayerVerifyUtil {
 	 * @return true:是玩家自己的操作 false:非法操作
 	 * */
 	public static boolean self(Long pid, ActorRef actorRef) {
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			return self(jedis, pid, actorRef.path().uid());
 		}
 		finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 	/**
@@ -53,13 +54,13 @@ public class PlayerVerifyUtil {
 	 * @return true:是玩家自己的操作 false:非法操作
 	 * */
 	public static boolean self(Long pid, int uid) {
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			return self(jedis, pid, uid);
 		}
 		finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 	
@@ -69,13 +70,13 @@ public class PlayerVerifyUtil {
 	 * @param uid actor编号
 	 * */
 	public static void mapping(Integer pid, int uid) {
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			jedis.hset("map_player_channel",KutaUtil.intToBase64(uid),KutaUtil.intToBase64(pid));
 		}
 		finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 	/**
@@ -84,7 +85,7 @@ public class PlayerVerifyUtil {
 	 * @param pid 玩家编号
 	 * @param uid actor编号
 	 * */
-	public static void mapping(Jedis jedis,Integer pid, int uid) {
+	public static void mapping(JedisClient jedis,Integer pid, int uid) {
 		jedis.hset("map_player_channel",KutaUtil.intToBase64(uid),KutaUtil.intToBase64(pid));
 	}
 	
@@ -95,13 +96,13 @@ public class PlayerVerifyUtil {
 	 * @param uid actor编号
 	 * */
 	public static void unmapping(int uid) {
-		Jedis jedis = null;
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			jedis.hdel("map_player_channel", KutaUtil.intToBase64(uid));
 		}
 		finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 }
