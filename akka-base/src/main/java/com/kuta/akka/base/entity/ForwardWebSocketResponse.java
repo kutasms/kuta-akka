@@ -18,6 +18,11 @@ public class ForwardWebSocketResponse extends WebSocketResponse implements Seria
 	private Integer pid;
 	
 	/**
+	 * 是否保存离线消息
+	 * */
+	private boolean saveOffline = true;
+	
+	/**
 	 * 获取用户编号
 	 * */
 	public Integer getPid() {
@@ -29,5 +34,13 @@ public class ForwardWebSocketResponse extends WebSocketResponse implements Seria
 	 * */
 	public void setPid(Integer pid) {
 		this.pid = pid;
+	}
+
+	public boolean isSaveOffline() {
+		return saveOffline;
+	}
+
+	public void setSaveOffline(boolean saveOffline) {
+		this.saveOffline = saveOffline;
 	}
 }

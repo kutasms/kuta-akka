@@ -9,6 +9,7 @@ import com.kuta.akka.base.entity.RegistrationMessage;
 import com.kuta.base.entity.KutaConstants;
 
 import akka.actor.ActorRef;
+import akka.actor.Props;
 import akka.japi.pf.ReceiveBuilder;
 
 /**
@@ -16,12 +17,22 @@ import akka.japi.pf.ReceiveBuilder;
  * */
 public class KutaOnlineManageActor extends KutaActor {
 
-	
-	
 	/**
 	 * 客户端连接Map
 	 * */
 	private Map<Integer, ActorRef> channelMap = new HashMap<Integer, ActorRef>();
+	private final Class<? extends KutaActor> offlineMsgHandlerClazz;
+	/**
+	 * 构造函数
+	 * @param offlineHandler 离线消息处理器
+	 * */
+	public KutaOnlineManageActor(Class<? extends KutaActor> offlineMsgHandlerClazz) {
+		this.offlineMsgHandlerClazz = offlineMsgHandlerClazz;
+	}
+	
+	public static Props props(Class<? extends KutaActor> offlineMsgHandlerClazz) {
+		return Props.create(KutaOnlineManageActor.class, offlineMsgHandlerClazz);
+	}
 	
 	@Override
 	public void onReceive(ReceiveBuilder rb) {
@@ -50,6 +61,7 @@ public class KutaOnlineManageActor extends KutaActor {
 	 * @param message 用户在线离线消息包装
 	 * */
 	private void Offline(ActiveMessage message) {
+		logger.info("从online-Map中清除用户:{}", message.getPid());
 		this.channelMap.remove(message.getPid());
 	}
 	/**
@@ -66,6 +78,12 @@ public class KutaOnlineManageActor extends KutaActor {
 		}
 		if(this.channelMap.containsKey(message.getPid())) {
 			this.channelMap.get(message.getPid()).tell(message.toJSONString(), self());
+		} else {
+			//该用户已下线，由下游Actor处理
+			if(message.isSaveOffline() && this.offlineMsgHandlerClazz != null) {
+				ActorRef handler = context().actorOf(Props.create(offlineMsgHandlerClazz));
+				handler.tell(message, self());
+			}
 		}
 	}
 

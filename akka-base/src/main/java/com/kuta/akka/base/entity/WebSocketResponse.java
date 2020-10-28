@@ -49,6 +49,9 @@ public class WebSocketResponse implements Serializable {
 	public void setFilters(List<String> filters) {
 		this.filters = filters;
 	}
+	public List<String> getFilters(){
+		return this.filters;
+	}
 	
 	/**
 	 * 获取消息

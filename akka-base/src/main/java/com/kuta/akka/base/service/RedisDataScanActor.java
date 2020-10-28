@@ -6,6 +6,7 @@ import com.kuta.akka.base.entity.RedisScanResultMessage;
 import com.kuta.akka.base.entity.KutaAkkaConstants;
 import com.kuta.akka.base.entity.RegistrationMessage;
 import com.kuta.akka.base.entity.ScanCompletedMessage;
+import com.kuta.base.cache.JedisClient;
 import com.kuta.base.cache.JedisPoolUtil;
 import com.kuta.base.cache.JedisUtil;
 import com.kuta.base.collection.KutaHashSet;
@@ -81,6 +82,8 @@ public class RedisDataScanActor extends KutaActor {
 		return Props.create(RedisDataScanActor.class, hashRouter,broadcastRouter);
 	}
 
+	
+	
 	/**
 	 * 消息处理函数
 	 * */
@@ -92,7 +95,7 @@ public class RedisDataScanActor extends KutaActor {
 			this.name = msg.getName();
 			this.pattern = msg.getPattern();
 			Future<Boolean> future = Futures.future(()->{
-				Jedis jedis = null;
+				JedisClient jedis = null;
 				try {
 					jedis = JedisPoolUtil.getJedis();
 					long start = System.currentTimeMillis();
@@ -120,7 +123,7 @@ public class RedisDataScanActor extends KutaActor {
 					// TODO: handle exception
 				}
 				finally {
-					JedisPoolUtil.release(jedis);
+					JedisPoolUtil.release(jedis.getJedis());
 				}
 				return true;
 			}, ec);

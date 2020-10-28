@@ -1,7 +1,7 @@
 package com.kuta.akka.base;
 
 import com.kuta.akka.base.entity.KutaAkkaConstants;
-import com.kuta.akka.util.DatabaseBatchExceUtil;
+import com.kuta.akka.base.util.DatabaseBatchExceUtil;
 import com.kuta.base.exception.KutaRuntimeException;
 
 import akka.actor.ActorRef;

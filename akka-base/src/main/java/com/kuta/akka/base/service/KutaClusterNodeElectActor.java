@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.UUID;
 
 import com.alibaba.fastjson.JSONObject;
 import com.kuta.akka.base.KutaActorWithClusterQuartz;
@@ -39,21 +40,21 @@ public abstract class KutaClusterNodeElectActor extends KutaActorWithClusterQuar
 	protected void startElect(ActorRef router,String role, String electName, int min, int max) {
 		
 		if (!electMap.containsKey(electName)) {
+			logger.info("创建推举MapKey:{}", electName);
 			electMap.put(electName, new HashMap<String, ElectMessage>());
 		}
-		Map<String, ElectMessage> map = electMap.get(electName);
-		
 		Random random = new Random();
 		// min:5,max:50 0-45
-		int seed = random.nextInt((max - min)) + min;
+//		int seed = random.nextInt((max - min)) + min;
 		ElectMessage electMessage = new ElectMessage();
 		electMessage.setActorRef(self());
 		electMessage.setRole(role);
-		electMessage.setSeed(seed);
-		electMessage.setHostport(this.hostport);
+		electMessage.setSeed(Math.abs(UUID.randomUUID().hashCode()));
+		electMessage.setHostport(this.cluster.selfAddress().hostPort());
 		electMessage.setName(electName);
-		map.put(this.hostport, electMessage);
-		
+		logger.info("将本节点加入投票Map中.");
+//		map.put(this.cluster.selfAddress().hostPort(), electMessage);
+		self().tell(electMessage, self());
 		router.tell(electMessage, self());
 		logger.info("向worker角色的集群节点广播发送推选投票信息");
 	}
@@ -86,8 +87,10 @@ public abstract class KutaClusterNodeElectActor extends KutaActorWithClusterQuar
 				for(Map.Entry<String, ElectMessage> entry : val.entrySet()) {
 					//判断当前可达节点中是否包含了选举消息送达节点
 					if(reachableSet.contains(entry.getValue().getHostport())) {
-						max = Integer.max(entry.getValue().getSeed(), max);
-						hostport = entry.getValue().getHostport();
+						if(entry.getValue().getSeed() > max) {
+							max = entry.getValue().getSeed();
+							hostport = entry.getValue().getHostport();
+						}
 						logger.info("可达节点中包含当前节点，赋值max:{},hostport:{}",max,hostport);
 					}
 					else {
@@ -104,7 +107,6 @@ public abstract class KutaClusterNodeElectActor extends KutaActorWithClusterQuar
 				else {
 					logger.info("选举结果为其他节点执行,本地:{},预期:{}",this.hostport,hostport);
 				}
-				
 				this.electMap.remove(msg.getName());
 			} else {
 				logger.info("还未收集到足够的推举投票信息,need:{},current:{}", this.registerMap.get(msg.getRole()).size(),val.size());
