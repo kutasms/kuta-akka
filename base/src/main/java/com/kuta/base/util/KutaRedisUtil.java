@@ -1,8 +1,10 @@
 package com.kuta.base.util;
 
+import com.kuta.base.cache.JedisClient;
 import com.kuta.base.cache.JedisPoolUtil;
 
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Transaction;
 
 public class KutaRedisUtil {
@@ -19,8 +21,8 @@ public class KutaRedisUtil {
 	 * @param consumer 可抛出异常的函数式消费器
 	 * @throws Exception 当消费器内部发生异常时将抛出
 	 * */
-	public static void exec(ThrowingConsumer<Jedis,Exception> consumer) throws Exception {
-		Jedis jedis = null;
+	public static void exec(ThrowingConsumer<JedisClient,Exception> consumer) throws Exception {
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			consumer.accept(jedis);
@@ -30,10 +32,12 @@ public class KutaRedisUtil {
 			throw e;
 		}
 		finally {
-			
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
+	
+	
+	
 	/**
 	 * <pre>
 	 * 获取一个redis连接，并且包装此连接以实现自动释放
@@ -49,8 +53,8 @@ public class KutaRedisUtil {
 	 * @return 执行器中返回的结果
 	 * @throws Exception 当消费器内部发生异常时将抛出
 	 * */
-	public static <T> T exec(ThrowingFunction<Jedis, T, Exception> func) throws Exception {
-		Jedis jedis = null;
+	public static <T> T exec(ThrowingFunction<JedisClient, T, Exception> func) throws Exception {
+		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
 			return func.apply(jedis);
@@ -60,7 +64,7 @@ public class KutaRedisUtil {
 			throw e;
 		}
 		finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 	
@@ -76,20 +80,22 @@ public class KutaRedisUtil {
 	 * @param consumer 可抛出异常的函数式消费器
 	 * @throws Exception 当消费器内部发生异常时将抛出
 	 * */
-	public static void trans(ThrowingConsumer<Transaction,Exception> consumer)  throws Exception{
-		Jedis jedis = JedisPoolUtil.getJedis();
-		Transaction multi = jedis.multi(); 
+	public static void trans(ThrowingConsumer<JedisClient,Exception> consumer)  throws Exception{
+		JedisClient jedis = JedisPoolUtil.getJedis();
+		jedis.multi();
 		try {
-			consumer.accept(multi);
-			multi.exec();
+			consumer.accept(jedis);
+			jedis.exec();
 		}
 		catch (Exception e) {
 			// TODO: handle exception
-			multi.discard();
+			jedis.discard();
 			throw e;
+			
+			
 		}
 		finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 	/**
@@ -106,21 +112,21 @@ public class KutaRedisUtil {
 	 * @return 执行器中返回的结果
 	 * @throws Exception 当消费器内部发生异常时将抛出
 	 * */
-	public static <T> T trans(ThrowingFunction<Transaction,T,Exception> func)  throws Exception{
-		Jedis jedis = JedisPoolUtil.getJedis();
-		Transaction multi = jedis.multi();
+	public static <T> T trans(ThrowingFunction<JedisClient,T,Exception> func)  throws Exception{
+		JedisClient jedis = JedisPoolUtil.getJedis();
+		jedis.multi();
 		try {
-			T result = func.apply(multi);
-			multi.exec();
+			T result = func.apply(jedis);
+			jedis.exec();
 			return result;
 		}
 		catch (Exception e) {
 			// TODO: handle exception
-			multi.discard();
+			jedis.discard();
 			throw e;
 		}
 		finally {
-			JedisPoolUtil.release(jedis);
+			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
 }
