@@ -13,6 +13,9 @@ import java.util.Base64.Decoder;
 
 import javax.imageio.ImageIO;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import sun.misc.BASE64Encoder;
 
 /**
@@ -110,7 +113,8 @@ public class PictureUtil {
 			out = new ByteArrayOutputStream();// io流
 			ImageIO.write(image, type, out);// 写入流中
 			byte[] bytes = out.toByteArray();// 转换成字节
-			String base64 = Base64.getEncoder().encode(bytes).toString().trim();// 转换成base64串
+			
+			String base64 = new BASE64Encoder().encode(bytes).toString().trim();// 转换成base64串
 			base64 = base64.replaceAll("\n", "").replaceAll("\r", "");// 删除 \r\n
 			return base64;
 		} finally {
@@ -142,7 +146,7 @@ public class PictureUtil {
 		String prefix = "data:image/%s;base64,%s";
 		return String.format(prefix, type, toBase64(image, type));
 	}
-
+	private static final Logger logger = LoggerFactory.getLogger(PictureUtil.class);
 	/**
 	 * 将base64字符串保存为jpeg图片文件
 	 * @param base64Str base64字符串
@@ -158,6 +162,11 @@ public class PictureUtil {
 		if(file.exists()) {
 			file.delete();
 		}
+		File dir = new File(file.getParent());
+		if (!dir.exists()) {
+			dir.mkdirs();
+		}
+		
 		Decoder decoder = Base64.getDecoder();
 
 		try {
@@ -179,6 +188,7 @@ public class PictureUtil {
 			return true;
 		} catch (Exception e) {
 			// TODO: handle exception
+			logger.error("存储图片时发生异常", e);
 			return false;
 		}
 	}
