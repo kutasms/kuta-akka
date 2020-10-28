@@ -5,6 +5,7 @@ import java.util.List;
 import org.apache.ibatis.session.SqlSession;
 
 import com.alibaba.fastjson.JSONObject;
+import com.kuta.base.cache.JedisClient;
 import com.kuta.base.cache.JedisUtil;
 import com.kuta.base.exception.KutaRuntimeException;
 import com.kuta.base.util.KutaUtil;
@@ -33,7 +34,7 @@ public abstract class KutaJsonBiz<T extends KutaDBEntity,TKey extends Number> ex
 	}
 
 	@Override
-	public void cache(T ins, Jedis jedis, Object... args) throws KutaRuntimeException {
+	public void cache(T ins, JedisClient jedis, Object... args) throws KutaRuntimeException {
 		// TODO Auto-generated method stub
 		String json = JSONObject.toJSONString(ins);
 		if(!KutaUtil.isEmptyString(json)) {
@@ -52,7 +53,7 @@ public abstract class KutaJsonBiz<T extends KutaDBEntity,TKey extends Number> ex
 	}
 
 	@Override
-	public void cache(T ins, Jedis jedis, String cacheKey) {
+	public void cache(T ins, JedisClient jedis, String cacheKey) {
 		// TODO Auto-generated method stub
 		
 	}
@@ -64,19 +65,19 @@ public abstract class KutaJsonBiz<T extends KutaDBEntity,TKey extends Number> ex
 	}
 
 	@Override
-	public T getOne(TKey key, Jedis jedis, String cacheKey) throws Exception {
+	public T getOne(TKey key, JedisClient jedis, String cacheKey) throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public T getOne(SqlSession session, TKey key, Jedis jedis, String cacheKey) throws Exception {
+	public T getOne(SqlSession session, TKey key, JedisClient jedis, String cacheKey) throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public T getOne(TKey key, SqlSession session, Jedis jedis, Object... args) throws Exception {
+	public T getOne(TKey key, SqlSession session, JedisClient jedis, Object... args) throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -119,7 +120,7 @@ public abstract class KutaJsonBiz<T extends KutaDBEntity,TKey extends Number> ex
 	}
 
 	@Override
-	public T getOne(JSONObject param, Jedis jedis, Object... args) throws Exception {
+	public T getOne(JSONObject param, JedisClient jedis, Object... args) throws Exception {
 		// TODO Auto-generated method stub
 		String cacheKey = CACHE_KEY;
 		if(!KutaUtil.isValueNull(args)) {
@@ -146,7 +147,7 @@ public abstract class KutaJsonBiz<T extends KutaDBEntity,TKey extends Number> ex
 	}
 
 	@Override
-	public T getOne(TKey key, Jedis jedis, Object... args) throws Exception {
+	public T getOne(TKey key, JedisClient jedis, Object... args) throws Exception {
 		// TODO Auto-generated method stub
 		String cacheKey = CACHE_KEY;
 		if(!KutaUtil.isValueNull(args)) {

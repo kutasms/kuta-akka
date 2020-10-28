@@ -5,9 +5,11 @@ import java.util.Map;
 import org.apache.ibatis.session.SqlSession;
 
 import com.alibaba.fastjson.JSONObject;
+import com.kuta.base.cache.JedisClient;
 import com.kuta.base.util.KutaRedisUtil;
 
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Transaction;
 
 /**
  * <b>抽象配置数据处理器</b>
@@ -86,7 +88,11 @@ public abstract class KutaConfigAbstractBiz<T extends KutaDBEntity> {
 	 * @param session 数据库连接
 	 * @param jedis redis连接
 	 * */
-	public void cacheAllToHash(SqlSession session,Jedis jedis) throws Exception {
+	public void cacheAllToHash(SqlSession session,JedisClient jedis) throws Exception {
+		Map<String, String> map = getMap(session);
+		jedis.hset(CACHE_KEY, map);
+	}
+	public void cacheAllToHash(SqlSession session,Transaction jedis) throws Exception {
 		Map<String, String> map = getMap(session);
 		jedis.hset(CACHE_KEY, map);
 	}
@@ -95,7 +101,13 @@ public abstract class KutaConfigAbstractBiz<T extends KutaDBEntity> {
 	 * 将所有相关配置数据以hashmap的形式加载到缓存
 	 * @param jedis redis连接
 	 * */
-	public void cacheAllToHash(Jedis jedis) throws Exception {
+	public void cacheAllToHash(JedisClient jedis) throws Exception {
+		KutaSQLUtil.exec(session -> {
+			Map<String, String> map = getMap(session);
+			jedis.hset(CACHE_KEY, map);
+		});
+	}
+	public void cacheAllToHash(Transaction jedis) throws Exception {
 		KutaSQLUtil.exec(session -> {
 			Map<String, String> map = getMap(session);
 			jedis.hset(CACHE_KEY, map);
@@ -108,7 +120,7 @@ public abstract class KutaConfigAbstractBiz<T extends KutaDBEntity> {
 	 * @param jedis redis连接
 	 * @param map 需要保存的键值对
 	 * */
-	public void dbCache(SqlSession session,Jedis jedis,Map<String, String> map) {
+	public void dbCache(SqlSession session,JedisClient jedis,Map<String, String> map) {
 		jedis.hset(CACHE_KEY, map);
 		update(session,map);
 	}

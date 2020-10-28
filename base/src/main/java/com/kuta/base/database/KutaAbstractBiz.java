@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSONObject;
 import com.kuta.base.annotation.PrimaryKey;
+import com.kuta.base.cache.JedisClient;
 import com.kuta.base.exception.KutaError;
 import com.kuta.base.exception.KutaIllegalArgumentException;
 import com.kuta.base.exception.KutaRuntimeException;
@@ -23,6 +24,8 @@ import com.kuta.base.util.KutaUtil;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;
+import redis.clients.jedis.Response;
+import redis.clients.jedis.Transaction;
 
 /**
  * <b>抽象数据处理器，包括对redis，mysql数据的处理</b>
@@ -93,13 +96,12 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 	 * @return 受影响的数据行数
 	 * @throws KutaRuntimeException KSF运行时异常
 	 * */
-	public int remove(SqlSession session,Jedis jedis, TKey key, Object... args) throws KutaRuntimeException {
+	public int remove(SqlSession session,JedisClient jedis, TKey key, Object... args) throws KutaRuntimeException {
 		int result = this.remove(session, key);
 		String cacheKey = formatCacheKey(args);
 		jedis.del(cacheKey);
 		return result;
 	}
-	
 	/**
 	 * 抽象的删除数据方法，在实现类中实现此方法以支持从数据库中删除数据
 	 * @param session 数据库连接
@@ -124,8 +126,8 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 	 * @param args 缓存键格式化参数
 	 * @throws Exception 内部异常
 	 * */
-	public abstract void cache(T entity, Jedis jedis, Object... args) throws Exception;
-
+	public abstract void cache(T entity, JedisClient jedis, Object... args) throws Exception;
+	
 	/**
 	 * 在内部redis连接中，将实体对象写入缓存
 	 * @param entity 数据对象实体
@@ -140,8 +142,7 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 	 * @param jedis redis连接
 	 * @param cacheKey 缓存键
 	 * */
-	public abstract void cache(T entity, Jedis jedis, String cacheKey);
-	
+	public abstract void cache(T entity, JedisClient jedis, String cacheKey);
 	/**
 	 * 以管线的方式将实体对象写入缓存
 	 * @param entity 数据对象实体
@@ -155,8 +156,7 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 	 * @param entity 数据对象实体
 	 * @param jedis redis连接
 	 * */
-	public abstract void cacheByKey(T entity, Jedis jedis) throws KutaRuntimeException;
-	
+	public abstract void cacheByKey(T entity, JedisClient jedis) throws KutaRuntimeException;
 	/**
 	 * <p>获取一个数据对象，仅传入redis连接，如果需要在内部创建数据库连接</p>
 	 * <p>先从redis中获取，如果找不到则从数据库中获取</p>
@@ -167,8 +167,7 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 	 * @return T 获取的数据对象
 	 * @throws Exception 内部异常
 	 * */
-	public abstract T getOne(JSONObject param, Jedis jedis, Object... args) throws Exception;
-
+	public abstract T getOne(JSONObject param, JedisClient jedis, Object... args) throws Exception;
 	/**
 	 * <p>获取一个数据对象，数据库连接和redis连接都从外部传递</p>
 	 * <p>先从redis中获取，如果找不到则从数据库中获取</p>
@@ -180,8 +179,7 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 	 * @return T 获取的数据对象
 	 * @throws Exception 内部异常
 	 * */
-	public abstract T getOne(JSONObject param, SqlSession session,Jedis jedis, Object... args) throws Exception;
-	
+	public abstract T getOne(JSONObject param, SqlSession session,JedisClient jedis, Object... args) throws Exception;
 	/**
 	 * <p>获取一个数据对象，仅传入redis连接，如果需要在内部创建数据库连接</p>
 	 * <p>先从redis中获取，如果找不到则从数据库中获取</p>
@@ -192,8 +190,7 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 	 * @return T 获取的数据对象
 	 * @throws Exception 内部异常
 	 * */
-	public abstract T getOne(TKey key, Jedis jedis, Object... args) throws Exception;
-
+	public abstract T getOne(TKey key, JedisClient jedis, Object... args) throws Exception;
 	/**
 	 * <p>获取一个数据对象,仅传入redis连接，如果需要在内部创建数据库连接</p>
 	 * <p>先从redis中获取，如果找不到则从数据库中获取</p>
@@ -204,8 +201,7 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 	 * @return T 获取的数据对象
 	 * @throws Exception 内部异常
 	 * */
-	public abstract T getOne(TKey key, Jedis jedis, String cacheKey) throws Exception;
-	
+	public abstract T getOne(TKey key, JedisClient jedis, String cacheKey) throws Exception;
 	/**
 	 * 从实体中获取主键值
 	 * @param t 数据实体
@@ -224,8 +220,7 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 	 * @return T 获取的数据对象
 	 * @throws Exception 内部异常
 	 * */
-	public abstract T getOne(SqlSession session,TKey key, Jedis jedis, String cacheKey) throws Exception;
-	
+	public abstract T getOne(SqlSession session,TKey key, JedisClient jedis, String cacheKey) throws Exception;
 	/**
 	 * <p>获取一个数据对象,数据库连接和redis连接都从外部传递</p>
 	 * <p>先从redis中获取，如果找不到则从数据库中获取</p>
@@ -237,8 +232,7 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 	 * @return T 获取的数据对象
 	 * @throws Exception 内部异常
 	 * */
-	public abstract T getOne(TKey key, SqlSession session, Jedis jedis, Object... args) throws Exception;
-
+	public abstract T getOne(TKey key, SqlSession session, JedisClient jedis, Object... args) throws Exception;
 	/**
 	 * 从数据库中直接查询一个数据对象
 	 * @param session 数据库连接
@@ -282,7 +276,7 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 	 * @return T 获取的数据对象
 	 * @throws Exception 内部异常
 	 * */
-	public T getOneByKey(TKey key, Jedis jedis) throws Exception {
+	public T getOneByKey(TKey key, JedisClient jedis) throws Exception {
 		String cacheKey = formatCacheKeyByTKey(key);
 		return getOne(key, jedis, cacheKey);
 	}
@@ -306,7 +300,7 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 	 * @return T 获取的数据对象
 	 * @throws Exception 内部异常
 	 * */
-	public T getOneByKey(SqlSession session, Jedis jedis, TKey key) throws Exception {
+	public T getOneByKey(SqlSession session, JedisClient jedis, TKey key) throws Exception {
 		String cacheKey = formatCacheKeyByTKey(key);
 		return getOne(session, key, jedis, cacheKey);
 	}
@@ -320,11 +314,10 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 	 * @return 受影响的数据行数
 	 * @throws Exception 内部异常
 	 * */
-	public int dbCacheWithKey(SqlSession session,Jedis jedis,T entity, TKey key) throws Exception {
+	public int dbCacheWithKey(SqlSession session,JedisClient jedis,T entity, TKey key) throws Exception {
 		String cacheKey = formatCacheKeyByTKey(key);
 		return dbCache(session,jedis,entity, cacheKey);
 	}
-	
 	/**
 	 * 将数据写入缓存，并写入数据库
 	 * @param entity 数据实体
@@ -349,12 +342,11 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 	 * @return 受影响的数据行数
 	 * @throws Exception 内部异常
 	 * */
-	public int dbCache(SqlSession session,Jedis jedis,T entity, String cacheKey) throws Exception {
+	public int dbCache(SqlSession session,JedisClient jedis,T entity, String cacheKey) throws Exception {
 		int result = update(session, entity);
 		cache(entity,jedis, cacheKey);
 		return result;
 	}
-
 	/**
 	 * 插入数据至数据库并将数据缓存
 	 * @param entity 数据实体 
@@ -379,7 +371,7 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 	 * @return 受影响的数据行数
 	 * @throws Exception 内部异常
 	 * */
-	public int insertCache(SqlSession session,Jedis jedis, T entity, Object... args) throws Exception {
+	public int insertCache(SqlSession session,JedisClient jedis, T entity, Object... args) throws Exception {
 		int result = insert(session, entity);
 		cache(entity,jedis,args);
 		return result;
@@ -392,12 +384,11 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 	 * @return 受影响的数据行数
 	 * @throws Exception 内部异常
 	 * */
-	public int insertCache(SqlSession session,Jedis jedis, T entity) throws Exception {
+	public int insertCache(SqlSession session,JedisClient jedis, T entity) throws Exception {
 		int result = insert(session, entity);
 		cache(entity,jedis, formatCacheKeyByTKey(getKey(entity)));
 		return result;
 	}
-	
 	
 	
 	/**
@@ -446,7 +437,7 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 	 * @return 查询结果
 	 * @throws Exception 内部异常
 	 * */
-	public String queryByKey(SqlSession session,Jedis jedis,String field, TKey key) throws Exception {
+	public String queryByKey(SqlSession session,JedisClient jedis,String field, TKey key) throws Exception {
 		String cacheKey = formatCacheKeyByTKey(key);
 		String val = jedis.hget(cacheKey, field);
 		if(KutaUtil.isEmptyString(val)) {
@@ -459,7 +450,6 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 		}
 		return val;
 	}
-	
 	/**
 	 * 使用数据主键查询数据(内部创建数据库和redis连接)
 	 * @param field 查询键
@@ -483,7 +473,7 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 	 * @param args 缓存键格式化参数
 	 * @throws Exception 内部异常
 	 * */
-	public void cacheIncr(Jedis jedis, T t, Object... args) throws Exception {
+	public void cacheIncr(JedisClient jedis, T t, Object... args) throws Exception {
 		if (KutaUtil.isValueNull(t)) {
 			throw new KutaIllegalArgumentException(
 					String.format(KutaError.ARGUMENT_NOT_EMPTY.getDesc(), "实体对象"));
@@ -495,7 +485,6 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 		if (!KutaUtil.isValueNull(args)) {
 			cacheKey = formatCacheKey(args);
 		}
-		Pipeline pipe = jedis.pipelined();
 		int n = 0;
 		for (Field field : fields) {
 			field.setAccessible(true);
@@ -506,26 +495,27 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 			if(KutaSQLUtil.isPrimaryKey(field)) {
 				continue;
 			}
+			if(field.getName().equals("serialVersionUID")) {
+				continue;
+			}
 			Class<?> fieldType = field.getType();
 			if (fieldType.equals(Integer.class) || fieldType.equals(Long.class)
 					|| fieldType.equals(Short.class) || fieldType.equals(Byte.class)
 					|| fieldType.equals(int.class) || fieldType.equals(long.class)
 					|| fieldType.equals(short.class) || fieldType.equals(byte.class)) {
-				pipe.hincrBy(cacheKey, field.getName(), Long.parseLong(field.get(t).toString()));
+				logger.info("累加操作: hincrBy key:{},field:{},value:{}", cacheKey, field.getName(),field.get(t));
+				jedis.hincrBy(cacheKey, field.getName(), Long.parseLong(field.get(t).toString()));
 				n++;
 			}
 			if (fieldType.equals(Float.class) || fieldType.equals(Double.class)
 					|| fieldType.equals(BigDecimal.class)
 					|| fieldType.equals(float.class) || fieldType.equals(double.class)) {
-				pipe.hincrByFloat(cacheKey, field.getName(), Double.parseDouble(field.get(t).toString()));
+				logger.info("累加操作:hincrByFloat key:{},field:{},value:{}", cacheKey, field.getName(),field.get(t));
+				jedis.hincrByFloat(cacheKey, field.getName(), Double.parseDouble(field.get(t).toString()));
 				n++;
 			}
 		}
-		if (n > 0) {
-			pipe.sync();
-		}
 	}
-	
 	
 	
 	/**
@@ -535,7 +525,7 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 	 * @param key 数据主键
 	 * @throws Exception 内部异常
 	 * */
-	public void cacheIncr(Jedis jedis, T t, TKey key) throws Exception {
+	public void cacheIncr(JedisClient jedis, T t, TKey key) throws Exception {
 		if (KutaUtil.isValueNull(t)) {
 			throw new KutaIllegalArgumentException(
 					String.format(KutaError.ARGUMENT_NOT_EMPTY.getDesc(), "实体对象"));
@@ -551,7 +541,6 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 				cacheKey = formatCacheKey(KutaUtil.intToBase64(key.intValue()));
 			}
 		}
-		Pipeline pipe = jedis.pipelined();
 		int n = 0;
 		for (Field field : fields) {
 			field.setAccessible(true);
@@ -562,27 +551,26 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 			if(KutaSQLUtil.isPrimaryKey(field)) {
 				continue;
 			}
+			if(field.getName().equals("serialVersionUID")) {
+				continue;
+			}
 			
 			Class<?> fieldType = field.getType();
 			if (fieldType.equals(Integer.class) || fieldType.equals(Long.class)
 					|| fieldType.equals(Short.class) || fieldType.equals(Byte.class)
 					|| fieldType.equals(int.class) || fieldType.equals(long.class)
 					|| fieldType.equals(short.class) || fieldType.equals(byte.class)) {
-				pipe.hincrBy(cacheKey, field.getName(), Long.parseLong(field.get(t).toString()));
+				jedis.hincrBy(cacheKey, field.getName(), Long.parseLong(field.get(t).toString()));
 				n++;
 			}
 			if (fieldType.equals(Float.class) || fieldType.equals(Double.class)
 					|| fieldType.equals(BigDecimal.class)
 					|| fieldType.equals(float.class) || fieldType.equals(double.class)) {
-				pipe.hincrByFloat(cacheKey, field.getName(), Double.parseDouble(field.get(t).toString()));
+				jedis.hincrByFloat(cacheKey, field.getName(), Double.parseDouble(field.get(t).toString()));
 				n++;
 			}
 		}
-		if (n > 0) {
-			pipe.sync();
-		}
 	}
-
 	/**
 	 * 缓存中的数据增加指定的值(值设置为负数即为减法操作)
 	 * <p>内部建立redis连接</p>

@@ -2,7 +2,10 @@ package com.kuta.base.database;
 
 import org.apache.ibatis.session.SqlSession;
 
+import com.kuta.base.cache.JedisClient;
+
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Transaction;
 
 /**
  * 附带原子增加功能的数据处理器
@@ -34,7 +37,7 @@ public abstract class KutaMapWithIncrBiz<T extends KutaDBEntity, TKey extends Nu
 	 * @param key 数据主键值
 	 * @throws Exception 内部异常
 	 * */
-	public void incrCacheDB(SqlSession session,Jedis jedis,T t, TKey key) throws Exception {
+	public void incrCacheDB(SqlSession session,JedisClient jedis,T t, TKey key) throws Exception {
 		cacheIncr(jedis, t, key);
 		incrDBByKey(session,t, key);
 	}
@@ -48,7 +51,7 @@ public abstract class KutaMapWithIncrBiz<T extends KutaDBEntity, TKey extends Nu
 	 * @param args 缓存键格式化参数
 	 * @throws Exception 内部异常
 	 * */
-	public void incrCacheDBWithArgs(SqlSession session,Jedis jedis,T t,TKey key, Object... args) throws Exception {
+	public void incrCacheDBWithArgs(SqlSession session,JedisClient jedis,T t,TKey key, Object... args) throws Exception {
 		cacheIncr(jedis, t, args);
 		incrDBByKey(session, t, key);
 	}

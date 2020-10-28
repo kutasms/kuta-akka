@@ -6,6 +6,8 @@ import java.util.Map;
 import org.apache.ibatis.session.SqlSession;
 
 import com.alibaba.fastjson.JSONObject;
+import com.kuta.base.cache.JedisClient;
+import com.kuta.base.cache.JedisPoolUtil;
 import com.kuta.base.cache.JedisUtil;
 import com.kuta.base.exception.KutaIllegalArgumentException;
 import com.kuta.base.exception.KutaRuntimeException;
@@ -14,6 +16,8 @@ import com.kuta.base.util.KutaUtil;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;
+import redis.clients.jedis.Response;
+import redis.clients.jedis.Transaction;
 
 public abstract class KutaMapBiz<T extends KutaDBEntity, TKey extends Number> extends KutaAbstractBiz<T, TKey>{
 
@@ -40,7 +44,7 @@ public abstract class KutaMapBiz<T extends KutaDBEntity, TKey extends Number> ex
 	}
 
 	@Override
-	public void cache(T ins, Jedis jedis, Object... args) throws KutaRuntimeException {
+	public void cache(T ins, JedisClient jedis, Object... args) throws KutaRuntimeException {
 		// TODO Auto-generated method stub
 		Map<String, String> map = KutaBeanUtil.bean2Map(ins);
 		if (!KutaUtil.isEmptyMap(map)) {
@@ -56,7 +60,7 @@ public abstract class KutaMapBiz<T extends KutaDBEntity, TKey extends Number> ex
 	}
 	
 	@Override
-	public void cache(T ins, Jedis jedis, String cacheKey) {
+	public void cache(T ins, JedisClient jedis, String cacheKey) {
 		// TODO Auto-generated method stub
 		Map<String, String> map = KutaBeanUtil.bean2Map(ins);
 		if (!KutaUtil.isEmptyMap(map)) {
@@ -92,7 +96,7 @@ public abstract class KutaMapBiz<T extends KutaDBEntity, TKey extends Number> ex
 	}
 
 	@Override
-	public void cacheByKey(T entity, Jedis jedis) throws KutaRuntimeException {
+	public void cacheByKey(T entity, JedisClient jedis) throws KutaRuntimeException {
 		// TODO Auto-generated method stub
 		TKey key = getKey(entity);
 		Map<String, String> map = KutaBeanUtil.bean2Map(entity);
@@ -100,10 +104,21 @@ public abstract class KutaMapBiz<T extends KutaDBEntity, TKey extends Number> ex
 			jedis.hset(formatCacheKeyByTKey(key), map);
 		}
 	}
-
 	@Override
 	public TKey getKey(T t) {
 		// TODO Auto-generated method stub
+//		java.lang.reflect.Field[] fields = KutaBeanUtil.getAllFields(t);
+//		for (int i = 0; i < fields.length; i++) {
+//			PrimaryKey primaryKey = fields[i].getAnnotation(PrimaryKey.class);
+//			if(primaryKey != null) {
+//				try {
+//					return (TKey) fields[i].get(t);
+//				} catch (IllegalArgumentException | IllegalAccessException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
+//			}
+//		}
 		return null;
 	}
 
@@ -132,7 +147,7 @@ public abstract class KutaMapBiz<T extends KutaDBEntity, TKey extends Number> ex
 	}
 
 	@Override
-	public T getOne(SqlSession session, TKey key, Jedis jedis, String cacheKey) throws Exception{
+	public T getOne(SqlSession session, TKey key, JedisClient jedis, String cacheKey) throws Exception{
 		
 		Map<String, String> map = jedis.hgetAll(cacheKey);
 		if (KutaUtil.isEmptyMap(map)) {
@@ -146,10 +161,9 @@ public abstract class KutaMapBiz<T extends KutaDBEntity, TKey extends Number> ex
 		}
 		return KutaBeanUtil.map2Bean(map, entityClazz);
 	}
-
 	
 	@Override
-	public T getOne(TKey key, Jedis jedis, String cacheKey) throws Exception {
+	public T getOne(TKey key, JedisClient jedis, String cacheKey) throws Exception {
 		// TODO Auto-generated method stub
 
 		Map<String, String> map = jedis.hgetAll(cacheKey);
@@ -170,8 +184,9 @@ public abstract class KutaMapBiz<T extends KutaDBEntity, TKey extends Number> ex
 		return KutaBeanUtil.map2Bean(map, entityClazz);
 	}
 	
+	
 	@Override
-	public T getOne(JSONObject param, Jedis jedis, Object... args) throws Exception {
+	public T getOne(JSONObject param, JedisClient jedis, Object... args) throws Exception {
 		// TODO Auto-generated method stub
 		String cacheKey = CACHE_KEY;
 		if(!KutaUtil.isValueNull(args)) {
@@ -197,9 +212,8 @@ public abstract class KutaMapBiz<T extends KutaDBEntity, TKey extends Number> ex
 		}
 		return KutaBeanUtil.map2Bean(map, entityClazz);
 	}
-
 	@Override
-	public T getOne(JSONObject param,SqlSession session, Jedis jedis, Object... args) throws Exception{
+	public T getOne(JSONObject param,SqlSession session, JedisClient jedis, Object... args) throws Exception{
 		// TODO Auto-generated method stub
 				String cacheKey = CACHE_KEY;
 				if(!KutaUtil.isValueNull(args)) {
@@ -219,9 +233,8 @@ public abstract class KutaMapBiz<T extends KutaDBEntity, TKey extends Number> ex
 				}
 				return KutaBeanUtil.map2Bean(map, entityClazz);
 	}
-	
 	@Override
-	public T getOne(TKey key, SqlSession session, Jedis jedis, Object... args) throws Exception {
+	public T getOne(TKey key, SqlSession session, JedisClient jedis, Object... args) throws Exception {
 		// TODO Auto-generated method stub
 				String cacheKey = CACHE_KEY;
 				if(!KutaUtil.isValueNull(args)) {
@@ -241,9 +254,8 @@ public abstract class KutaMapBiz<T extends KutaDBEntity, TKey extends Number> ex
 				}
 				return KutaBeanUtil.map2Bean(map, entityClazz);
 	}
-	
 	@Override
-	public T getOne(TKey key, Jedis jedis, Object... args) throws Exception {
+	public T getOne(TKey key, JedisClient jedis, Object... args) throws Exception {
 		// TODO Auto-generated method stub
 		String cacheKey = CACHE_KEY;
 		if(!KutaUtil.isValueNull(args)) {
@@ -269,6 +281,7 @@ public abstract class KutaMapBiz<T extends KutaDBEntity, TKey extends Number> ex
 		}
 		return KutaBeanUtil.map2Bean(map, entityClazz);
 	}
+
 	
 	
 }
