@@ -79,12 +79,14 @@ public class KutaMongoUtil {
 		ServerAddress serverAddress = new ServerAddress(MONGO_HOST, MONGO_PORT);
 		List<ServerAddress> addrs = new ArrayList<ServerAddress>();
 		addrs.add(serverAddress);
-
+		boolean isCluster = PropertyUtil.getBoolean("mongo", "mongo.cluster.enable");
+		
 		List<MongoCredential> credentials = new ArrayList<MongoCredential>();
 		MongoCredential credential = MongoCredential.createCredential(MONGO_USER, MONGO_DBNM, MONGO_PSWD.toCharArray());
 		credentials.add(credential);
 		client = new MongoClient(serverAddress, credential, MongoClientOptions.builder().build());
-	
+		
+		
 		fastJsonConfig = new SerializeConfig();
 		fastJsonConfig.put(BigInteger.class, JSON2BsonLongSerializer.getInstance());
 		fastJsonConfig.put(Long.class, JSON2BsonLongSerializer.getInstance());

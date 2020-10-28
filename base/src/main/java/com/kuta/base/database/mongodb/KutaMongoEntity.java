@@ -36,6 +36,9 @@ public class KutaMongoEntity {
 	 * */
 	@JSONField(name="_id")
 	public String getId() {
+		if(KutaUtil.isEmptyString(this._id)) {
+			this._id = new KutaObjectId().getStringVal();
+		}
 		return _id;
 	}
 	

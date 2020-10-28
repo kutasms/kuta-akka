@@ -11,6 +11,7 @@ import org.bson.conversions.Bson;
 
 import com.kuta.base.util.KutaByteUtil;
 import com.kuta.base.util.KutaUtil;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.Filters;
@@ -142,13 +143,26 @@ public abstract class KutaMongoDao<T extends KutaMongoEntity> {
 	 * @return 查询结果
 	 */
 	public List<T> find(Bson filter, Bson sort, int pageNum, int pageSize) {
-		MongoCursor<Document> iterator = coll.find(filter).sort(sort).skip(pageNum * pageSize).limit(pageSize)
+		FindIterable<Document> iterable = null;
+		if(filter == null) {
+			iterable = coll.find();
+		} else {
+			iterable = coll.find(filter);
+		}
+		MongoCursor<Document> iterator = iterable.sort(sort).skip(pageNum * pageSize).limit(pageSize)
 				.iterator();
 		if (iterator.hasNext()) {
 			List<T> list = KutaMongoUtil.toBean(iterator, clazz);
 			return list;
 		}
 		return null;
+	}
+	
+	public long count(Bson filter) {
+		if(filter!=null) {
+		return coll.countDocuments(filter);
+		}
+		return coll.countDocuments();
 	}
 
 	/**
