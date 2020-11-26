@@ -389,8 +389,26 @@ public class JedisClient {
 			transaction.hset(key, hash);
 			return null;
 		}
+		
 		return jedis.hset(key, hash);
 	}
+	
+//	public Long expire(String key, int seconds) {
+//		if(JedisPoolUtil.useCluster()) {
+//			if(txOpened) {
+//				Transaction tran = JedisClusterTransactionManager.getTxByKey(new String(key));
+//				tran.expire(key, seconds);
+//				return null;
+//			}
+//			return cluster.expire(key, seconds);
+//		}
+//		if(txOpened) {
+//			transaction.expire(key, seconds);
+//			return null;
+//		}
+//		return jedis.expire(key, seconds);
+//	}
+	
 	public Long hset(final byte[] key, final Map<byte[], byte[]> hash) {
 		if(JedisPoolUtil.useCluster()) {
 			if(txOpened) {
