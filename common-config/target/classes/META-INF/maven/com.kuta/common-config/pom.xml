@@ -22,19 +22,4 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
-  <!-- 
-  <distributionManagement>
-    <repository>
-        <id>jswy-releases</id>
-        <name>Release repository</name>
-        <url>http://mvn.51baomu.cn/repository/maven-releases/</url>
-    </repository>
-    
-    <snapshotRepository>
-        <id>jswy-snapshots</id>
-        <name>Snapshots repository</name>
-        <url>http://mvn.51baomu.cn/repository/maven-snapshots/</url>
-    </snapshotRepository>
-  </distributionManagement>
-   -->
 </project>

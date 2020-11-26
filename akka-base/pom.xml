@@ -14,7 +14,7 @@
 		<akka-version>2.6.4</akka-version>
 		<slf4j-version>1.7.25</slf4j-version>
 		<scala.version>2.13.0</scala.version>
-		<log4j-version>2.7</log4j-version>
+		
 	</properties>
 
 	<dependencies>
@@ -68,21 +68,8 @@
 			<artifactId>scala-library</artifactId>
 			<version>${scala.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>com.alibaba</groupId>
-			<artifactId>fastjson</artifactId>
-			<version>1.2.9</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-core</artifactId>
-			<version>${log4j-version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-slf4j-impl</artifactId>
-			<version>${log4j-version}</version>
-		</dependency>
+		
+		
 		<dependency>
 			<groupId>com.kuta</groupId>
 			<artifactId>base</artifactId>
@@ -96,9 +83,4 @@
 		</dependency>
 
 	</dependencies>
-	<!-- <distributionManagement> <repository> <id>jswy-releases</id> <name>Release 
-		repository</name> <url>http://mvn.51baomu.cn/repository/maven-releases/</url> 
-		</repository> <snapshotRepository> <id>jswy-snapshots</id> <name>Snapshots 
-		repository</name> <url>http://mvn.51baomu.cn/repository/maven-snapshots/</url> 
-		</snapshotRepository> </distributionManagement> -->
 </project>
