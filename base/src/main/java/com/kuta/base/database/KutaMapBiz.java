@@ -6,6 +6,7 @@ import java.util.Map;
 import org.apache.ibatis.session.SqlSession;
 
 import com.alibaba.fastjson.JSONObject;
+import com.kuta.base.annotation.PrimaryKey;
 import com.kuta.base.cache.JedisClient;
 import com.kuta.base.cache.JedisPoolUtil;
 import com.kuta.base.cache.JedisUtil;
@@ -89,11 +90,6 @@ public abstract class KutaMapBiz<T extends KutaDBEntity, TKey extends Number> ex
 		}
 	}
 
-	@Override
-	protected int remove(SqlSession session, TKey key) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
 
 	@Override
 	public void cacheByKey(T entity, JedisClient jedis) throws KutaRuntimeException {
@@ -104,47 +100,30 @@ public abstract class KutaMapBiz<T extends KutaDBEntity, TKey extends Number> ex
 			jedis.hset(formatCacheKeyByTKey(key), map);
 		}
 	}
-	@Override
-	public TKey getKey(T t) {
-		// TODO Auto-generated method stub
+	
+	
+//	@Override
+//	public TKey getKey(T t) {
+//		// TODO Auto-generated method stub
 //		java.lang.reflect.Field[] fields = KutaBeanUtil.getAllFields(t);
 //		for (int i = 0; i < fields.length; i++) {
 //			PrimaryKey primaryKey = fields[i].getAnnotation(PrimaryKey.class);
 //			if(primaryKey != null) {
 //				try {
-//					return (TKey) fields[i].get(t);
+//					fields[i].setAccessible(true);
+//					@SuppressWarnings("unchecked")
+//					TKey result = (TKey) fields[i].get(t);
+//					return result;
 //				} catch (IllegalArgumentException | IllegalAccessException e) {
 //					// TODO Auto-generated catch block
 //					e.printStackTrace();
 //				}
 //			}
 //		}
-		return null;
-	}
+//		return null;
+//	}
 
-	@Override
-	public T get(SqlSession session, TKey key) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
-	@Override
-	public int insert(SqlSession session, T entity) throws Exception {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public int update(SqlSession session, T entity) throws Exception {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public List<T> select(SqlSession session, JSONObject param) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 	@Override
 	public T getOne(SqlSession session, TKey key, JedisClient jedis, String cacheKey) throws Exception{
