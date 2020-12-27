@@ -17,6 +17,11 @@ public class ClusterMessage extends KutaSerialMessage {
 	 * */
 	private ActorRef proxy;
 	/**
+	 * 命令编号
+	 * */
+	private Integer code;
+	
+	/**
 	 * 获取用户通道
 	 * @return 用户通道
 	 * */
@@ -43,5 +48,18 @@ public class ClusterMessage extends KutaSerialMessage {
 	 * */
 	public void setProxy(ActorRef proxy) {
 		this.proxy = proxy;
+	}
+	/**
+	 * 获取命令编号
+	 * */
+	public Integer getCode() {
+		return code;
+	}
+	/**
+	 * 设置命令编号
+	 * @param code 命令编号
+	 * */
+	public void setCode(Integer code) {
+		this.code = code;
 	}
 }
