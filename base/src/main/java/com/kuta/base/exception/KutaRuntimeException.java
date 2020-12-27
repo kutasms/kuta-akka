@@ -3,7 +3,7 @@ package com.kuta.base.exception;
 /**
  * KSF框架运行时错误
  * */
-public class KutaRuntimeException extends Exception {
+public class KutaRuntimeException extends RuntimeException {
 
 	/**
 	 * 序列化ID
