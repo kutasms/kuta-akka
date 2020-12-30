@@ -11,6 +11,7 @@ public class KutaAsserts extends Asserts{
 	private final static String NOT_IP_ADDR = "'%s'不是标准的IP地址";
 	private final static String NOT_IDCARD = "'%s'不是身份证号码";
 	
+	
 	/**
 	 * 非标准email格式
 	 * */
