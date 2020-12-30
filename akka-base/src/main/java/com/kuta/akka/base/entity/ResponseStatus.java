@@ -10,4 +10,8 @@ public class ResponseStatus {
 	 * 未知错误
 	 * */
 	public final static int UNKNOWN_ERROR = -1;
+	/**
+	 * 未找到合适的actor处理消息
+	 * */
+	public final static int NON_MATCHED_ACTOR = -2;
 }
