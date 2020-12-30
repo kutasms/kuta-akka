@@ -22,6 +22,7 @@ public abstract class WebsocketServiceActor extends KutaActor {
 				for (String arg : args)
 					KutaAsserts.notNull(arg, arg);
 			}
+			consumer.accept(response);
 		} catch (Exception ex) {
 			logger.error(ex,ex.getMessage());
 			response.setMessage(ex.getMessage());
