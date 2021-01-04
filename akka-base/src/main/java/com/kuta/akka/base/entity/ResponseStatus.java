@@ -14,4 +14,8 @@ public class ResponseStatus {
 	 * 未找到合适的actor处理消息
 	 * */
 	public final static int NON_MATCHED_ACTOR = -2;
+	/**
+	 * 无法解析的指令
+	 * */
+	public final static int UNKNOWN_CODE = -3;
 }
