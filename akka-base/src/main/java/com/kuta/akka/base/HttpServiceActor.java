@@ -3,8 +3,8 @@ package com.kuta.akka.base;
 import com.alibaba.fastjson.JSONObject;
 import com.kuta.akka.base.entity.GatewayMessage;
 import com.kuta.akka.base.entity.HttpResponseMessage;
-import com.kuta.akka.base.entity.ResponseStatus;
 import com.kuta.akka.base.entity.WebSocketResponse;
+import com.kuta.base.communication.ResponseStatus;
 import com.kuta.base.exception.KutaIllegalArgumentException;
 import com.kuta.base.exception.KutaRuntimeException;
 import com.kuta.base.util.ThrowingConsumer;
@@ -46,6 +46,14 @@ public abstract class HttpServiceActor extends KutaActor {
 		}
 	}
 	
+	protected void successRESTful(ActorRef channel, HttpResponseMessage rsp) {
+		successRESTful(channel, rsp, null);
+	}
+	
+	protected void successRESTful(GatewayMessage msg, HttpResponseMessage rsp) {
+		successRESTful(msg.getChannel(), rsp, null);
+	}
+	
 	protected void successRESTful(ActorRef channel, HttpResponseMessage rsp, JSONObject data) {
 		if(!channel.isTerminated()) {
 			rsp.setStatus(ResponseStatus.OK);
@@ -54,6 +62,7 @@ public abstract class HttpServiceActor extends KutaActor {
 			if(data != null) {
 				rsp.setData(data);
 			}
+			rsp.setElapsedTime(System.currentTimeMillis() - rsp.getElapsedTime());
 			channel.tell(rsp, self());
 		} else {
 			throw new KutaRuntimeException("Http通道已关闭");
@@ -78,6 +87,7 @@ public abstract class HttpServiceActor extends KutaActor {
 			String... args) {
 		WebSocketResponse response = new WebSocketResponse();
 		response.setCode(msg.getCode());
+		
 		try {
 			if (args != null && args.length > 0) {
 				for (String arg : args){
