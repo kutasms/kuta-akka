@@ -38,4 +38,28 @@ public class KutaConstants {
 	 * 向所有用户广播消息
 	 * */
 	public static final Integer BROADCAST_ALL = -1;
+	
+	/**
+	 * [SQL]like语句模板
+	 * */
+	public final static String SQL_LIKE_TEMPLATE = "%%s%";
+	/**
+	 * [SQL]like语句模板(只有右侧百分号)
+	 * */
+	public final static String SQL_LIKE_TEMP_ONLY_RIGHT = "%s%";
+	/**
+	 * [SQL]order by *** asc
+	 * */
+	public final static String SQL_ORDER_BY_ASC = "asc";
+	/**
+	 * [SQL]order by *** desc
+	 * */
+	public final static String SQL_ORDER_BY_DESC = "desc";
+	
+	public final static String ERROR_USER_ACC_PWD = "用户名或密码错误";
+	public final static String ERROR_USER_ACC_REPEAT = "用户名重复，请设置其他用户名";
+	public final static String ERROR_TOKEN_NOT_FOUND = "未找到该token相关信息";
+	public final static String ERROR_SIGNIN_REPEAT = "请勿重复登录";
+	public final static String ERROR_LEASTONE_MODIFY_OBJ = "至少提交一个修改项";
+	public final static String ERROR_ARGUMENT_LOSE = "参数%s丢失";
 }
