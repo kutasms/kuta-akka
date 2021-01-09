@@ -2,6 +2,10 @@ package com.kuta.base.exception;
 
 import org.apache.http.util.Asserts;
 
+import com.alibaba.fastjson.JSONObject;
+import com.kuta.base.communication.ResponseStatus;
+import com.kuta.base.entity.KutaConstants;
+
 public class KutaAsserts extends Asserts{
 
 	private final static String NOT_EMAIL_MESSAGE = "'%s'不是标准的email格式";
@@ -11,6 +15,22 @@ public class KutaAsserts extends Asserts{
 	private final static String NOT_IP_ADDR = "'%s'不是标准的IP地址";
 	private final static String NOT_IDCARD = "'%s'不是身份证号码";
 	
+	/**
+	 *	参数丢失检测
+	 * */
+	public static void argumentLose(JSONObject json,String... args) {
+		if(args == null) {
+			return;
+		}
+		
+		for(String arg : args) {
+			if(!json.containsKey(arg)) {
+				throw new KutaIllegalArgumentException(
+						String.format(KutaConstants.ERROR_ARGUMENT_LOSE, arg)
+						, ResponseStatus.ERROR_ARGUMENT_LOSE);
+			}
+		}
+	}
 	
 	/**
 	 * 非标准email格式
