@@ -103,6 +103,40 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 		return result;
 	}
 	/**
+	 * <p>删除缓存和数据库中的数据</p>
+	 * <p>先删除数据库中的数据并返回受影响的数据行数</p>
+	 * <p>由于mybatis批量删除可能不会返回受影响行数，所以直接删除缓存内容</p>
+	 * @param session 数据库连接
+	 * @param jedis redis连接
+	 * @param key 数据主键值
+	 * @return 受影响的数据行数
+	 * @throws KutaRuntimeException KSF运行时异常
+	 * */
+	public int remove(SqlSession session,JedisClient jedis, TKey key) throws KutaRuntimeException {
+		int result = this.remove(session, key);
+		String cacheKey = formatCacheKeyByTKey(key);
+		jedis.del(cacheKey);
+		return result;
+	}
+	/**
+	 * <p>删除缓存和数据库中的数据</p>
+	 * <p>先删除数据库中的数据并返回受影响的数据行数</p>
+	 * @param key 数据主键值
+	 * @return 受影响的数据行数
+	 * @throws KutaRuntimeException KSF运行时异常
+	 * */
+	public int remove(TKey key) throws Exception {
+		return KutaSQLUtil.exec(session->{
+			return KutaRedisUtil.exec(jedis->{
+				int result = this.remove(session, key);
+				String cacheKey = formatCacheKeyByTKey(key);
+				jedis.del(cacheKey);
+				return result;
+			});
+		});
+	}
+	
+	/**
 	 * 抽象的删除数据方法，在实现类中实现此方法以支持从数据库中删除数据
 	 * @param session 数据库连接
 	 * @param key 数据主键值
@@ -318,6 +352,8 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 		String cacheKey = formatCacheKeyByTKey(key);
 		return dbCache(session,jedis,entity, cacheKey);
 	}
+	
+	
 	/**
 	 * 将数据写入缓存，并写入数据库
 	 * @param entity 数据实体
