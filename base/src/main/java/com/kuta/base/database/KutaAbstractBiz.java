@@ -192,6 +192,13 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 	 * */
 	public abstract void cacheByKey(T entity, JedisClient jedis) throws KutaRuntimeException;
 	/**
+	 * 将实体对象写入缓存并设置过期时间
+	 * @param entity 数据对象实体
+	 * @param jedis redis连接
+	 * @param seconds 过期秒数
+	 * */
+	public abstract void cacheByKeyEx(T entity, JedisClient jedis, int seconds) throws KutaRuntimeException;
+	/**
 	 * <p>获取一个数据对象，仅传入redis连接，如果需要在内部创建数据库连接</p>
 	 * <p>先从redis中获取，如果找不到则从数据库中获取</p>
 	 * <p>如果成功从数据库中加载数据，则将数据加入缓存，然后返回该数据</p>
