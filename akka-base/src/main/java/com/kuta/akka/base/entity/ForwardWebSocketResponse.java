@@ -5,7 +5,7 @@ import java.io.Serializable;
 /**
  * 转发回复消息
  * */
-public class ForwardWebSocketResponse extends WebSocketResponse implements Serializable{
+public class ForwardWebSocketResponse extends KutaWebSocketResponse implements Serializable{
 
 	/**
 	 * 序列化编号
