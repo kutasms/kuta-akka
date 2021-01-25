@@ -8,10 +8,14 @@ import com.alibaba.fastjson.JSONObject;
 public class GatewayMessage extends ClusterMessage {
 
 	/**
-	 * 参数
+	 * 	参数
 	 * */
 	private JSONObject param;
 	
+	/**
+	 * 	协议，websocket/http
+	 * */
+	private String protocol = "http";
 	
 	/**
 	 * 获取参数
@@ -25,6 +29,18 @@ public class GatewayMessage extends ClusterMessage {
 	 * */
 	public void setParams(JSONObject param) {
 		this.param = param;
+	}
+	/**
+	 * 	获取协议
+	 * */
+	public String getProtocol() {
+		return protocol;
+	}
+	/**
+	 * 	设置协议
+	 * */
+	public void setProtocol(String protocol) {
+		this.protocol = protocol;
 	}
 	
 }
