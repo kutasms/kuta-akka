@@ -1,133 +1,141 @@
 package com.kuta.akka.base;
 
-import com.alibaba.fastjson.JSONObject;
 import com.kuta.akka.base.entity.GatewayMessage;
-import com.kuta.akka.base.entity.HttpResponseMessage;
-import com.kuta.akka.base.entity.WebSocketResponse;
+import com.kuta.akka.base.entity.KutaHttpResponse;
+import com.kuta.akka.base.entity.KutaResponse;
+import com.kuta.akka.base.entity.KutaWebSocketResponse;
 import com.kuta.base.communication.ResponseStatus;
+import com.kuta.base.entity.KutaConstants;
 import com.kuta.base.exception.KutaIllegalArgumentException;
 import com.kuta.base.exception.KutaRuntimeException;
+import com.kuta.base.util.Status;
 import com.kuta.base.util.ThrowingConsumer;
 
 import akka.actor.ActorRef;
 
 public abstract class HttpServiceActor extends KutaActor {
 
-	protected void inspectRESTful(GatewayMessage msg, 
-			ThrowingConsumer<HttpResponseMessage, Exception> consumer,
+	
+	protected <T extends KutaResponse> void inspect(GatewayMessage msg, 
+			ThrowingConsumer<T, Exception> consumer,
 			String... args) {
-		HttpResponseMessage response = new HttpResponseMessage();
-		response.setCode(msg.getCode());
-		response.setElapsedTime(System.currentTimeMillis());
+		KutaHttpResponse httpRsp = null;
+		KutaWebSocketResponse websocketRsp = null;
+		boolean isWebsocket = msg.getProtocol().equals(KutaConstants.PROTOCAL_WEBSOCKET);
+		if(isWebsocket) {
+			websocketRsp = new KutaWebSocketResponse();
+			websocketRsp.setCode(msg.getCode());
+			websocketRsp.setElapsedTime(System.currentTimeMillis());
+		} else {
+			httpRsp = new KutaHttpResponse();
+			httpRsp.setCode(msg.getCode());
+			httpRsp.setElapsedTime(System.currentTimeMillis());
+		}
 		try {
 			if (args != null && args.length > 0) {
 				for (String arg : args) {
 					if(!msg.getParams().containsKey(arg)) {
-						throw new KutaIllegalArgumentException(String.format("缺失参数%s", arg));
+						throw new KutaIllegalArgumentException(
+								String.format("缺失参数%s", arg));
 					}
 				}
 			}
+			if(isWebsocket) {
+				consumer.accept((T)websocketRsp);
+			} else {
+				consumer.accept((T)httpRsp);
+			}
 			
-			consumer.accept(response);
 		} 
 		catch(KutaIllegalArgumentException ex) {
 			logger.error(ex,ex.getMessage());
-			response.setMessage(ex.getMessage());
-			response.setStatus(ex.getErrorCode());
-			response.setElapsedTime(System.currentTimeMillis() - response.getElapsedTime());
-			msg.getChannel().tell(response, self());
+			if(isWebsocket) {
+				websocketRsp.setMessage(ex.getMessage());
+				websocketRsp.setStatus(ex.getErrorCode());
+				websocketRsp.setElapsedTime(System.currentTimeMillis() - websocketRsp.getElapsedTime());
+				msg.getChannel().tell(websocketRsp.toJSONString(), self());
+			} else {
+				httpRsp.setMessage(ex.getMessage());
+				httpRsp.setStatus(ex.getErrorCode());
+				httpRsp.setElapsedTime(System.currentTimeMillis() - httpRsp.getElapsedTime());
+				msg.getChannel().tell(httpRsp, self());
+			}
 		}
 		catch (Exception ex) {
 			logger.error(ex,ex.getMessage());
-			response.setMessage(ex.getMessage());
-			response.setStatus(ResponseStatus.UNKNOWN_ERROR);
-			response.setElapsedTime(System.currentTimeMillis() - response.getElapsedTime());
-			msg.getChannel().tell(response, self());
-		}
-	}
-	
-	protected void successRESTful(ActorRef channel, HttpResponseMessage rsp) {
-		successRESTful(channel, rsp, null);
-	}
-	
-	protected void successRESTful(GatewayMessage msg, HttpResponseMessage rsp) {
-		successRESTful(msg.getChannel(), rsp, null);
-	}
-	
-	protected void successRESTful(ActorRef channel, HttpResponseMessage rsp, JSONObject data) {
-		if(!channel.isTerminated()) {
-			rsp.setStatus(ResponseStatus.OK);
-			rsp.setMessage("OK");
-			
-			if(data != null) {
-				rsp.setData(data);
+			if(isWebsocket) {
+				websocketRsp.setMessage(ex.getMessage());
+				websocketRsp.setStatus(ResponseStatus.UNKNOWN_ERROR);
+				websocketRsp.setElapsedTime(System.currentTimeMillis() - 
+						websocketRsp.getElapsedTime());
+				msg.getChannel().tell(websocketRsp, self());
+			} else {
+				httpRsp.setMessage(ex.getMessage());
+				httpRsp.setStatus(ResponseStatus.UNKNOWN_ERROR);
+				httpRsp.setElapsedTime(System.currentTimeMillis() - 
+						httpRsp.getElapsedTime());
+				msg.getChannel().tell(httpRsp, self());
 			}
-			rsp.setElapsedTime(System.currentTimeMillis() - rsp.getElapsedTime());
-			channel.tell(rsp, self());
-		} else {
-			throw new KutaRuntimeException("Http通道已关闭");
 		}
 	}
 	
-	protected void failureRESTful(ActorRef channel, 
-			HttpResponseMessage rsp, 
-			String errorMsg, 
-			int errorCode) {
-		if(!channel.isTerminated()) {
-			rsp.setMessage(errorMsg);
-			rsp.setStatus(errorCode);
-			channel.tell(rsp, self());
-		} else {
-			throw new KutaRuntimeException("Http通道已关闭");
-		}
+	
+	protected void success(GatewayMessage msg, KutaResponse rsp) {
+		success(msg.getChannel(),msg.getProtocol(), rsp, null);
 	}
-
-	protected void inspectWebsocket(GatewayMessage msg, 
-			ThrowingConsumer<WebSocketResponse, Exception> consumer,
-			String... args) {
-		WebSocketResponse response = new WebSocketResponse();
-		response.setCode(msg.getCode());
+	
+	protected void success(GatewayMessage msg, KutaResponse rsp, Object data) {
+		success(msg.getChannel(),msg.getProtocol(), rsp, data);
+	}
+	
+	protected void success(ActorRef channel, String protocal, KutaResponse rsp, Object data) {
+		rsp.setStatus(ResponseStatus.OK);
+		rsp.setMessage(Status.OK);
 		
-		try {
-			if (args != null && args.length > 0) {
-				for (String arg : args){
-					if(!msg.getParams().containsKey(arg)) {
-						throw new KutaIllegalArgumentException(String.format("缺失参数%s", arg));
-					}
-				}
-			}
-			consumer.accept(response);
-		} catch (Exception ex) {
-			logger.error(ex,ex.getMessage());
-			response.setMessage(ex.getMessage());
-			response.setStatus(ResponseStatus.UNKNOWN_ERROR);
-			msg.getChannel().tell(response.toJSONString(), self());
+		if(data != null) {
+			rsp.setData(data);
 		}
-	}
-	
-	protected void successWebsocket(ActorRef channel, WebSocketResponse rsp, JSONObject data) {
-		if(!channel.isTerminated()) {
-			rsp.setStatus(ResponseStatus.OK);
-			rsp.setMessage("OK");
-			if(data != null) {
-				rsp.setData(data);
-			}
+		if(channel == null || channel.isTerminated()) {
+			logger.info("通道已关闭,取消发送");
+		}
+		if(rsp.getElapsedTime() == null) {
+			rsp.setElapsedTime(System.currentTimeMillis());
+		}
+		rsp.setElapsedTime(System.currentTimeMillis() - rsp.getElapsedTime());
+		if(KutaConstants.PROTOCAL_WEBSOCKET.equals(protocal)) {
 			channel.tell(rsp.toJSONString(), self());
 		} else {
-			throw new KutaRuntimeException("websocket通道已关闭");
+			channel.tell(rsp, self());
 		}
 	}
 	
-	protected void failureWebsocket(ActorRef channel, 
-			WebSocketResponse rsp, 
+	
+	protected void failure(GatewayMessage msg, 
+			KutaResponse rsp, 
+			String errorMsg, 
+			int errorCode) {
+		failure(msg.getChannel(), rsp, msg.getProtocol(), errorMsg, errorCode);
+	}
+	
+	
+	protected void failure(ActorRef channel, 
+			KutaResponse rsp, 
+			String protocal,
 			String errorMsg, 
 			int errorCode) {
 		if(!channel.isTerminated()) {
 			rsp.setMessage(errorMsg);
 			rsp.setStatus(errorCode);
-			channel.tell(rsp.toJSONString(), self());
+			if(KutaConstants.PROTOCAL_WEBSOCKET.equals(protocal)) {
+				channel.tell(rsp.toJSONString(), self());
+			} else {
+				channel.tell(rsp, self());
+			}
+			
 		} else {
-			throw new KutaRuntimeException("websocket通道已关闭");
+			throw new KutaRuntimeException("Http通道已关闭");
 		}
 	}
+	
+	
 }
