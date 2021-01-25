@@ -101,6 +101,13 @@ public abstract class KutaMapBiz<T extends KutaDBEntity, TKey extends Number> ex
 		}
 	}
 	
+	@Override
+	public void cacheByKeyEx(T entity, JedisClient jedis, int seconds) throws KutaRuntimeException {
+		// TODO Auto-generated method stub
+		cacheByKey(entity, jedis);
+		String cacheKey = formatCacheKeyByTKey(getKey(entity));
+		jedis.expire(cacheKey, seconds);
+	}
 	
 //	@Override
 //	public TKey getKey(T t) {
@@ -123,6 +130,8 @@ public abstract class KutaMapBiz<T extends KutaDBEntity, TKey extends Number> ex
 //		return null;
 //	}
 
+
+	
 
 
 	@Override
