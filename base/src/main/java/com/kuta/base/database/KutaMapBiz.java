@@ -13,6 +13,7 @@ import com.kuta.base.cache.JedisUtil;
 import com.kuta.base.exception.KutaIllegalArgumentException;
 import com.kuta.base.exception.KutaRuntimeException;
 import com.kuta.base.util.KutaBeanUtil;
+import com.kuta.base.util.KutaRedisUtil;
 import com.kuta.base.util.KutaUtil;
 
 import redis.clients.jedis.Jedis;
@@ -22,6 +23,7 @@ import redis.clients.jedis.Transaction;
 
 public abstract class KutaMapBiz<T extends KutaDBEntity, TKey extends Number> extends KutaAbstractBiz<T, TKey>{
 
+	
 
 	public KutaMapBiz(String cacheName) {
 		super(cacheName);
@@ -40,7 +42,12 @@ public abstract class KutaMapBiz<T extends KutaDBEntity, TKey extends Number> ex
 			else {
 				throw new KutaIllegalArgumentException("请传入JEDIS.KEY格式化参数");
 			}
-			pipe.hset(cacheName, map);
+			final String cacheKey = cacheName;
+			map.forEach((key,value)->{
+				if(value!=null && !value.equals("null")) {
+					pipe.hset(cacheKey, key, value);
+				}
+			});
 		}
 	}
 
@@ -56,7 +63,12 @@ public abstract class KutaMapBiz<T extends KutaDBEntity, TKey extends Number> ex
 			else {
 				throw new IllegalArgumentException("请传入JEDIS.KEY格式化参数");
 			}
-			jedis.hset(cacheName, map);
+			final String cacheKey = cacheName;
+			map.forEach((key,value)->{
+				if(value!=null && !value.equals("null")) {
+					jedis.hset(cacheKey, key, value);
+				}
+			});
 		}
 	}
 	
@@ -65,7 +77,11 @@ public abstract class KutaMapBiz<T extends KutaDBEntity, TKey extends Number> ex
 		// TODO Auto-generated method stub
 		Map<String, String> map = KutaBeanUtil.bean2Map(ins);
 		if (!KutaUtil.isEmptyMap(map)) {
-			jedis.hset(cacheKey, map);
+			map.forEach((key,value)->{
+				if(value!=null && !value.equals("null")) {
+					jedis.hset(cacheKey, key, value);
+				}
+			});
 		}
 	}
 	@Override
@@ -73,7 +89,11 @@ public abstract class KutaMapBiz<T extends KutaDBEntity, TKey extends Number> ex
 		// TODO Auto-generated method stub
 		Map<String, String> map = KutaBeanUtil.bean2Map(ins);
 		if (!KutaUtil.isEmptyMap(map)) {
-			pipeline.hset(cacheKey, map);
+			map.forEach((key,value)->{
+				if(value!=null && !value.equals("null")) {
+					pipeline.hset(cacheKey, key, value);
+				}
+			});
 		}
 	}
 
@@ -86,7 +106,18 @@ public abstract class KutaMapBiz<T extends KutaDBEntity, TKey extends Number> ex
 			if (!KutaUtil.isValueNull(args)) {
 				cacheName = formatCacheKey(args);
 			}
-			JedisUtil.mapBatchSet(cacheName, map);
+			String cacheKey = cacheName;
+			try {
+				KutaRedisUtil.exec(jedis->{
+					map.forEach((key,value)->{
+						if(value!=null && !value.equals("null")) {
+							jedis.hset(cacheKey, key, value);
+						}
+					});
+				});
+			} catch (Exception e) {
+				throw new KutaRuntimeException(e.getMessage(), e);
+			}
 		}
 	}
 
@@ -97,7 +128,12 @@ public abstract class KutaMapBiz<T extends KutaDBEntity, TKey extends Number> ex
 		TKey key = getKey(entity);
 		Map<String, String> map = KutaBeanUtil.bean2Map(entity);
 		if (!KutaUtil.isEmptyMap(map)) {
-			jedis.hset(formatCacheKeyByTKey(key), map);
+			String cacheKey = formatCacheKeyByTKey(key);
+			map.forEach((k,v) -> {
+				if(v!=null && !v.equals("null")) {
+					jedis.hset(cacheKey, k, v);
+				}
+			});
 		}
 	}
 	

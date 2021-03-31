@@ -1,5 +1,6 @@
 package com.kuta.akka.base;
 
+import com.alibaba.fastjson.JSONObject;
 import com.kuta.akka.base.entity.GatewayMessage;
 import com.kuta.akka.base.entity.KutaHttpResponse;
 import com.kuta.akka.base.entity.KutaResponse;
@@ -17,7 +18,7 @@ public abstract class HttpServiceActor extends KutaActor {
 
 	
 	protected <T extends KutaResponse> void inspect(GatewayMessage msg, 
-			ThrowingConsumer<T, Exception> consumer,
+			ThrowingConsumer<T, Exception> rsp,
 			String... args) {
 		KutaHttpResponse httpRsp = null;
 		KutaWebSocketResponse websocketRsp = null;
@@ -41,9 +42,9 @@ public abstract class HttpServiceActor extends KutaActor {
 				}
 			}
 			if(isWebsocket) {
-				consumer.accept((T)websocketRsp);
+				rsp.accept((T)websocketRsp);
 			} else {
-				consumer.accept((T)httpRsp);
+				rsp.accept((T)httpRsp);
 			}
 			
 		} 
@@ -108,6 +109,7 @@ public abstract class HttpServiceActor extends KutaActor {
 			channel.tell(rsp, self());
 		}
 	}
+	
 	
 	
 	protected void failure(GatewayMessage msg, 

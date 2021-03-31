@@ -23,6 +23,7 @@ public class ResponseStatus {
 	 *	参数丢失
 	 * */
 	public final static int ERROR_ARGUMENT_LOSE = 1004;
+	
 	/**
 	 * 	目标服务不存在
 	 * */
@@ -57,6 +58,14 @@ public class ResponseStatus {
 	 * */
 	public static final int ERROR_LEASTONE_MODIFY_OBJ = 1011;
 	
+	/**
+	 * 未找到符合条件的数据
+	 * */
+	public static final int ERROR_DATA_NOT_FOUND = 1012;
+	/**
+	 * 参数错误
+	 * */
+	public final static int ERROR_ARGUMENT_FAULT= 1013;
 	/**
 	 *	系统通知
 	 * */

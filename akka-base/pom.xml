@@ -75,6 +75,11 @@
 			<artifactId>base</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
+		<dependency>
+			<groupId>com.kuta.database</groupId>
+			<artifactId>mysql</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
 		<!-- https://mvnrepository.com/artifact/com.enragedginger/akka-quartz-scheduler -->
 		<dependency>
 			<groupId>com.enragedginger</groupId>

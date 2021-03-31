@@ -87,6 +87,7 @@ public class KutaConstants {
 	public final static String ERROR_TARGET_SERVICE_NOT_FOUND = "目标服务不存在";
 	public final static String ERROR_TOKEN_EXPIRE = "token已过期";
 	public final static String ERROR_UNKNOWN = "未知错误";
+	public final static String ERROR_DATA_NOT_FOUND = "未找到符合条件的数据";
 	
 	public final static String HEADER_TOKEN = "X-Token";
 	
@@ -101,6 +102,8 @@ public class KutaConstants {
 	public final static String PARAM_PAGE_SIZE = "page_size";
 	public final static String PARAM_PAGE_NUM = "page_num";
 	public final static String PARAM_TYPE = "type";
+	public final static String PARAM_DEFAULT_VAL = "default_val";
+	public final static String PARAM_REMARK = "remark";
 	public final static String PARAM_USER_NAME = "username";
 	public final static String PARAM_PASSWORD = "password";
 	public final static String PARAM_TOKEN = "token";
@@ -131,4 +134,12 @@ public class KutaConstants {
 	public final static String PARAM_DISPLAY = "display";
 	public final static String PARAM_TOTAL = "total";
 	public final static String PARAM_DATA = "data";
+	public final static String PARAM_CATEGORY = "category";
+	public final static String PARAM_TIME_TYPE = "time_type";
+	public final static String PARAM_CREATED = "created";
+	public final static String PARAM_TIME = "time";
+	public final static String PARAM_OWNER = "owner";
+	public final static String PARAM_MODIFIER = "modifier";
+	public final static String PARAM_AUTHOR = "author";
+	public final static String PARAM_DIRECTION = "direction";
 }

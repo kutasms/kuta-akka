@@ -112,6 +112,14 @@ public abstract class KutaMongoDao<T extends KutaMongoEntity> {
 	public DeleteResult delBy(Bson bson) {
 		return coll.deleteMany(bson);
 	}
+	/**
+	 * 根据ID删除对象
+	 * @param id mongodb的_id值
+	 * @return 删除结果
+	 * */
+	public DeleteResult delById(String id) {
+		return coll.deleteMany(new Document("_id", id));
+	}
 
 	/**
 	 * <p>

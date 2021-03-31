@@ -24,4 +24,8 @@ public class KutaRuntimeException extends RuntimeException {
 	public KutaRuntimeException(String message) {
 		super(message);
 	}
+	
+	public KutaRuntimeException(String message,Throwable throwable) {
+		super(message, throwable);
+	}
 }

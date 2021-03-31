@@ -65,4 +65,10 @@ public class KutaDBEntity extends Number implements Serializable {
 	public Object toJSON() {
 		return JSONObject.toJSON(this);
 	}
+	public String toJSONString(boolean prettyFormat) {
+		return JSONObject.toJSONString(this, prettyFormat);
+	}
+	public String toJSONString() {
+		return JSONObject.toJSONString(this, false);
+	}
 }

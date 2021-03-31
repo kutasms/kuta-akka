@@ -15,6 +15,8 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.alibaba.fastjson.JSONObject;
+
 /**
  * Java实体对象序列化工具
  * */
@@ -55,13 +57,20 @@ public class KutaBeanUtil {
 		try {
 			for (Field field : fields) {
 				field.setAccessible(true);
+				
 				Object fieldObj = field.get(obj);
+				if(!field.getClass().isPrimitive()) {
+					map.put(field.getName(), JSONObject.toJSONString(fieldObj));
+					continue;
+				}
+				
 				if(KutaUtil.isValueNull(fieldObj)) {
 					continue;
 				}
 				if(field.getName().equals("serialVersionUID")) {
 					continue;
 				}
+				
 				if (field.getGenericType().getTypeName().equals(Date.class.getName())) {
 					SimpleDateFormat fomatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 //					logger.info("时间转换:{}", fomatter.format(field.get(obj)));
@@ -104,10 +113,18 @@ public class KutaBeanUtil {
 
 				Type type = field.getGenericType();
 				
-				String val = map.get(field.getName());;
+				String val = map.get(field.getName());
+				
 				if(KutaUtil.isEmptyString(val)) {
 					continue;
 				}
+				
+				if(!field.getClass().isPrimitive()) {
+					Object ins = JSONObject.parseObject(val,field.getType());
+					field.set(obj, ins);
+					continue;
+				}
+				
 				if (type.getTypeName().equals(java.lang.Integer.class.getName())
 						|| type.getTypeName().equals("int")) {
 					field.set(obj, Integer.parseInt(val));

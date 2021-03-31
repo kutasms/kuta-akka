@@ -102,6 +102,16 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 		jedis.del(cacheKey);
 		return result;
 	}
+	
+	/**
+	 * 删除缓存
+	 * @param jedis redis连接
+	 * @param key 数据主键
+	 * */
+	public void removeCache(JedisClient jedis,TKey key) {
+		String cacheKey = formatCacheKeyByTKey(key);
+		jedis.del(cacheKey);
+	}
 	/**
 	 * <p>删除缓存和数据库中的数据</p>
 	 * <p>先删除数据库中的数据并返回受影响的数据行数</p>
@@ -359,7 +369,18 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 		String cacheKey = formatCacheKeyByTKey(key);
 		return dbCache(session,jedis,entity, cacheKey);
 	}
-	
+	/**
+	 * 将数据主键以base64作为field写入缓存，并写入数据库
+	 * @param session 数据库连接
+	 * @param jedis redis连接
+	 * @param entity 数据实体
+	 * @return 受影响的数据行数
+	 * @throws Exception 内部异常
+	 * */
+	public int dbCacheWithKey(SqlSession session,JedisClient jedis,T entity) throws Exception {
+		String cacheKey = formatCacheKeyByTKey(getKey(entity));
+		return dbCache(session,jedis,entity, cacheKey);
+	}
 	
 	/**
 	 * 将数据写入缓存，并写入数据库

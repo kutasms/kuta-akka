@@ -5,7 +5,7 @@
 	<properties resource="jdbc.properties" />
 	<settings>
 		<!-- 可选用SLF4J、LOG4J、LOG4J2、JDK_LOGGING、COMMONS_LOGGING、STDOUT_LOGGING其中之一 -->
-		<setting name="logImpl" value="LOG4J2" />
+		<setting name="logImpl" value="SLF4J" />
 	</settings>
 	<plugins>
 		<plugin interceptor="com.github.pagehelper.PageInterceptor">

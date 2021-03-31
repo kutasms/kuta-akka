@@ -10,6 +10,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.util.List;
 
 /**
  * 文件工具类
@@ -94,6 +95,50 @@ public class FileUtil {
 		}
 		return filedo;
 	}
+	
+	/**
+	 * 文件数据写入（如果文件夹和文件不存在，则先创建，再写入）
+	 * 
+	 * @param filePath 文件路径
+	 * @param lines 多行文本
+	 * @param flag
+	 *            true:如果文件存在且存在内容，则内容换行追加；false:如果文件存在且存在内容，则内容替换
+	 * @return 操作类型
+	 */
+	public static String fileLinesWrite(String filePath, List<String> lines, boolean flag) {
+		String filedo = "write";
+		FileWriter fw = null;
+		try {
+			File file = new File(filePath);
+			// 如果文件夹不存在，则创建文件夹
+			if (!file.getParentFile().exists()) {
+				file.getParentFile().mkdirs();
+			}
+			if (!file.exists()) {// 如果文件不存在，则创建文件,写入第一行内容
+				file.createNewFile();
+				fw = new FileWriter(file);
+				filedo = "create";
+			} else {// 如果文件存在,则追加或替换内容
+				fw = new FileWriter(file, flag);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		PrintWriter pw = new PrintWriter(fw);
+		lines.forEach(line->{
+			pw.println(line);
+		});
+		
+		pw.flush();
+		try {
+			fw.flush();
+			pw.close();
+			fw.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return filedo;
+	}
 
 	/**
 	 * 以字节为单位读取文件，常用于读二进制文件，如图片、声音、影像等文件。
@@ -159,6 +204,12 @@ public class FileUtil {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+		}
+	}
+	public static void delete(String path) {
+		File file = new File(path);
+		if(file.exists()) {
+			file.delete();
 		}
 	}
 }
