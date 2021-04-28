@@ -1,0 +1,14 @@
+package com.kuta.akka.base.auto;
+
+public enum PluginJobInternalParamNames {
+	MESSAGE,
+	DATA_SOURCE,
+	SCHEDULED_FIRE_TIME,
+	PREVIOUS_FIRING_TIME,
+	NEXT_FIRING_TIME,
+	RECEIVER,
+	ENTITY,
+	REQUEST_PARAMS,
+	REPORT_PARAMS,
+	MODE
+}
