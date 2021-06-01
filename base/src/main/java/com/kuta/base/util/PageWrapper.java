@@ -58,6 +58,10 @@ public class PageWrapper<T> extends PageInfo<T>{
 		
 	}
 
+	public boolean empty() {
+		return KutaUtil.isEmptyColl(this.list);
+	}
+	
 	public T pop() {
 		if(this.list!=null) {
 			if(this.list.size() <= 0) {
