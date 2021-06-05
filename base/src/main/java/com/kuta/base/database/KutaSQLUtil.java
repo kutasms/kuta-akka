@@ -204,4 +204,22 @@ public class KutaSQLUtil {
 			MybatisUtil.release(session);
 		}
 	}
+	public static <T> T execUpdateSql(String sql,ThrowingFunction<Integer,T,Exception> consumer) throws Exception {
+		SqlSession session = null;
+		try {
+			session = MybatisUtil.getSession();
+			int result = session.getConnection().prepareStatement(sql).executeUpdate(sql);
+			T t = consumer.apply(result);
+			return t;
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+			if(session!=null) {
+				session.rollback();
+			}
+			throw e1;
+		} finally {
+			MybatisUtil.release(session);
+		}
+	}
 }
