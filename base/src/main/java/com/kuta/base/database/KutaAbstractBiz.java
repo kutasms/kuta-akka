@@ -365,6 +365,7 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 	 * @return 受影响的数据行数
 	 * @throws Exception 内部异常
 	 * */
+	@Deprecated
 	public int dbCacheWithKey(SqlSession session,JedisClient jedis,T entity, TKey key) throws Exception {
 		String cacheKey = formatCacheKeyByTKey(key);
 		return dbCache(session,jedis,entity, cacheKey);

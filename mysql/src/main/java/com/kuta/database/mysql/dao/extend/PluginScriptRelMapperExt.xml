@@ -15,7 +15,7 @@
   <select id="getScripts" parameterType="java.lang.Integer" resultMap="ResultMapWithScript">
     select 
     o.*
-    , por.index as rel_index, por.status as rel_status, por.backup_oid as rel_backup_oid from BS_Plugin_Script_Rel por inner join BS_Script o on por.oid = o.oid
+    , por.index as rel_index, por.status as rel_status, por.backup_oid as rel_backup_oid from BS_Plugin_Script_Rel por inner join BS_Script o on por.backup_oid = o.backup_sid
 	where por.pid = #{pid, jdbcType=INTEGER}
   </select>
   <!-- 
