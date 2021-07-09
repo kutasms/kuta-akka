@@ -105,7 +105,9 @@ public class KutaMongoUtil {
 	private static final JsonWriterSettings settings = JsonWriterSettings.builder().int64Converter(new Converter<Long>() {
 		public void convert(Long value, StrictJsonWriter writer) {
 			writer.writeNumber(value.toString());
+			JsonWriterSettings.builder();
 		}
+		 
 	}).build();
 	
 	/**
@@ -188,7 +190,8 @@ public class KutaMongoUtil {
 	 * @return 实体对象
 	 * */
 	public static <T> T toBean(Document document, Class<T> clazz) {
-		return JSONObject.parseObject(document.toJson(settings), clazz);
+		String json = document.toJson(settings);
+		return JSONObject.parseObject(json, (Type)clazz, fastjsonParserConfig, JSONObject.DEFAULT_PARSER_FEATURE);
 	}
 	
 	/**
