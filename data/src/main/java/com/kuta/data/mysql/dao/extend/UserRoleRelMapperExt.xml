@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kuta.database.mysql.dao.extend.UserRoleRelMapperExt">
+
+  <select id="getRoles" parameterType="java.lang.Integer" resultMap="com.kuta.database.mysql.dao.RoleMapper.BaseResultMap">
+    select r.* from BS_UserRoleRel ur inner join BS_Role r on ur.rid = r.rid
+	where ur.uid = #{uid, jdbcType=INTEGER}
+  </select>
+  <select id="getUsers" parameterType="java.lang.Integer" resultMap="com.kuta.database.mysql.dao.UserMapper.BaseResultMap">
+    select u.* from BS_UserRoleRel ur inner join BS_User u on ur.uid = u.uid
+	where ur.rid = #{rid, jdbcType=INTEGER}
+  </select>
+</mapper>
