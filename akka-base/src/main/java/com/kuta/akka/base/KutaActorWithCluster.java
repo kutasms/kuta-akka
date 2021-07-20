@@ -8,6 +8,9 @@ import java.util.Set;
 import com.alibaba.fastjson.JSONObject;
 import com.kuta.akka.base.entity.RegistrationMessage;
 import com.kuta.base.collection.KutaHashSet;
+import com.kuta.data.akka.pojo.AkkaNodeInfo;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 
 import akka.cluster.Cluster;
 import akka.cluster.ClusterEvent;
@@ -16,18 +19,24 @@ import akka.cluster.ClusterEvent.MemberRemoved;
 import akka.cluster.ClusterEvent.MemberUp;
 import akka.cluster.ClusterEvent.UnreachableMember;
 import akka.japi.pf.ReceiveBuilder;
+import akka.routing.FromConfig;
 
 
 /**
  * 附带集群信息的Actor
  * */
-public abstract class KutaActorWithCluster extends KutaActor {
+public abstract class KutaActorWithCluster extends KutaActorWithTimers {
 
 	/**
 	 * 集群信息
 	 * */
 	protected final Cluster cluster = Cluster.get(getContext().system());
 
+	/**
+	 * 	节点名称
+	 * */
+	protected String nodeName;
+	
 	/**
 	 * host和端口信息
 	 * */
@@ -71,6 +80,20 @@ public abstract class KutaActorWithCluster extends KutaActor {
 	 * */
 	private static final String MSG_MEMBER_UNREACHABLE = "Member detected as Unreachable: {}";
 	
+	public AkkaNodeInfo getNodeInfo() {
+		AkkaNodeInfo info = new AkkaNodeInfo();
+		info.setHost(this.hostname);
+		info.setHostport(this.hostport);
+		info.setName(this.nodeName);
+		info.setPort(this.port);
+		info.setRoles(this.roles);
+		return info;
+	}
+	
+	protected void setName() {
+		
+	}
+	
 	
 	@Override
 	public void preStart() {
@@ -91,6 +114,16 @@ public abstract class KutaActorWithCluster extends KutaActor {
 			}
 			Set<String> elem = registerMap.get(role);
 			elem.add(this.hostport);
+		}
+		try {
+			this.nodeName = getContext().getSystem().settings().config().getString("akka.cluster.name");
+			if(nodeName != null) {
+				logger.info("节点名称:{}",nodeName);
+				System.out.println(nodeName);
+			}
+		}catch (Exception e) {
+			// TODO: handle exception
+			nodeName = "未命名";
 		}
 	}
 
