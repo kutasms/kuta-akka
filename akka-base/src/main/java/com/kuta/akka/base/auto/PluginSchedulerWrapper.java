@@ -1,6 +1,6 @@
 package com.kuta.akka.base.auto;
 
-import com.kuta.database.mysql.pojo.PluginOrganization;
+import com.kuta.data.mysql.pojo.PluginOrganization;
 import com.typesafe.akka.extension.quartz.QuartzSchedulerExtension;
 
 import akka.actor.AbstractActor.ActorContext;
