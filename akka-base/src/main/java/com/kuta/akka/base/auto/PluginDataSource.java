@@ -2,9 +2,9 @@ package com.kuta.akka.base.auto;
 
 import java.util.List;
 
-import com.kuta.database.mysql.pojo.PluginHttpReport;
-import com.kuta.database.mysql.pojo.PluginHttpRequest;
-import com.kuta.database.mysql.pojo.extend.PluginOrganizationExt;
+import com.kuta.data.mysql.pojo.PluginHttpReport;
+import com.kuta.data.mysql.pojo.PluginHttpRequest;
+import com.kuta.data.mysql.pojo.extend.PluginOrganizationExt;
 
 public class PluginDataSource <T extends PluginTaskData>{
 	public enum Mode{	HTTP, 	Memory	}
