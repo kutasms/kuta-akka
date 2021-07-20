@@ -21,7 +21,10 @@ public class ActiveMessage extends KutaSerialMessage {
 	 * 是否活跃，true:在线，false:离线
 	 * */
 	private Boolean active = false;
-	
+	/**
+	 * 	连接通道编号
+	 * */
+	private Integer uid;
 	/**
 	 * 获取用户消息通道
 	 * @return 消息通道
@@ -63,5 +66,11 @@ public class ActiveMessage extends KutaSerialMessage {
 	 * */
 	public void setActive(Boolean active) {
 		this.active = active;
+	}
+	public Integer getUid() {
+		return uid;
+	}
+	public void setUid(Integer uid) {
+		this.uid = uid;
 	}
 }
