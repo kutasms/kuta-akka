@@ -16,11 +16,28 @@ import akka.japi.pf.ReceiveBuilder;
  * 在线用户管理Actor
  * */
 public class KutaOnlineManageActor extends KutaActor {
-
+	
+	private class Item{
+		private ActorRef channel;
+		private Integer uid;
+		
+		public Item(Integer uid,ActorRef channel) {
+			this.uid = uid;
+			this.channel = channel;
+		}
+		
+		public ActorRef getChannel() {
+			return channel;
+		}
+		public Integer getUid() {
+			return uid;
+		}
+	}
+	
 	/**
 	 * 客户端连接Map
 	 * */
-	private Map<Integer, ActorRef> channelMap = new HashMap<Integer, ActorRef>();
+	private Map<Integer, Item> channelMap = new HashMap<Integer, Item>();
 	private final Class<? extends KutaActor> offlineMsgHandlerClazz;
 	/**
 	 * 构造函数
@@ -54,15 +71,22 @@ public class KutaOnlineManageActor extends KutaActor {
 	 * @param message 用户在线离线消息包装
 	 * */
 	private void online(ActiveMessage message) {
-		this.channelMap.put(message.getPid(), message.getChannel());
+		this.channelMap.put(message.getPid(), new Item(message.getUid(), message.getChannel()));
 	}
 	/**
 	 * 用户离线
 	 * @param message 用户在线离线消息包装
 	 * */
 	private void Offline(ActiveMessage message) {
-		logger.info("从online-Map中清除用户:{}", message.getPid());
-		this.channelMap.remove(message.getPid());
+		if(this.channelMap.containsKey(message.getPid())) {
+			if(this.channelMap.get(message.getPid()).getUid().equals(message.getUid())) {
+				logger.info("从online-Map中清除用户:{}", message.getPid());
+				this.channelMap.remove(message.getPid());
+			} else {
+				logger.info("UID不同不能移除玩家");
+			}
+		}
+		
 	}
 	/**
 	 * 转发用户消息
@@ -70,14 +94,14 @@ public class KutaOnlineManageActor extends KutaActor {
 	 * */
 	private void forward(ForwardWebSocketResponse message) {
 		if(message.getPid().equals(KutaConstants.BROADCAST_ALL)) {
-			this.channelMap.forEach((pid,actor)->{
+			this.channelMap.forEach((pid,item)->{
 				message.setPid(pid);
-				actor.tell(message.toJSONString(), self());
+				item.getChannel().tell(message.toJSONString(), self());
 			});
 			return;
 		}
 		if(this.channelMap.containsKey(message.getPid())) {
-			this.channelMap.get(message.getPid()).tell(message.toJSONString(), self());
+			this.channelMap.get(message.getPid()).getChannel().tell(message.toJSONString(), self());
 		} else {
 			//该用户已下线，由下游Actor处理
 			if(message.isSaveOffline() && this.offlineMsgHandlerClazz != null) {
