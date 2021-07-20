@@ -121,6 +121,8 @@ public class JedisUtil {
 		return map;
 	}
 	
+	
+	
 //	/**
 //	 * 根据键集合通过管线加载所有数据
 //	 * <p>使用外部创建的jedis连接管线</p>

@@ -74,9 +74,10 @@ public class KutaBeanUtil {
 				if (field.getGenericType().getTypeName().equals(Date.class.getName())) {
 					SimpleDateFormat fomatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 //					logger.info("时间转换:{}", fomatter.format(field.get(obj)));
-//					
 					map.put(field.getName(), fomatter.format(field.get(obj)));
-				} else {
+				} 
+				
+				else {
 					map.put(field.getName(), field.get(obj).toString());
 				}
 			}

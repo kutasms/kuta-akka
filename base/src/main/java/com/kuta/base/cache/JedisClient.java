@@ -79,7 +79,7 @@ public class JedisClient {
 	
 	public ScanResult<String> scan(final String cursor, final ScanParams params) {
 		if(JedisPoolUtil.useCluster()) {
-			cluster.scan(cursor, params);
+			return cluster.scan(cursor, params);
 		}
 		return jedis.scan(cursor, params);
 	}
@@ -652,6 +652,7 @@ public class JedisClient {
 		if(JedisPoolUtil.useCluster()) {
 			return cluster.hgetAll(key);
 		}
+		
 		return jedis.hgetAll(key);
 	}
 	public Map<byte[], byte[]> hgetAll(final byte[] key) {

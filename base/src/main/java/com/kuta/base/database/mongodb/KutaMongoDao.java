@@ -43,7 +43,6 @@ public abstract class KutaMongoDao<T extends KutaMongoEntity> {
 	public KutaMongoDao() {
 		clazz = (Class<T>) ((ParameterizedType) this.getClass().getGenericSuperclass()).getActualTypeArguments()[0];
 		collName = clazz.getSimpleName();
-
 		coll = KutaMongoUtil.getColl(collName);
 	}
 

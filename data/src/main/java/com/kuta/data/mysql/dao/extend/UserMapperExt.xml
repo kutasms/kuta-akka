@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.kuta.database.mysql.dao.extend.UserMapperExt">
-	<resultMap type="com.kuta.database.mysql.pojo.extend.UserExt"  
+<mapper namespace="com.kuta.data.mysql.dao.extend.UserMapperExt">
+	<resultMap type="com.kuta.data.mysql.pojo.extend.UserExt"  
 	id="ResultMapWithDepartment"  
-	extends="com.kuta.database.mysql.dao.UserMapper.BaseResultMap">
-		<association property="department" column="did" select="com.kuta.database.mysql.dao.extend.DepartmentMapperExt.selectExtByPrimaryKey"></association>
-		<collection property="roles"  column="uid"  ofType="com.kuta.database.mysql.pojo.Role" select="com.kuta.database.mysql.dao.extend.UserRoleRelMapperExt.getRoles"></collection>
-		<collection property="perms" column="uid" ofType="com.kuta.database.mysql.pojo.Permission" select="com.kuta.database.mysql.dao.extend.PermissionMapperExt.getMergePermissions"></collection>
+	extends="com.kuta.data.mysql.dao.UserMapper.BaseResultMap">
+		<association property="department" column="did" select="com.kuta.data.mysql.dao.extend.DepartmentMapperExt.selectExtByPrimaryKey"></association>
+		<collection property="roles"  column="uid"  ofType="com.kuta.data.mysql.pojo.Role" select="com.kuta.data.mysql.dao.extend.UserRoleRelMapperExt.getRoles"></collection>
+		<collection property="perms" column="uid" ofType="com.kuta.data.mysql.pojo.Permission" select="com.kuta.data.mysql.dao.extend.PermissionMapperExt.getMergePermissions"></collection>
 	</resultMap>
 
-  <select id="selectExtByExample" parameterType="com.kuta.database.mysql.pojo.UserExample" resultMap="ResultMapWithDepartment">
+  <select id="selectExtByExample" parameterType="com.kuta.data.mysql.pojo.UserExample" resultMap="ResultMapWithDepartment">
     select
     <if test="distinct">
       distinct
     </if>
     'true' as QUERYID,
-    <include refid="com.kuta.database.mysql.dao.UserMapper.Base_Column_List" />
+    <include refid="com.kuta.data.mysql.dao.UserMapper.Base_Column_List" />
     from BS_User
     <if test="_parameter != null">
-      <include refid="com.kuta.database.mysql.dao.UserMapper.Example_Where_Clause" />
+      <include refid="com.kuta.data.mysql.dao.UserMapper.Example_Where_Clause" />
     </if>
     <if test="orderByClause != null">
       order by ${orderByClause}
@@ -26,7 +26,7 @@
   </select>
   <select id="selectExtByPrimaryKey" parameterType="java.lang.Integer" resultMap="ResultMapWithDepartment">
     select 
-    <include refid="com.kuta.database.mysql.dao.UserMapper.Base_Column_List" />
+    <include refid="com.kuta.data.mysql.dao.UserMapper.Base_Column_List" />
     from BS_User
     where `uid` = #{uid,jdbcType=INTEGER}
   </select>

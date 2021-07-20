@@ -20,6 +20,7 @@ import com.kuta.base.entity.KutaConstants;
  * http工具类
  * */
 public class HttpUtil {
+	
 	/**
 	 * 执行一个get请求
 	 *
@@ -317,6 +318,70 @@ public class HttpUtil {
 		return response;
 	}
 
+	public static ResponseWithCode getWithCode(String url) throws IOException{
+		return fetchWithCode("GET", url, null, null);
+	}
+	public static ResponseWithCode fetchWithCode(String method, String url, String body, Map<String, String> headers) throws IOException {
+		// connection
+		URL u = new URL(url);
+		HttpURLConnection conn = (HttpURLConnection) u.openConnection();
+		conn.setConnectTimeout(100000);
+		conn.setReadTimeout(300000);
+
+		// method
+		if (method != null) {
+			conn.setRequestMethod(method);
+		}
+
+		// headers
+		if (headers != null) {
+			for (String key : headers.keySet()) {
+				conn.addRequestProperty(key, headers.get(key));
+			}
+		}
+
+		// body
+		if (body != null) {
+			conn.setDoOutput(true);
+			OutputStream os = conn.getOutputStream();
+			os.write(body.getBytes());
+			os.flush();
+			os.close();
+		}
+		
+		InputStream ips = null;
+		byte[] header = new byte[2];
+		try {
+			BufferedInputStream bis = new BufferedInputStream(conn.getInputStream());
+			bis.mark(2);
+			int result = bis.read(header);
+			// reset输入流到开始位置
+			bis.reset();
+			// 判断是否是GZIP格式
+			int ss = (header[0] & 0xff) | ((header[1] & 0xff) << 8);
+			if(result!=-1 && ss == GZIPInputStream.GZIP_MAGIC) {
+				//System.out.println("为数据压缩格式...");
+				ips= new GZIPInputStream(bis);
+			} else {
+		        // 取前两个字节
+				ips= bis;
+			}
+		} catch (java.io.IOException e) {
+			e.printStackTrace();
+			ips = conn.getInputStream();
+		}
+		
+		String response = streamToString(ips);
+		ips.close();
+		
+		// handle redirects
+		if (conn.getResponseCode() == 301) {
+			String location = conn.getHeaderField("Location");
+			return fetchWithCode(method, location, body, headers);
+		}
+		conn.disconnect();
+		return ResponseWithCode.create(response, conn.getResponseCode());
+	}
 
 	/**
 	 * 从输入流中读取内容

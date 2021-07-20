@@ -44,6 +44,8 @@
 				<property name="removeAbandoned" value="${druid.removeAbandoned}"/>
 				<property name="removeAbandonedTimeout" value="${druid.removeAbandonedTimeout}" />
 				<property name="logAbandoned" value="${druid.logAbandoned}"/>
+				<property name="commentAllow" value="${druid.commentAllow}"/>
+				<property name="multiStatementAllow" value="${druid.commentAllow}"/>
 			</dataSource>
 		</environment>
 	</environments>
@@ -51,6 +53,6 @@
 	<!-- mappers：将 SQL 映射文件注册到全局配置中 -->
 	<mappers>
 		<!-- 引用类路径下的 SQL 映射文件 -->
-		<package name="com.simcity.database.dao"></package>
+		<package name="com.kuta.data.mysql.dao"></package>
 	</mappers>
 </configuration>

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.kuta.database.mysql.dao.extend.PluginHttpHeaderMapperExt">
+<mapper namespace="com.kuta.data.mysql.dao.extend.PluginHttpHeaderMapperExt">
 
 
-  <select id="getHeaders"  resultMap="com.kuta.database.mysql.dao.PluginHttpHeaderMapper.BaseResultMap">
+  <select id="getHeaders"  resultMap="com.kuta.data.mysql.dao.PluginHttpHeaderMapper.BaseResultMap">
     select 
-    <include refid="com.kuta.database.mysql.dao.PluginHttpHeaderMapper.Base_Column_List" />
+    <include refid="com.kuta.data.mysql.dao.PluginHttpHeaderMapper.Base_Column_List" />
      from BS_Plugin_Http_Header where `phrid` = #{phrid, jdbcType=BIGINT} and `type` = #{phrid, jdbcType=TINYINT}
   </select>
 </mapper>

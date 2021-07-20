@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.kuta.database.mysql.dao.CommonMapper">
+<mapper namespace="com.kuta.data.mysql.dao.CommonMapper">
     <select id="checkTableExistsWithSchema"
         resultType="java.lang.Integer">
         SELECT COUNT(1) FROM information_schema.tables WHERE

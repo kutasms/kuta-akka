@@ -1,5 +1,8 @@
 package com.kuta.base.util;
 
+import java.util.function.BiFunction;
+import java.util.function.Function;
+
 import com.kuta.base.cache.JedisClient;
 import com.kuta.base.cache.JedisPoolUtil;
 
@@ -54,6 +57,21 @@ public class KutaRedisUtil {
 	 * @throws Exception 当消费器内部发生异常时将抛出
 	 * */
 	public static <T> T exec(ThrowingFunction<JedisClient, T, Exception> func) throws Exception {
+		JedisClient jedis = null;
+		try {
+			jedis = JedisPoolUtil.getJedis();
+			return func.apply(jedis);
+		}
+		catch (Exception e) {
+			// TODO: handle exception
+			throw e;
+		}
+		finally {
+			JedisPoolUtil.release(jedis.getJedis());
+		}
+	}
+	
+	public static <T> T func(Function<JedisClient, T> func) {
 		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();

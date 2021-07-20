@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Random;
 
 import com.kuta.base.util.KutaTimeUtil;
 
@@ -94,4 +95,5 @@ public class KutaHashMap<K,V> extends HashMap<K, V> {
 		}
 		return KutaTimeUtil.parseWithMill(val.toString());
 	}
+	
 }

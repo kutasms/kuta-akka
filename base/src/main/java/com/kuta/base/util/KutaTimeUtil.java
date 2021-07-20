@@ -16,6 +16,8 @@ public class KutaTimeUtil {
 		y,M,d,H,m,s,S,n
 	}
 	
+	private static String baseLine = "1970-1-1 00:00:00";
+	
 	/**
 	 * 带3位毫秒的时间格式化器
 	 * */
@@ -24,6 +26,16 @@ public class KutaTimeUtil {
 	 * 不带毫秒的时间格式化器
 	 * */
 	private static final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	
+	public static Date getBaseLineDate() {
+		try {
+			return parse(baseLine);
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+	}
 	
 	/**
 	 * 格式化时间

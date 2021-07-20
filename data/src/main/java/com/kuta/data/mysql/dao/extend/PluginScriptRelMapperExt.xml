@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.kuta.database.mysql.dao.extend.PluginScriptRelMapperExt">
+<mapper namespace="com.kuta.data.mysql.dao.extend.PluginScriptRelMapperExt">
 
-<resultMap type="com.kuta.database.mysql.pojo.extend.PluginScriptWithRel"  
+<resultMap type="com.kuta.data.mysql.pojo.extend.PluginScriptWithRel"  
 	id="ResultMapWithScript"  
-	extends="com.kuta.database.mysql.dao.ScriptMapper.BaseResultMap">
+	extends="com.kuta.data.mysql.dao.ScriptMapper.BaseResultMap">
 		<constructor>
 	      <arg column="rel_index" javaType="java.lang.Short" jdbcType="SMALLINT" />
 	      <arg column="rel_status" javaType="java.lang.String" jdbcType="VARCHAR" />
@@ -19,7 +19,7 @@
 	where por.pid = #{pid, jdbcType=INTEGER}
   </select>
   <!-- 
-  <select id="getUsers" parameterType="java.lang.Integer" resultMap="com.kuta.database.mysql.dao.OrganizationMapper.BaseResultMap">
+  <select id="getUsers" parameterType="java.lang.Integer" resultMap="com.kuta.data.mysql.dao.OrganizationMapper.BaseResultMap">
     select u.* from BS_UserRoleRel ur inner join BS_User u on ur.uid = u.uid
 	where ur.rid = #{rid, jdbcType=INTEGER}
   </select>

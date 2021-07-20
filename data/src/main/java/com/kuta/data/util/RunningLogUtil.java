@@ -7,7 +7,7 @@ import com.kuta.data.mongo.dao.RunningLogDao;
 import com.kuta.data.mongo.pojo.LogLevel;
 import com.kuta.data.mongo.pojo.RunningLog;
 
-public class RunningLogFactory {
+public class RunningLogUtil {
 	public static void write(String topic,String detail, LogLevel level, Class<?> clazz,AkkaNodeInfo nodeInf) {
 		RunningLogDao.get().insert(
 				new RunningLog(

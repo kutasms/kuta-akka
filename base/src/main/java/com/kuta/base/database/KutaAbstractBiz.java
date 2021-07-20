@@ -73,7 +73,7 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 	 * @return String 已格式化的缓存键，可直接用于数据的读写
 	 * @throws KutaRuntimeException KSF运行时异常
 	 * */
-	protected String formatCacheKey(Object... args) throws KutaRuntimeException {
+	public String formatCacheKey(Object... args) throws KutaRuntimeException {
 		if (!KutaUtil.isValueNull(args)) {
 			String result = String.format(CACHE_KEY, args);
 			return result;
@@ -112,6 +112,16 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 		String cacheKey = formatCacheKeyByTKey(key);
 		jedis.del(cacheKey);
 	}
+	/**
+	 * 删除缓存
+	 * @param jedis redis连接
+	 * @param args 参数列表
+	 * */
+	public void removeCacheByArgs(JedisClient jedis, Object... args) {
+		String cacheKey = formatCacheKey(args);
+		jedis.del(cacheKey);
+	}
+	
 	/**
 	 * <p>删除缓存和数据库中的数据</p>
 	 * <p>先删除数据库中的数据并返回受影响的数据行数</p>
@@ -365,6 +375,7 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 	 * @return 受影响的数据行数
 	 * @throws Exception 内部异常
 	 * */
+	@Deprecated
 	public int dbCacheWithKey(SqlSession session,JedisClient jedis,T entity, TKey key) throws Exception {
 		String cacheKey = formatCacheKeyByTKey(key);
 		return dbCache(session,jedis,entity, cacheKey);
@@ -378,6 +389,10 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 	 * @throws Exception 内部异常
 	 * */
 	public int dbCacheWithKey(SqlSession session,JedisClient jedis,T entity) throws Exception {
+		TKey key = getKey(entity);
+		if(key == null) {
+			throw new KutaIllegalArgumentException("entity.key is null.");
+		}
 		String cacheKey = formatCacheKeyByTKey(getKey(entity));
 		return dbCache(session,jedis,entity, cacheKey);
 	}
@@ -407,9 +422,26 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 	 * @throws Exception 内部异常
 	 * */
 	public int dbCache(SqlSession session,JedisClient jedis,T entity, String cacheKey) throws Exception {
+		TKey key = getKey(entity);
+		if(key == null) {
+			throw new KutaIllegalArgumentException("请设置实体的主键");
+		}
 		int result = update(session, entity);
 		cache(entity,jedis, cacheKey);
 		return result;
+	}
+	/**
+	 * 将数据写入缓存，并写入数据库(外部传入数据库和缓存连接)
+	 * @param session 数据库连接
+	 * @param jedis redis连接
+	 * @param entity 数据实体
+	 * @param args 缓存参数集
+	 * @return 受影响的数据行数
+	 * @throws Exception 内部异常
+	 * */
+	public int dbCacheWithArgs(SqlSession session,JedisClient jedis,T entity,Object... args) throws Exception {
+		String cacheKey = formatCacheKey(args);
+		return dbCache(session,jedis,entity,cacheKey);
 	}
 	/**
 	 * 插入数据至数据库并将数据缓存
@@ -459,20 +491,20 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 	 * 使用json键值对查询数据
 	 * @param param json键值对(当使用field无法从redis中查询数据时使用此条件从数据库中加载数据)
 	 * @param field 查询键
-	 * @param args 缓存键格式化参数
+	 * @param keyArgs 缓存键格式化参数
 	 * @return 查询结果
 	 * @throws Exception 内部异常
 	 * */
-	public String query(JSONObject param, String field, Object... args) throws Exception {
+	public String query(JSONObject param, String field, Object... keyArgs) throws Exception {
 		return KutaRedisUtil.exec(jedis -> {
 			String cacheKey = CACHE_KEY;
-			if (KutaUtil.isValueNull(args)) {
-				cacheKey = formatCacheKey(args);
+			if (KutaUtil.isValueNull(keyArgs)) {
+				cacheKey = formatCacheKey(keyArgs);
 			}
 			if (jedis.exists(cacheKey)) {
 				return jedis.hget(cacheKey, field);
 			}
-			getOne(param, jedis, args);
+			getOne(param, jedis, keyArgs);
 			return jedis.hget(cacheKey, field);
 		});
 	}
@@ -553,10 +585,10 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 		for (Field field : fields) {
 			field.setAccessible(true);
 			Object fieldObj = field.get(t);
-			if (KutaUtil.isValueNull(fieldObj)) {
+			if (fieldObj == null) {
 				continue;
 			}
-			if(KutaSQLUtil.isPrimaryKey(field)) {
+			if(KutaSQLUtil.isPrimaryKey(field) || KutaSQLUtil.isIncrIgoneColumn(field)) {
 				continue;
 			}
 			if(field.getName().equals("serialVersionUID")) {
@@ -612,7 +644,7 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 			if (KutaUtil.isValueNull(fieldObj)) {
 				continue;
 			}
-			if(KutaSQLUtil.isPrimaryKey(field)) {
+			if(KutaSQLUtil.isPrimaryKey(field) || KutaSQLUtil.isIncrIgoneColumn(field)) {
 				continue;
 			}
 			if(field.getName().equals("serialVersionUID")) {

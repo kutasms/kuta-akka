@@ -92,6 +92,13 @@ public abstract class KutaConfigAbstractBiz<T extends KutaDBEntity> {
 		Map<String, String> map = getMap(session);
 		jedis.hset(CACHE_KEY, map);
 	}
+	
+	public boolean fullValid(SqlSession session,JedisClient jedis, String key) {
+		Map<String, String> map = getMap(session);
+		jedis.hset(CACHE_KEY, map);
+		return map.containsKey(key);
+	}
+	
 	public void cacheAllToHash(SqlSession session,Transaction jedis) throws Exception {
 		Map<String, String> map = getMap(session);
 		jedis.hset(CACHE_KEY, map);

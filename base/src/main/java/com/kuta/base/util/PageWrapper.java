@@ -2,19 +2,21 @@ package com.kuta.base.util;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Date;
 import java.util.List;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.parser.DefaultJSONParser;
 import com.alibaba.fastjson.parser.ParserConfig;
-import com.alibaba.fastjson.parser.deserializer.ObjectDeserializer;
 import com.alibaba.fastjson.serializer.JSONSerializer;
 import com.alibaba.fastjson.serializer.ObjectSerializer;
 import com.alibaba.fastjson.serializer.SerializeWriter;
 import com.github.pagehelper.PageInfo;
 import com.kuta.base.exception.KutaIllegalArgumentException;
+import com.kuta.base.json.BigDecimalDeserializer;
+import com.kuta.base.json.BigIntegerDeserializer;
 
 public class PageWrapper<T> extends PageInfo<T>{
 
@@ -52,6 +54,11 @@ public class PageWrapper<T> extends PageInfo<T>{
 	public PageWrapper(List<T> list){
 		super(list);
 		json = new JSONObject();
+//		ParserConfig config = new ParserConfig();
+//		
+//		config.putDeserializer(BigDecimal.class, new BigDecimalDeserializer());
+//		config.putDeserializer(BigInteger.class, new BigIntegerDeserializer());
+		
 		json.put("list", JSONArray.toJSON(this.list));
 		json.put("total_page", this.getPages());
 		json.put("total", this.total);

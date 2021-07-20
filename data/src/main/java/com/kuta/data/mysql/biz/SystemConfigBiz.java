@@ -1,6 +1,7 @@
 package com.kuta.data.mysql.biz;
 
 
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -107,6 +108,22 @@ public class SystemConfigBiz extends KutaConfigAbstractBiz<SystemConfig> {
 		return result;
 	}
 
+	public BigInteger queryBigInteger(String key, SqlSession session, JedisClient jedis) {
+		String result = query(key, session, jedis);
+		if (KutaUtil.isEmptyString(result)) {
+			throw new IllegalArgumentException("未查询到相关的配置");
+		}
+		return new BigInteger(result);
+	}
+
+	public BigInteger queryBigInteger(String key, JedisClient jedis) {
+		String result = query(key, jedis);
+		if (KutaUtil.isEmptyString(result)) {
+			throw new IllegalArgumentException("未查询到相关的配置");
+		}
+		return new BigInteger(result);
+	}
+	
 	public Integer queryInt(String key, SqlSession session, JedisClient jedis) {
 		String result = query(key, session, jedis);
 		if (KutaUtil.isEmptyString(result)) {
@@ -203,9 +220,25 @@ public class SystemConfigBiz extends KutaConfigAbstractBiz<SystemConfig> {
 		}
 	}
 
+	public int update(List<SystemConfig> configs,SqlSession session, JedisClient jedis) {
+		int batchUpdate = session.getMapper(SystemConfigMapper.class).batchUpdate(configs);
+		configs.forEach(config->{
+			jedis.hset(this.CACHE_KEY, config.getKey(), config.getValue());
+		});
+		return batchUpdate;
+	}
+	
+	public int update(List<SystemConfig> configs) {
+		return KutaSQLUtil.func(session -> {
+			return KutaRedisUtil.func(jedis -> {
+				return update(configs,session, jedis);
+			});
+		});
+	}
+	
 	public int update(SystemConfig config) throws Exception {
-		return KutaSQLUtil.exec(session -> {
-			return KutaRedisUtil.exec(jedis -> {
+		return KutaSQLUtil.func(session -> {
+			return KutaRedisUtil.func(jedis -> {
 				SystemConfigExample example = new SystemConfigExample();
 				example.createCriteria().andKeyEqualTo(config.getKey());
 				int result = session.getMapper(SystemConfigMapper.class).updateByExampleSelective(config, example);
@@ -215,7 +248,6 @@ public class SystemConfigBiz extends KutaConfigAbstractBiz<SystemConfig> {
 				return result;
 			});
 		});
-
 	}
 
 	public boolean checkType(String value,String type) {
@@ -238,6 +270,15 @@ public class SystemConfigBiz extends KutaConfigAbstractBiz<SystemConfig> {
 				return false;
 				// TODO: handle exception
 			}
+		case "long":
+			try {
+				Long.parseLong(value);
+				return true;
+			}
+			catch (Exception e) {
+				return false;
+				// TODO: handle exception
+			}
 		case "double":
 			try {
 				Double.parseDouble(value);
@@ -249,6 +290,14 @@ public class SystemConfigBiz extends KutaConfigAbstractBiz<SystemConfig> {
 		case "boolean":
 			try {
 				Boolean.parseBoolean(value);
+				return true;
+			} catch (Exception e) {
+				return false;
+				// TODO: handle exception
+			}
+		case "biginteger":
+			try {
+				new BigInteger(value);
 				return true;
 			} catch (Exception e) {
 				return false;

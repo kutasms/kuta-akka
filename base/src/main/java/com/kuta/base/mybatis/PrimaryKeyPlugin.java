@@ -20,6 +20,7 @@ import org.mybatis.generator.api.dom.xml.Document;
 import org.mybatis.generator.api.dom.xml.TextElement;
 import org.mybatis.generator.api.dom.xml.XmlElement;
 
+import com.kuta.base.annotation.IncrIgoneColumn;
 import com.kuta.base.annotation.PrimaryKey;
 import com.kuta.base.util.KutaUtil;
 
@@ -39,7 +40,9 @@ import com.kuta.base.util.KutaUtil;
 public class PrimaryKeyPlugin extends org.mybatis.generator.api.PluginAdapter {
 
 	private FullyQualifiedJavaType primaryKey;
-
+	private FullyQualifiedJavaType incrIgoneColumn;
+	
+	
 	@Override
 	public boolean validate(List<String> warnings) {
 		// TODO Auto-generated method stub
@@ -49,6 +52,7 @@ public class PrimaryKeyPlugin extends org.mybatis.generator.api.PluginAdapter {
 	public PrimaryKeyPlugin() {
 		super();
 		primaryKey = new FullyQualifiedJavaType(PrimaryKey.class.getName());
+		incrIgoneColumn = new FullyQualifiedJavaType(IncrIgoneColumn.class.getName());
 	}
 
 	@Override
@@ -60,10 +64,25 @@ public class PrimaryKeyPlugin extends org.mybatis.generator.api.PluginAdapter {
 			topLevelClass.addImportedType(primaryKey);
 			field.addAnnotation("@PrimaryKey");
 		}
+		this.addIncrIgoneAnn(field, topLevelClass, introspectedColumn, introspectedTable, modelClassType);
 		return true;
 //		return super.modelFieldGenerated(field, topLevelClass, introspectedColumn, introspectedTable, modelClassType);
 	}
 
+	private void addIncrIgoneAnn(Field field, TopLevelClass topLevelClass, IntrospectedColumn introspectedColumn,
+			IntrospectedTable introspectedTable, ModelClassType modelClassType) {
+		String columns = introspectedTable.getTableConfigurationProperty("incrIgoneColumnList");
+		if(columns!=null) {
+			Arrays.asList(columns.split(",")).forEach(item->{
+				if(introspectedColumn.getActualColumnName().equals(item)) {
+					topLevelClass.addImportedType(incrIgoneColumn);
+					field.addAnnotation("@IncrIgoneColumn");
+				}
+			});
+		}
+		
+	}
+	
 	@Override
 	public boolean modelExampleClassGenerated(TopLevelClass topLevelClass, IntrospectedTable introspectedTable) {
 
@@ -158,6 +177,8 @@ public class PrimaryKeyPlugin extends org.mybatis.generator.api.PluginAdapter {
 		return super.sqlMapDocumentGenerated(document, introspectedTable);
 	}
 
+	
+	
 	private void addXmlMaxNode(Document document, IntrospectedTable introspectedTable) {
 		String columnName = introspectedTable.getTableConfigurationProperty("generateMax");
 		List<IntrospectedColumn> columns = introspectedTable.getAllColumns();

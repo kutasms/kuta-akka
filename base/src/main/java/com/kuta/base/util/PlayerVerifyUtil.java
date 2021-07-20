@@ -36,15 +36,17 @@ public class PlayerVerifyUtil {
 	 * @param jedis redis连接
 	 * @param actorRef actor对象
 	 * @return true:是玩家自己的操作 false:非法操作
+	 * @throws Exception 
 	 * */
 	public static boolean self(Long pid, ActorRef actorRef) {
-		JedisClient jedis = null;
 		try {
-			jedis = JedisPoolUtil.getJedis();
-			return self(jedis, pid, actorRef.path().uid());
-		}
-		finally {
-			JedisPoolUtil.release(jedis.getJedis());
+			return KutaRedisUtil.exec(jedis->{
+				return self(jedis, pid, actorRef.path().uid());
+			});
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return false;
 		}
 	}
 	/**
@@ -52,16 +54,13 @@ public class PlayerVerifyUtil {
 	 * @param pid 玩家编号
 	 * @param uid actor编号
 	 * @return true:是玩家自己的操作 false:非法操作
+	 * @throws Exception 
 	 * */
-	public static boolean self(Long pid, int uid) {
-		JedisClient jedis = null;
-		try {
+	public static boolean self(Long pid, int uid) throws Exception {
+		return KutaRedisUtil.exec(jedis->{
 			jedis = JedisPoolUtil.getJedis();
 			return self(jedis, pid, uid);
-		}
-		finally {
-			JedisPoolUtil.release(jedis.getJedis());
-		}
+		});
 	}
 	
 	/**
@@ -79,6 +78,10 @@ public class PlayerVerifyUtil {
 			JedisPoolUtil.release(jedis.getJedis());
 		}
 	}
+	
+	public static void logged(Integer pid) {
+		
+	}
 	/**
 	 * 将玩家添加到映射中
 	 * @param jedis redis连接
@@ -94,15 +97,14 @@ public class PlayerVerifyUtil {
 	 * @param jedis redis连接
 	 * @param pid 玩家编号
 	 * @param uid actor编号
+	 * @throws Exception 
 	 * */
-	public static void unmapping(int uid) {
-		JedisClient jedis = null;
-		try {
-			jedis = JedisPoolUtil.getJedis();
+	public static void unmapping(int uid) throws Exception {
+		KutaRedisUtil.exec(jedis->{
 			jedis.hdel("map_player_channel", KutaUtil.intToBase64(uid));
-		}
-		finally {
-			JedisPoolUtil.release(jedis.getJedis());
-		}
+		});
+	}
+	public static void unmapping(JedisClient jedis,int uid) throws Exception {
+		jedis.hdel("map_player_channel", KutaUtil.intToBase64(uid));
 	}
 }

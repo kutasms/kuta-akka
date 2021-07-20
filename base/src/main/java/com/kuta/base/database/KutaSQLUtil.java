@@ -4,11 +4,13 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.function.Function;
 
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.TransactionIsolationLevel;
 
+import com.kuta.base.annotation.IncrIgoneColumn;
 import com.kuta.base.annotation.PrimaryKey;
 import com.kuta.base.util.ThrowingConsumer;
 import com.kuta.base.util.ThrowingFunction;
@@ -28,7 +30,19 @@ public class KutaSQLUtil {
 		Annotation[] anns = field.getAnnotations();
 		if(anns!=null && anns.length > 0) {
 			for(int i=0;i<anns.length;i++) {
-				if(anns[i].getClass().equals(PrimaryKey.class)) {
+				if(anns[i].annotationType().getName().equals(PrimaryKey.class.getName())) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	public static boolean isIncrIgoneColumn(Field field) {
+		Annotation[] anns = field.getAnnotations();
+		if(anns!=null && anns.length > 0) {
+			for(int i=0;i<anns.length;i++) {
+				if(anns[i].annotationType().getName().equals(PrimaryKey.class.getName())) {
 					return true;
 				}
 			}
@@ -85,12 +99,31 @@ public class KutaSQLUtil {
 	}
 	
 	/**
-	 * 执行数据库相关操作
+	 * 执行数据库相关操作 (已废弃，请使用func方法)
 	 * @param func 带返回结果的函数式数据执行单元
 	 * @return 返回执行结果
 	 * @throws Exception 内部异常
 	 * */
+	@Deprecated
 	public static <T> T exec(ThrowingFunction<SqlSession,T,Exception> func) throws Exception {
+		SqlSession session = null;
+		try {
+			session = MybatisUtil.getSession();
+			T t = func.apply(session);
+			session.commit();
+			return t;
+		}
+		catch (Exception e) {
+			if(session!=null) {
+				session.rollback();
+			}
+			throw e;
+		}
+		finally {
+			MybatisUtil.release(session);
+		}
+	}
+	public static <T> T func(Function<SqlSession,T> func) {
 		SqlSession session = null;
 		try {
 			session = MybatisUtil.getSession();

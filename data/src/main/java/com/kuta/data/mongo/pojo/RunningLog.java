@@ -14,8 +14,8 @@ public class RunningLog extends KutaMongoEntity {
 	
 	private String nodeName;
 	private String nodeHost;
-	private String nodePort;
-	private String threadId;
+	private Integer nodePort;
+	private Long threadId;
 	private String topic;
 	private String detail;
 	private Date created;
@@ -25,7 +25,7 @@ public class RunningLog extends KutaMongoEntity {
 	
 	
 	
-	public RunningLog(String nodeName, String nodeHost, String nodePort, String threadId, String topic, String detail,
+	public RunningLog(String nodeName, String nodeHost, Integer nodePort, Long threadId, String topic, String detail,
 			Date created, LogLevel level, String className, String stackTrace) {
 		super();
 		this.nodeName = nodeName;
@@ -40,7 +40,7 @@ public class RunningLog extends KutaMongoEntity {
 		this.stackTrace = stackTrace;
 	}
 
-	public RunningLog(String nodeName, String nodeHost, String nodePort, String threadId, String topic, String detail,
+	public RunningLog(String nodeName, String nodeHost, Integer nodePort, Long threadId, String topic, String detail,
 			LogLevel level, String className, String stackTrace) {
 		super();
 		this.nodeName = nodeName;
@@ -55,7 +55,7 @@ public class RunningLog extends KutaMongoEntity {
 		this.stackTrace = stackTrace;
 	}
 	
-	public RunningLog(String nodeName, String nodeHost, String nodePort, String threadId, String topic, String detail,
+	public RunningLog(String nodeName, String nodeHost, Integer nodePort, Long threadId, String topic, String detail,
 			Date created, String className, Throwable throwable) {
 		super();
 		this.nodeName = nodeName;
@@ -66,6 +66,20 @@ public class RunningLog extends KutaMongoEntity {
 		this.detail = detail;
 		this.created = created;
 		this.level = LogLevel.ERROR;
+		this.className = className;
+		this.stackTrace = ExceptionUtils.getStackTrace(throwable);
+	}
+	public RunningLog(String nodeName, String nodeHost, Integer nodePort, Long threadId, String topic, String detail,
+			Date created, LogLevel level, String className, Throwable throwable) {
+		super();
+		this.nodeName = nodeName;
+		this.nodeHost = nodeHost;
+		this.nodePort = nodePort;
+		this.threadId = threadId;
+		this.topic = topic;
+		this.detail = detail;
+		this.created = created;
+		this.level = level;
 		this.className = className;
 		this.stackTrace = ExceptionUtils.getStackTrace(throwable);
 	}
@@ -110,7 +124,7 @@ public class RunningLog extends KutaMongoEntity {
 	/**
 	 * 	获取节点端口号
 	 * */
-	public String getNodePort() {
+	public Integer getNodePort() {
 		return nodePort;
 	}
 	/**
@@ -122,7 +136,7 @@ public class RunningLog extends KutaMongoEntity {
 	/**
 	 * 	获取线程编号
 	 * */
-	public String getThreadId() {
+	public Long getThreadId() {
 		return threadId;
 	}
 	/**
@@ -170,7 +184,7 @@ public class RunningLog extends KutaMongoEntity {
 	/**
 	 * 	设置节点端口号
 	 * */
-	public void setNodePort(String nodePort) {
+	public void setNodePort(Integer nodePort) {
 		this.nodePort = nodePort;
 	}
 	/**
@@ -182,7 +196,7 @@ public class RunningLog extends KutaMongoEntity {
 	/**
 	 * 	设置线程编号
 	 * */
-	public void setThreadId(String threadId) {
+	public void setThreadId(Long threadId) {
 		this.threadId = threadId;
 	}
 	/**

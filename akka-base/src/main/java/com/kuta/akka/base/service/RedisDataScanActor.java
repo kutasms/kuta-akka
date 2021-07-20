@@ -1,15 +1,16 @@
 package com.kuta.akka.base.service;
 
 import com.kuta.akka.base.KutaActor;
+import com.kuta.akka.base.entity.KutaAkkaConstants;
 import com.kuta.akka.base.entity.RedisScanRequestMessage;
 import com.kuta.akka.base.entity.RedisScanResultMessage;
-import com.kuta.akka.base.entity.KutaAkkaConstants;
 import com.kuta.akka.base.entity.RegistrationMessage;
 import com.kuta.akka.base.entity.ScanCompletedMessage;
-import com.kuta.base.cache.JedisClient;
+import com.kuta.akka.base.entity.ScanStartedMessage;
 import com.kuta.base.cache.JedisPoolUtil;
 import com.kuta.base.cache.JedisUtil;
 import com.kuta.base.collection.KutaHashSet;
+import com.kuta.base.util.KutaRedisUtil;
 
 import akka.actor.ActorRef;
 import akka.actor.Cancellable;
@@ -19,7 +20,6 @@ import akka.dispatch.Futures;
 import akka.dispatch.OnComplete;
 import akka.japi.pf.ReceiveBuilder;
 import akka.routing.ConsistentHashingRouter.ConsistentHashableEnvelope;
-import redis.clients.jedis.Jedis;
 import scala.concurrent.ExecutionContext;
 import scala.concurrent.Future;
 
@@ -68,9 +68,9 @@ public class RedisDataScanActor extends KutaActor {
 	/**
 	 * 扫描模板信息
 	 * */
-	public RedisDataScanActor(ActorRef router, ActorRef broadcastRouter) {
+	public RedisDataScanActor(ActorRef hashRouter, ActorRef broadcastRouter) {
 		// TODO Auto-generated constructor stub
-		this.hashRouter = router;
+		this.hashRouter = hashRouter;
 		this.broadcastRouter = broadcastRouter;
 	}
 	/**
@@ -94,43 +94,44 @@ public class RedisDataScanActor extends KutaActor {
 			logger.info("收到{}Key扫描请求...", msg.getName());
 			this.name = msg.getName();
 			this.pattern = msg.getPattern();
+			ScanStartedMessage scanStartedMessage = new ScanStartedMessage();
+			scanStartedMessage.setName(msg.getName());
+			broadcastRouter.tell(scanStartedMessage, self());
 			Future<Boolean> future = Futures.future(()->{
-				JedisClient jedis = null;
-				try {
-					jedis = JedisPoolUtil.getJedis();
-					long start = System.currentTimeMillis();
-					logger.info("开始扫描关键字");
-					
-					JedisUtil.scanKeys(jedis, msg.getPattern(), msg.getScanSize(), msg.getConsumeSize(),msg.getSleep(), x->{
-						RedisScanResultMessage result = new RedisScanResultMessage();
-						result.setName(msg.getName());
-						result.setPattern(msg.getPattern());
-						result.setSource("REDIS");
-						result.setValues(x);
-						keySeed++;
-						hashRouter.tell(new ConsistentHashableEnvelope(result, String.format("K%s", keySeed)), self());
-					});
-					logger.info("关键字扫描完成,耗时:{}", System.currentTimeMillis() - start);
-					
-					ScanCompletedMessage completedMsg = new ScanCompletedMessage();
-					completedMsg.setName(msg.getName());
-					getContext().parent().tell(completedMsg, self());
-					this.broadcastRouter.tell(completedMsg, self());
-				} 
-				catch (Exception e) {
-					logger.error(e,"扫描数据发生错误。");
-					return false;
-					// TODO: handle exception
-				}
-				finally {
-					JedisPoolUtil.release(jedis.getJedis());
-				}
-				return true;
+				return KutaRedisUtil.exec(jedis->{
+					try {
+						jedis = JedisPoolUtil.getJedis();
+						long start = System.currentTimeMillis();
+						logger.info("开始扫描关键字");
+						JedisUtil.scanKeys(jedis, msg.getPattern(), msg.getScanSize(), msg.getConsumeSize(), msg.getSleep(), x->{
+							RedisScanResultMessage result = new RedisScanResultMessage();
+							result.setName(msg.getName());
+							result.setPattern(msg.getPattern());
+							result.setSource("REDIS");
+							result.setValues(x);
+							
+							keySeed++;
+							hashRouter.tell(new ConsistentHashableEnvelope(result, String.format("K%s", keySeed)), self());
+						});
+						logger.info("关键字扫描完成,耗时:{}", System.currentTimeMillis() - start);
+						
+						ScanCompletedMessage completedMsg = new ScanCompletedMessage();
+						completedMsg.setName(msg.getName());
+						this.broadcastRouter.tell(completedMsg, self());
+						return true;
+					}
+					catch (Exception e) {
+						// TODO: handle exception
+						logger.error(e, "REDIS扫描过程发生故障");
+						return false;
+					}
+				});
 			}, ec);
 			future.onComplete(new OnComplete<Boolean>() {
 				@Override
 				public void onComplete(Throwable failure, Boolean success) throws Throwable {
 					// TODO Auto-generated method stub
+					logger.info("{}数据扫描完成,扫描{}", name, success ? "成功":"失败");
 					self().tell(PoisonPill.getInstance(), ActorRef.noSender());
 				}
 			}, ec);

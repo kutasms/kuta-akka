@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.kuta.database.mysql.dao.extend.DepartmentMapperExt">
-  <resultMap type="com.kuta.database.mysql.pojo.extend.DepartmentExt"  
+<mapper namespace="com.kuta.data.mysql.dao.extend.DepartmentMapperExt">
+  <resultMap type="com.kuta.data.mysql.pojo.extend.DepartmentExt"  
 	id="ResultMapWithOrganization"  
-	extends="com.kuta.database.mysql.dao.DepartmentMapper.BaseResultMap">
-		<association property="organization" column="oid" select="com.kuta.database.mysql.dao.OrganizationMapper.selectByPrimaryKey"></association>
+	extends="com.kuta.data.mysql.dao.DepartmentMapper.BaseResultMap">
+		<association property="organization" column="oid" select="com.kuta.data.mysql.dao.OrganizationMapper.selectByPrimaryKey"></association>
 	</resultMap>
   
   
   <select id="selectExtByPrimaryKey" parameterType="java.lang.Integer" resultMap="ResultMapWithOrganization">
     select 
-    <include refid="com.kuta.database.mysql.dao.DepartmentMapper.Base_Column_List" />
+    <include refid="com.kuta.data.mysql.dao.DepartmentMapper.Base_Column_List" />
     from BS_Department
     where `did` = #{did,jdbcType=INTEGER}
   </select>

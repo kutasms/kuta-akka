@@ -26,7 +26,6 @@ public class KutaMongoEntity {
 		if(KutaUtil.isEmptyString(this._id)) {
 			this._id = new KutaObjectId().getStringVal();
 		}
-		
 		return KutaMongoUtil.toDocument(this);
 	}
 

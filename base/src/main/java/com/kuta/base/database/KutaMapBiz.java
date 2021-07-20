@@ -64,6 +64,7 @@ public abstract class KutaMapBiz<T extends KutaDBEntity, TKey extends Number> ex
 				throw new IllegalArgumentException("请传入JEDIS.KEY格式化参数");
 			}
 			final String cacheKey = cacheName;
+			logger.debug("缓存键:{}", cacheKey);
 			map.forEach((key,value)->{
 				if(value!=null && !value.equals("null")) {
 					jedis.hset(cacheKey, key, value);
@@ -107,6 +108,7 @@ public abstract class KutaMapBiz<T extends KutaDBEntity, TKey extends Number> ex
 				cacheName = formatCacheKey(args);
 			}
 			String cacheKey = cacheName;
+			logger.debug("缓存键:{}", cacheKey);
 			try {
 				KutaRedisUtil.exec(jedis->{
 					map.forEach((key,value)->{

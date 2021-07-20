@@ -58,7 +58,7 @@ public class KutaBatchUpdatePlugin extends org.mybatis.generator.api.PluginAdapt
     }
 
     /**
-     * 当运行时为MYBATIS3时生成xml文档
+     * 	当运行时为MYBATIS3时生成xml文档
      * @param document xml文档描述
      * @param introspectedTable 是MBG提供的一个比较基础的扩展类，相当于可以重新定义一个runtime，同时，IntrospectedTable也是一个比较低级的扩展点，比较适合做低级的扩展，比如想使用FreeMarker或者Velocity来生成代码
      * @return 执行结果
@@ -98,7 +98,7 @@ public class KutaBatchUpdatePlugin extends org.mybatis.generator.api.PluginAdapt
         XmlElement trimElement = SqlMapperGeneratorTool.baseTrimElement("set", null, ",");
 
         for (int i = 0; i < columnList.size(); i++) {
-
+        	
             IntrospectedColumn introspectedColumn = columnList.get(i);
 
             String columnName = introspectedColumn.getActualColumnName();
@@ -106,9 +106,10 @@ public class KutaBatchUpdatePlugin extends org.mybatis.generator.api.PluginAdapt
             String columnJavaTypeName = introspectedColumn.getJavaProperty("item.");
 
             String parameterClause = MyBatis3FormattingUtilities.getParameterClause(introspectedColumn, "item.");
+            
 
-
-            if (introspectedColumn.isIdentity()) {
+            if (introspectedTable.getPrimaryKeyColumns().contains(introspectedColumn)) {
+            	System.out.println("主键:" + introspectedColumn.getActualColumnName() + "跳过");
                 continue;
             }
 
@@ -123,7 +124,9 @@ public class KutaBatchUpdatePlugin extends org.mybatis.generator.api.PluginAdapt
             foreachElement.addElement(ifElement);
             foreachElement.addElement(ifNullElement);
 
-            XmlElement caseTrimElement = SqlMapperGeneratorTool.baseTrimElement(columnName + " =case " + primaryKeyName, "end,", null);
+            
+            
+            XmlElement caseTrimElement = SqlMapperGeneratorTool.baseTrimElement("`" + columnName + "`" + " =case `" + primaryKeyName + "`", "end,", null);
             caseTrimElement.addElement(foreachElement);
 
             trimElement.addElement(caseTrimElement);
@@ -137,7 +140,7 @@ public class KutaBatchUpdatePlugin extends org.mybatis.generator.api.PluginAdapt
                 ",");
         foreachElement.addElement(new TextElement(primaryKeyParameterClause));
 
-        updateXmlElement.addElement(new TextElement(String.format("where %s in(", primaryKeyName)));
+        updateXmlElement.addElement(new TextElement(String.format("where `%s` in(", primaryKeyName)));
 
         updateXmlElement.addElement(foreachElement);
 
