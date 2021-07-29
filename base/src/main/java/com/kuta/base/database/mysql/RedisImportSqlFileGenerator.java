@@ -193,7 +193,7 @@ public class RedisImportSqlFileGenerator {
 						fields[i].getName(),""));
 			}
 		}
-		builder.append(String.format(" FROM %s where `%s`>${1} && %s<=${2}\r\n",tableName ==null ? clazz.getSimpleName() : tableName, primaryKey,primaryKey) + 
+		builder.append(String.format(" FROM %s where `%s`>=${1} && %s<=${2}\r\n",tableName ==null ? clazz.getSimpleName() : tableName, primaryKey,primaryKey) + 
 				" ) AS t");
 		File file = new File(path);
 		if(!file.exists()) {

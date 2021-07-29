@@ -205,7 +205,7 @@ public abstract class KutaConfigAbstractBiz<T extends KutaDBEntity> {
 	 * @param map 需要保存的键值对
 	 * */
 	public void dbCache(SqlSession session,JedisClient jedis,Map<String, String> map) {
-		jedis.hset(CACHE_KEY, map);
+		jedis.hset(CACHE_KEY, map); 
 		jedis.expire(CACHE_KEY, 30 * 60);
 		update(session,map);
 	}
