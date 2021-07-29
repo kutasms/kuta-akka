@@ -6,7 +6,7 @@ import org.apache.ibatis.session.SqlSession;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
-import com.kuta.base.database.KutaMapBiz;
+import com.kuta.base.database.KutaExpireMapBiz;
 import com.kuta.base.util.PageWrapper;
 import com.kuta.data.mysql.dao.PluginOrganizationMapper;
 import com.kuta.data.mysql.dao.extend.PluginOrganizationMapperExt;
@@ -14,10 +14,10 @@ import com.kuta.data.mysql.pojo.PluginOrganization;
 import com.kuta.data.mysql.pojo.PluginOrganizationExample;
 import com.kuta.data.mysql.pojo.extend.PluginOrganizationExt;
 
-public class PluginOrganizationBiz extends KutaMapBiz<PluginOrganization, Integer> {
+public class PluginOrganizationBiz extends KutaExpireMapBiz<PluginOrganization, Integer> {
 
 	public PluginOrganizationBiz() {
-		super("PluginOrganization_%s");
+		super("PluginOrganization_%s", 30 * 60);
 		// TODO Auto-generated constructor stub
 	}
 

@@ -6,7 +6,7 @@ import org.apache.ibatis.session.SqlSession;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
-import com.kuta.base.database.KutaMapBiz;
+import com.kuta.base.database.KutaExpireMapBiz;
 import com.kuta.base.entity.KutaConstants;
 import com.kuta.base.util.PageWrapper;
 import com.kuta.data.mysql.dao.DepartmentMapper;
@@ -14,10 +14,10 @@ import com.kuta.data.mysql.pojo.Department;
 import com.kuta.data.mysql.pojo.DepartmentExample;
 import com.kuta.data.mysql.pojo.DepartmentExample.Criteria;
 
-public class DepartmentBiz extends KutaMapBiz<Department, Integer> {
+public class DepartmentBiz extends KutaExpireMapBiz<Department, Integer> {
 
 	public DepartmentBiz() {
-		super("Department_%s");
+		super("Department_%s",30 * 60);
 		// TODO Auto-generated constructor stub
 	}
 

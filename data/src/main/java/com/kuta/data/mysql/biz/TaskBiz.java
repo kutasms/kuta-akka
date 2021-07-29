@@ -7,16 +7,16 @@ import org.apache.ibatis.session.SqlSession;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
-import com.kuta.base.database.KutaMapBiz;
+import com.kuta.base.database.KutaExpireMapBiz;
 import com.kuta.base.util.PageWrapper;
 import com.kuta.data.mysql.dao.TaskMapper;
 import com.kuta.data.mysql.pojo.Task;
 import com.kuta.data.mysql.pojo.TaskExample;
 
-public class TaskBiz  extends KutaMapBiz<Task, Long>{
+public class TaskBiz  extends KutaExpireMapBiz<Task, Long>{
 
 	public TaskBiz() {
-		super("Task_%s");
+		super("Task_%s", 30 * 60);
 		// TODO Auto-generated constructor stub
 	}
 

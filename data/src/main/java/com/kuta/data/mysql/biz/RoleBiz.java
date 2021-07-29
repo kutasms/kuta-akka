@@ -6,7 +6,7 @@ import org.apache.ibatis.session.SqlSession;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
-import com.kuta.base.database.KutaMapBiz;
+import com.kuta.base.database.KutaExpireMapBiz;
 import com.kuta.base.entity.KutaConstants;
 import com.kuta.base.util.PageWrapper;
 import com.kuta.data.mysql.dao.RoleMapper;
@@ -14,10 +14,10 @@ import com.kuta.data.mysql.pojo.Role;
 import com.kuta.data.mysql.pojo.RoleExample;
 import com.kuta.data.mysql.pojo.RoleExample.Criteria;
 
-public class RoleBiz extends KutaMapBiz<Role, Integer> {
+public class RoleBiz extends KutaExpireMapBiz<Role, Integer> {
 
 	public RoleBiz() {
-		super("Role_%s");
+		super("Role_%s", 30 * 60);
 		// TODO Auto-generated constructor stub
 	}
 

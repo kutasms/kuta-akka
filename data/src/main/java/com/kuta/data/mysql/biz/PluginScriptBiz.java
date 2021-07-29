@@ -5,7 +5,7 @@ import java.util.List;
 import org.apache.ibatis.session.SqlSession;
 
 import com.alibaba.fastjson.JSONObject;
-import com.kuta.base.database.KutaMapBiz;
+import com.kuta.base.database.KutaExpireMapBiz;
 import com.kuta.base.exception.KutaRuntimeException;
 import com.kuta.base.util.KutaUtil;
 import com.kuta.data.mysql.dao.PluginScriptRelMapper;
@@ -13,10 +13,10 @@ import com.kuta.data.mysql.pojo.PluginScriptRel;
 import com.kuta.data.mysql.pojo.PluginScriptRelExample;
 import com.kuta.data.mysql.pojo.PluginScriptRelKey;
 
-public class PluginScriptBiz  extends KutaMapBiz<PluginScriptRel, PluginScriptRelKey>{
+public class PluginScriptBiz  extends KutaExpireMapBiz<PluginScriptRel, PluginScriptRelKey>{
 
 	public PluginScriptBiz() {
-		super("PluginScript_%s_%s");
+		super("PluginScript_%s_%s", 30 * 60);
 		// TODO Auto-generated constructor stub
 	}
 

@@ -7,7 +7,6 @@ import java.util.Map;
 
 import org.apache.ibatis.jdbc.ScriptRunner;
 import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
 
 import com.kuta.base.database.KutaSQLUtil;
 import com.kuta.base.exception.KutaIllegalArgumentException;

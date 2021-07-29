@@ -42,7 +42,7 @@ public class KutaTimeUtil {
 	 * @param date 时间
 	 * @return String类型的时间
 	 * */
-	public static String format(Date date) {
+	public static String format(Object date) {
 		if(KutaUtil.isValueNull(date)) {
 			return null;
 		}
@@ -81,7 +81,7 @@ public class KutaTimeUtil {
 	 * @param date 时间
 	 * @return String类型的时间
 	 * */
-	public static String formatWithMill(Date date) {
+	public static String formatWithMill(Object date) {
 		if(KutaUtil.isValueNull(date)) {
 			return null;
 		}

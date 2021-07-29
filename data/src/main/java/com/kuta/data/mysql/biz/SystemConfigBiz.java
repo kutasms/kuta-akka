@@ -21,6 +21,8 @@ import com.kuta.data.mysql.pojo.SystemConfigExample;
 
 public class SystemConfigBiz extends KutaConfigAbstractBiz<SystemConfig> {	
 
+	private final int expire = 30 * 60;
+	
 	public SystemConfigBiz() {
 		super("system-config");
 		// TODO Auto-generated constructor stub
@@ -29,7 +31,7 @@ public class SystemConfigBiz extends KutaConfigAbstractBiz<SystemConfig> {
 	@Override
 	protected String getJson(SqlSession session) {
 		// TODO Auto-generated method stub
-		throw new NotImplementedException("不支持insert");
+		throw new NotImplementedException("不支持JSON格式");
 	}
 
 	@Override
@@ -53,7 +55,7 @@ public class SystemConfigBiz extends KutaConfigAbstractBiz<SystemConfig> {
 				return jedis.hgetAll(CACHE_KEY);
 			} else {
 				try {
-					cacheAllWithHash();
+					cacheAllToHash(jedis, expire);
 					return get();
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
@@ -79,7 +81,7 @@ public class SystemConfigBiz extends KutaConfigAbstractBiz<SystemConfig> {
 		String result = jedis.hget(CACHE_KEY, key);
 		if (KutaUtil.isEmptyString(result)) {
 			try {
-				cacheAllToHash(jedis);
+				cacheAllToHash(jedis, expire);
 				return query(key, jedis);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
@@ -194,7 +196,7 @@ public class SystemConfigBiz extends KutaConfigAbstractBiz<SystemConfig> {
 			return jedis.hgetAll(CACHE_KEY);
 		} else {
 			try {
-				cacheAllToHash(jedis);
+				cacheAllToHash(jedis, expire);
 				return get(jedis);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
@@ -210,7 +212,7 @@ public class SystemConfigBiz extends KutaConfigAbstractBiz<SystemConfig> {
 			return jedis.hgetAll(CACHE_KEY);
 		} else {
 			try {
-				cacheAllToHash(session, jedis);
+				cacheAllToHash(session, jedis, expire);
 				return get(jedis);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
@@ -239,12 +241,8 @@ public class SystemConfigBiz extends KutaConfigAbstractBiz<SystemConfig> {
 	public int update(SystemConfig config) throws Exception {
 		return KutaSQLUtil.func(session -> {
 			return KutaRedisUtil.func(jedis -> {
-				SystemConfigExample example = new SystemConfigExample();
-				example.createCriteria().andKeyEqualTo(config.getKey());
-				int result = session.getMapper(SystemConfigMapper.class).updateByExampleSelective(config, example);
-				if (result > 0) {
-					jedis.hset(this.CACHE_KEY, config.getKey(), config.getValue());
-				}
+				int result = session.getMapper(SystemConfigMapper.class).updateByPrimaryKey(config);
+				jedis.hset(this.CACHE_KEY, config.getKey(), config.getValue());
 				return result;
 			});
 		});
@@ -326,10 +324,9 @@ public class SystemConfigBiz extends KutaConfigAbstractBiz<SystemConfig> {
 
 		map.forEach((k, v) -> {
 			SystemConfig config = new SystemConfig();
+			config.setKey(k);
 			config.setValue(v);
-			SystemConfigExample example = new SystemConfigExample();
-			example.createCriteria().andKeyEqualTo(k);
-			session.getMapper(SystemConfigMapper.class).updateByExampleSelective(config, example);
+			session.getMapper(SystemConfigMapper.class).updateByPrimaryKeySelective(config);
 		});
 		return map.size();
 	}

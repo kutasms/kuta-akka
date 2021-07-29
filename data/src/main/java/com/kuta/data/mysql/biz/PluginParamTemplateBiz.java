@@ -5,15 +5,15 @@ import java.util.List;
 import org.apache.ibatis.session.SqlSession;
 
 import com.alibaba.fastjson.JSONObject;
-import com.kuta.base.database.KutaMapBiz;
+import com.kuta.base.database.KutaExpireMapBiz;
 import com.kuta.data.mysql.dao.PluginParamTemplateMapper;
 import com.kuta.data.mysql.pojo.PluginParamTemplate;
 import com.kuta.data.mysql.pojo.PluginParamTemplateExample;
 
-public class PluginParamTemplateBiz extends KutaMapBiz<PluginParamTemplate, Integer> {
+public class PluginParamTemplateBiz extends KutaExpireMapBiz<PluginParamTemplate, Integer> {
 
 	public PluginParamTemplateBiz() {
-		super("PluginParamTemplate_%s");
+		super("PluginParamTemplate_%s", 30 * 60);
 		// TODO Auto-generated constructor stub
 	}
 

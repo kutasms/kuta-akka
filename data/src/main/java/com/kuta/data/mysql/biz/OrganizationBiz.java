@@ -7,9 +7,8 @@ import org.apache.ibatis.session.SqlSession;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
 import com.kuta.base.cache.JedisClient;
-import com.kuta.base.database.KutaMapBiz;
+import com.kuta.base.database.KutaExpireMapBiz;
 import com.kuta.base.database.KutaSQLUtil;
 import com.kuta.base.entity.KutaConstants;
 import com.kuta.base.util.KutaBeanUtil;
@@ -17,15 +16,14 @@ import com.kuta.base.util.KutaUtil;
 import com.kuta.base.util.PageWrapper;
 import com.kuta.base.util.Status;
 import com.kuta.data.mysql.dao.OrganizationMapper;
-import com.kuta.data.mysql.pojo.Department;
 import com.kuta.data.mysql.pojo.Organization;
 import com.kuta.data.mysql.pojo.OrganizationExample;
 import com.kuta.data.mysql.pojo.OrganizationExample.Criteria;
 
-public class OrganizationBiz extends KutaMapBiz<Organization, Integer> {
+public class OrganizationBiz extends KutaExpireMapBiz<Organization, Integer> {
 
 	public OrganizationBiz() {
-		super("Organization_%s");
+		super("Organization_%s", 30 *60);
 		// TODO Auto-generated constructor stub
 	}
 

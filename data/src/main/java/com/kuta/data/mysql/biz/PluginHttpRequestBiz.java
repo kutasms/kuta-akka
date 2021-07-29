@@ -5,7 +5,7 @@ import java.util.List;
 import org.apache.ibatis.session.SqlSession;
 
 import com.alibaba.fastjson.JSONObject;
-import com.kuta.base.database.KutaMapBiz;
+import com.kuta.base.database.KutaExpireMapBiz;
 import com.kuta.base.util.KutaUtil;
 import com.kuta.data.mysql.dao.PluginHttpRequestMapper;
 import com.kuta.data.mysql.dao.extend.PluginHttpRequestMapperExt;
@@ -13,10 +13,10 @@ import com.kuta.data.mysql.pojo.PluginHttpRequest;
 import com.kuta.data.mysql.pojo.PluginHttpRequestExample;
 import com.kuta.data.mysql.pojo.extend.PluginHttpRequestExt;
 
-public class PluginHttpRequestBiz extends KutaMapBiz<PluginHttpRequest, Long>{
+public class PluginHttpRequestBiz extends KutaExpireMapBiz<PluginHttpRequest, Long>{
 
 	public PluginHttpRequestBiz() {
-		super("PluginHttpRequest_%s");
+		super("PluginHttpRequest_%s", 30 * 60);
 		// TODO Auto-generated constructor stub
 	}
 

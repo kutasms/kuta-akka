@@ -8,7 +8,7 @@ import org.apache.ibatis.session.SqlSession;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.kuta.base.cache.JedisClient;
-import com.kuta.base.database.KutaMapBiz;
+import com.kuta.base.database.KutaExpireMapBiz;
 import com.kuta.base.entity.KutaConstants;
 import com.kuta.base.util.PageWrapper;
 import com.kuta.data.mysql.dao.ScriptMapper;
@@ -16,12 +16,12 @@ import com.kuta.data.mysql.pojo.Organization;
 import com.kuta.data.mysql.pojo.Script;
 import com.kuta.data.mysql.pojo.ScriptExample;
 
-public class ScriptBiz extends KutaMapBiz<Script, Long> {
+public class ScriptBiz extends KutaExpireMapBiz<Script, Long> {
 
 	private OrganizationBiz organizationBiz = new OrganizationBiz();
 	
 	public ScriptBiz() {
-		super("Script_%s");
+		super("Script_%s", 30 * 60);
 		// TODO Auto-generated constructor stub
 	}
 

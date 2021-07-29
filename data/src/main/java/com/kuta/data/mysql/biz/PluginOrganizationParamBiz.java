@@ -5,16 +5,16 @@ import java.util.List;
 import org.apache.ibatis.session.SqlSession;
 
 import com.alibaba.fastjson.JSONObject;
-import com.kuta.base.database.KutaMapBiz;
+import com.kuta.base.database.KutaExpireMapBiz;
 import com.kuta.data.mysql.dao.PluginOrganizationParamMapper;
 import com.kuta.data.mysql.pojo.PluginOrganizationParam;
 import com.kuta.data.mysql.pojo.PluginOrganizationParamExample;
 import com.kuta.data.mysql.pojo.PluginOrganizationParamKey;
 
-public class PluginOrganizationParamBiz extends KutaMapBiz<PluginOrganizationParam, PluginOrganizationParamKey> {
+public class PluginOrganizationParamBiz extends KutaExpireMapBiz<PluginOrganizationParam, PluginOrganizationParamKey> {
 
 	public PluginOrganizationParamBiz() {
-		super("PluginOrganizationParam_%s");
+		super("PluginOrganizationParam_%s", 30 * 60);
 		// TODO Auto-generated constructor stub
 	}
 

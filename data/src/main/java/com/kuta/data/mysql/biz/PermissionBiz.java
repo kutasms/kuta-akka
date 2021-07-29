@@ -6,7 +6,7 @@ import org.apache.ibatis.session.SqlSession;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
-import com.kuta.base.database.KutaMapBiz;
+import com.kuta.base.database.KutaExpireMapBiz;
 import com.kuta.base.entity.KutaConstants;
 import com.kuta.base.util.PageWrapper;
 import com.kuta.data.mysql.dao.PermissionMapper;
@@ -14,10 +14,10 @@ import com.kuta.data.mysql.pojo.Permission;
 import com.kuta.data.mysql.pojo.PermissionExample;
 import com.kuta.data.mysql.pojo.PermissionExample.Criteria;
 
-public class PermissionBiz extends KutaMapBiz<Permission, Integer> {
+public class PermissionBiz extends KutaExpireMapBiz<Permission, Integer> {
 
 	public PermissionBiz() {
-		super("Permission_%s");
+		super("Permission_%s", 30 * 60);
 		// TODO Auto-generated constructor stub
 	}
 

@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,6 +12,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.enterprise.inject.New;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,16 +35,19 @@ public class KutaBeanUtil {
 	 * @return 字段包装数组
 	 * */
 	public static Field[] getAllFields(Object o){
-	    Class<?> c= o.getClass();
+	    return getAllFields(o.getClass());
+	}
+	public static Field[] getAllFields(Class<?> clazz){
 	    List<Field> fieldList = new ArrayList<>();
-	    while (c!= null){
-	        fieldList.addAll(new ArrayList<>(Arrays.asList(c.getDeclaredFields())));
-	        c= c.getSuperclass();
+	    while (clazz!= null){
+	        fieldList.addAll(new ArrayList<>(Arrays.asList(clazz.getDeclaredFields())));
+	        clazz= clazz.getSuperclass();
 	    }
 	    Field[] fields = new Field[fieldList.size()];
 	    fieldList.toArray(fields);
 	    return fields;
 	}
+	
 	/**
 	 * 实体对象转成Map
 	 *
@@ -57,28 +63,39 @@ public class KutaBeanUtil {
 		try {
 			for (Field field : fields) {
 				field.setAccessible(true);
-				
 				Object fieldObj = field.get(obj);
-				if(!field.getClass().isPrimitive()) {
-					map.put(field.getName(), JSONObject.toJSONString(fieldObj));
-					continue;
-				}
-				
-				if(KutaUtil.isValueNull(fieldObj)) {
+				if(fieldObj == null) {
 					continue;
 				}
 				if(field.getName().equals("serialVersionUID")) {
 					continue;
 				}
-				
-				if (field.getGenericType().getTypeName().equals(Date.class.getName())) {
-					SimpleDateFormat fomatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-//					logger.info("时间转换:{}", fomatter.format(field.get(obj)));
-					map.put(field.getName(), fomatter.format(field.get(obj)));
+				Type declareType = field.getGenericType();
+				if (declareType.equals(Date.class)) {
+
+					map.put(field.getName(), KutaTimeUtil.formatWithMill(field.get(obj)));
 				} 
-				
-				else {
+				else if(declareType.equals(String.class)||
+						declareType.equals(Integer.class) ||
+						declareType.equals(Boolean.class) ||
+						declareType.equals(Float.class) ||
+						declareType.equals(Double.class)||
+						declareType.equals(BigDecimal.class) ||
+						declareType.equals(BigInteger.class) ||
+						declareType.equals(Long.class)||
+						declareType.equals(Byte.class) ||
+						declareType.equals(Short.class)) {
 					map.put(field.getName(), field.get(obj).toString());
+				}
+				else if(field.getType().isPrimitive()) {
+					map.put(field.getName(), field.get(obj).toString());
+				}
+//				else if(field.getType().isEnum()) {
+//					logger.info("field:{}, 枚举", field.getName());
+//					map.put(field.getName(), field.get(obj).toString());
+//				}
+				else {
+					map.put(field.getName(), JSONObject.toJSONString(fieldObj));
 				}
 			}
 		} catch (Exception e) {
@@ -112,45 +129,52 @@ public class KutaBeanUtil {
 				}
 				field.setAccessible(true);
 
-				Type type = field.getGenericType();
+				Class<?> type = field.getType();
 				
-				String val = map.get(field.getName());
-				
-				if(KutaUtil.isEmptyString(val)) {
+				if(!map.containsKey(field.getName())) {
 					continue;
 				}
 				
-				if(!field.getClass().isPrimitive()) {
+				String val = map.get(field.getName());
+				if(val.startsWith("\"") && val.endsWith("\"")) {
 					Object ins = JSONObject.parseObject(val,field.getType());
 					field.set(obj, ins);
 					continue;
 				}
-				
-				if (type.getTypeName().equals(java.lang.Integer.class.getName())
-						|| type.getTypeName().equals("int")) {
+				if (type.equals(java.lang.Integer.class)
+						|| type.equals(int.class)) {
 					field.set(obj, Integer.parseInt(val));
-				} else if (type.getTypeName().equals(java.lang.Long.class.getName())
-						|| type.getTypeName().equals("long")) {
+				} else if (type.equals(java.lang.Long.class)
+						|| type.equals(long.class)) {
 					field.set(obj, Long.parseLong(val));
-				} else if (type.getTypeName().equals(java.lang.Boolean.class.getName())
-						|| type.getTypeName().equals("boolean")) {
+				} else if (type.equals(java.lang.Boolean.class)
+						|| type.equals(boolean.class)) {
 					field.set(obj, Boolean.parseBoolean(val));
-				} else if (type.getTypeName().equals(java.lang.Short.class.getName())
-						|| type.getTypeName().equals("short")) {
+				} else if (type.equals(java.lang.Short.class)
+						|| type.equals(short.class)) {
 					field.set(obj, Short.parseShort(val));
-				} else if (type.getTypeName().equals(java.lang.Byte.class.getName())
-						|| type.getTypeName().equals("byte")) {
+				} else if (type.equals(java.lang.Byte.class)
+						|| type.equals(byte.class)) {
 					field.set(obj, Byte.parseByte(val));
-				} else if (type.getTypeName().equals(java.math.BigDecimal.class.getName())) {
+				} else if (type.equals(java.math.BigDecimal.class)) {
 					field.set(obj, new BigDecimal(val));
-				} else if (type.getTypeName().equals(Date.class.getName())) {
+				} else if (type.equals(BigInteger.class)) {
+					field.set(obj, new BigInteger(val));
+				} else if (type.equals(Date.class)) {
+					if(val.matches("^[0-9]+$")) {
+						field.set(obj, new Date(Long.parseLong(val)));
+					} else {
 					field.set(obj, KutaTimeUtil.parseWithMill(val));
-				} else if(type.getTypeName().equals(Double.class.getName())
-						|| type.getTypeName().equals("double")) {
+					}
+				} else if(type.equals(Double.class)
+						|| type.equals(double.class)) {
 					field.set(obj, Double.parseDouble(val));
-				} 
-				else {
+				} else if(type.equals(String.class)) {
 					field.set(obj, val);
+				} else {
+					Object ins = JSONObject.parseObject(val,field.getType());
+					field.set(obj, ins);
+					continue;
 				}
 
 			}

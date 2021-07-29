@@ -1,6 +1,5 @@
 package com.kuta.data.mysql.biz;
 
-import java.util.Date;
 import java.util.List;
 
 import org.apache.ibatis.session.SqlSession;
@@ -8,7 +7,7 @@ import org.apache.ibatis.session.SqlSession;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.kuta.base.database.KutaMapBiz;
+import com.kuta.base.database.KutaExpireMapBiz;
 import com.kuta.base.entity.KutaConstants;
 import com.kuta.base.util.KutaUtil;
 import com.kuta.base.util.PageWrapper;
@@ -19,10 +18,10 @@ import com.kuta.data.mysql.pojo.UserExample;
 import com.kuta.data.mysql.pojo.UserExample.Criteria;
 import com.kuta.data.mysql.pojo.extend.UserExt;
 
-public class UserBiz extends KutaMapBiz<UserExt, Integer>{
+public class UserBiz extends KutaExpireMapBiz<UserExt, Integer>{
 
 	public UserBiz(String cacheName) {
-		super(cacheName);
+		super(cacheName, 30 * 60);
 		// TODO Auto-generated constructor stub
 	}
 

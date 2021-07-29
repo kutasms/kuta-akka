@@ -6,17 +6,17 @@ import org.apache.ibatis.session.SqlSession;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
-import com.kuta.base.database.KutaMapBiz;
+import com.kuta.base.database.KutaExpireMapBiz;
 import com.kuta.base.entity.KutaConstants;
 import com.kuta.base.util.PageWrapper;
 import com.kuta.data.mysql.dao.PluginMapper;
 import com.kuta.data.mysql.pojo.Plugin;
 import com.kuta.data.mysql.pojo.PluginExample;
 
-public class PluginBiz  extends KutaMapBiz<Plugin, Integer>{
+public class PluginBiz  extends KutaExpireMapBiz<Plugin, Integer>{
 
 	public PluginBiz() {
-		super("Plugin_%s");
+		super("Plugin_%s", 30 * 60);
 		// TODO Auto-generated constructor stub
 	}
 

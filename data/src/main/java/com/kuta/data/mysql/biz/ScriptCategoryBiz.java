@@ -5,15 +5,15 @@ import java.util.List;
 import org.apache.ibatis.session.SqlSession;
 
 import com.alibaba.fastjson.JSONObject;
-import com.kuta.base.database.KutaMapBiz;
+import com.kuta.base.database.KutaExpireMapBiz;
 import com.kuta.data.mysql.dao.ScriptCategoryMapper;
 import com.kuta.data.mysql.pojo.ScriptCategory;
 import com.kuta.data.mysql.pojo.ScriptCategoryExample;
 
-public class ScriptCategoryBiz extends KutaMapBiz<ScriptCategory, Integer>{
+public class ScriptCategoryBiz extends KutaExpireMapBiz<ScriptCategory, Integer>{
 
 	public ScriptCategoryBiz() {
-		super("ScriptCategory_%s");
+		super("ScriptCategory_%s", 30 * 60);
 		// TODO Auto-generated constructor stub
 	}
 
