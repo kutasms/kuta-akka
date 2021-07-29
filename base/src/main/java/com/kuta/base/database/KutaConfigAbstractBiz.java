@@ -68,14 +68,49 @@ public abstract class KutaConfigAbstractBiz<T extends KutaDBEntity> {
 	}
 
 	/**
-	 * 将所有相关配置数据以hashmap的形式加载到缓存
+	 * 将所有相关配置数据以json字符串的形式加载到缓存
 	 * */
+	public void cacheAllWithJson(int expire) throws Exception {
+		KutaSQLUtil.exec(x -> {
+			try {
+				KutaRedisUtil.exec(redis -> {
+					redis.setex(CACHE_KEY, expire, getJson(x));
+				});
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		});
+	}
+	
+	/**
+	 * 	将所有相关配置数据以hashmap的形式加载到缓存
+	 *	已销毁，请使用cacheAllToHash
+	 * */
+	@Deprecated
 	public void cacheAllWithHash() throws Exception {
 		KutaSQLUtil.exec(session -> {
 			try {
 				KutaRedisUtil.exec(jedis -> {
 					Map<String, String> map = getMap(session);
 					jedis.hset(CACHE_KEY, map);
+				});
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		});
+	}
+	/**
+	 * 将所有相关配置数据以hashmap的形式加载到缓存
+	 * */
+	public void cacheAllWithHash(int expire) throws Exception {
+		KutaSQLUtil.exec(session -> {
+			try {
+				KutaRedisUtil.exec(jedis -> {
+					Map<String, String> map = getMap(session);
+					jedis.hset(CACHE_KEY, map);
+					jedis.expire(CACHE_KEY, expire);
 				});
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
@@ -92,10 +127,25 @@ public abstract class KutaConfigAbstractBiz<T extends KutaDBEntity> {
 		Map<String, String> map = getMap(session);
 		jedis.hset(CACHE_KEY, map);
 	}
-	
+	/**
+	 * 将所有相关配置数据以hashmap的形式加载到缓存
+	 * @param session 数据库连接
+	 * @param jedis redis连接
+	 * */
+	public void cacheAllToHash(SqlSession session,JedisClient jedis, int expire) throws Exception {
+		Map<String, String> map = getMap(session);
+		jedis.hset(CACHE_KEY, map);
+		jedis.expire(CACHE_KEY, expire);
+	}
 	public boolean fullValid(SqlSession session,JedisClient jedis, String key) {
 		Map<String, String> map = getMap(session);
 		jedis.hset(CACHE_KEY, map);
+		return map.containsKey(key);
+	}
+	public boolean fullValid(SqlSession session,JedisClient jedis, String key, int expire) {
+		Map<String, String> map = getMap(session);
+		jedis.hset(CACHE_KEY, map);
+		jedis.expire(CACHE_KEY, expire);
 		return map.containsKey(key);
 	}
 	
@@ -104,6 +154,11 @@ public abstract class KutaConfigAbstractBiz<T extends KutaDBEntity> {
 		jedis.hset(CACHE_KEY, map);
 	}
 
+	public void cacheAllToHash(SqlSession session,Transaction jedis, int expire) throws Exception {
+		Map<String, String> map = getMap(session);
+		jedis.hset(CACHE_KEY, map);
+		jedis.expire(CACHE_KEY, expire);
+	}
 	/**
 	 * 将所有相关配置数据以hashmap的形式加载到缓存
 	 * @param jedis redis连接
@@ -114,10 +169,28 @@ public abstract class KutaConfigAbstractBiz<T extends KutaDBEntity> {
 			jedis.hset(CACHE_KEY, map);
 		});
 	}
+	/**
+	 * 将所有相关配置数据以hashmap的形式加载到缓存
+	 * @param jedis redis连接
+	 * */
+	public void cacheAllToHash(JedisClient jedis, int expire) throws Exception {
+		KutaSQLUtil.exec(session -> {
+			Map<String, String> map = getMap(session);
+			jedis.hset(CACHE_KEY, map);
+			jedis.expire(CACHE_KEY, expire);
+		});
+	}
 	public void cacheAllToHash(Transaction jedis) throws Exception {
 		KutaSQLUtil.exec(session -> {
 			Map<String, String> map = getMap(session);
 			jedis.hset(CACHE_KEY, map);
+		});
+	}
+	public void cacheAllToHash(Transaction jedis, int expire) throws Exception {
+		KutaSQLUtil.exec(session -> {
+			Map<String, String> map = getMap(session);
+			jedis.hset(CACHE_KEY, map);
+			jedis.expire(CACHE_KEY, expire);
 		});
 	}
 	
@@ -129,6 +202,17 @@ public abstract class KutaConfigAbstractBiz<T extends KutaDBEntity> {
 	 * */
 	public void dbCache(SqlSession session,JedisClient jedis,Map<String, String> map) {
 		jedis.hset(CACHE_KEY, map);
+		update(session,map);
+	}
+	/**
+	 * 保存数据至数据库并且更新缓存数据
+	 * @param session 数据库连接
+	 * @param jedis redis连接
+	 * @param map 需要保存的键值对
+	 * */
+	public void dbCache(SqlSession session,JedisClient jedis,Map<String, String> map, int expire) {
+		jedis.hset(CACHE_KEY, map);
+		jedis.expire(CACHE_KEY, expire);
 		update(session,map);
 	}
 }
