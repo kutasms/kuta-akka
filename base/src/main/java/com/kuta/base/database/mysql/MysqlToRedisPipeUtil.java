@@ -47,7 +47,7 @@ public class MysqlToRedisPipeUtil {
 		}
 		arguments.add("-p" + password);
 		arguments.add("-P" + PropertyUtil.getProperty("jdbc", "jdbc.port"));
-		arguments.add("-Dsimcity");
+		arguments.add("-D" + PropertyUtil.getProperty("jdbc", "jdbc.dbnm"));
 		arguments.add("-h" + PropertyUtil.getProperty("jdbc", "jdbc.host"));
 		arguments.add("--default-character-set=utf8");
 		// commandList.add("-h");
