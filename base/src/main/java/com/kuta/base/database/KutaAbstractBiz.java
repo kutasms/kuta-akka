@@ -4,7 +4,9 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -20,6 +22,7 @@ import com.kuta.base.exception.KutaIllegalArgumentException;
 import com.kuta.base.exception.KutaRuntimeException;
 import com.kuta.base.util.KutaBeanUtil;
 import com.kuta.base.util.KutaRedisUtil;
+import com.kuta.base.util.KutaTimeUtil;
 import com.kuta.base.util.KutaUtil;
 
 import redis.clients.jedis.Jedis;
@@ -595,7 +598,12 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 				continue;
 			}
 			Class<?> fieldType = field.getType();
-			if (fieldType.equals(Integer.class) || fieldType.equals(Long.class)
+			if(fieldType.equals(Date.class)) {
+				String date = KutaTimeUtil.formatWithMill((Date)field.get(t));
+				logger.info("hset date:{}", date);
+				jedis.hset(cacheKey, field.getName(), date);
+			}
+			else if (fieldType.equals(Integer.class) || fieldType.equals(Long.class)
 					|| fieldType.equals(Short.class) || fieldType.equals(Byte.class)
 					|| fieldType.equals(int.class) || fieldType.equals(long.class)
 					|| fieldType.equals(short.class) || fieldType.equals(byte.class)) {
@@ -603,7 +611,7 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 				jedis.hincrBy(cacheKey, field.getName(), Long.parseLong(field.get(t).toString()));
 				n++;
 			}
-			if (fieldType.equals(Float.class) || fieldType.equals(Double.class)
+			else if (fieldType.equals(Float.class) || fieldType.equals(Double.class)
 					|| fieldType.equals(BigDecimal.class)
 					|| fieldType.equals(float.class) || fieldType.equals(double.class)) {
 				logger.info("累加操作:hincrByFloat key:{},field:{},value:{}", cacheKey, field.getName(),field.get(t));
@@ -613,7 +621,7 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 		}
 	}
 	
-	
+	private final SimpleDateFormat fomatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 	/**
 	 * 缓存中的数据增加指定的值(值设置为负数即为减法操作)
 	 * @param jedis redis连接
@@ -652,14 +660,17 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 			}
 			
 			Class<?> fieldType = field.getType();
-			if (fieldType.equals(Integer.class) || fieldType.equals(Long.class)
+			if(fieldType.equals(Date.class)) {
+				jedis.hset(cacheKey, field.getName(), fomatter.format((Date)field.get(t)));
+			}
+			else if (fieldType.equals(Integer.class) || fieldType.equals(Long.class)
 					|| fieldType.equals(Short.class) || fieldType.equals(Byte.class)
 					|| fieldType.equals(int.class) || fieldType.equals(long.class)
 					|| fieldType.equals(short.class) || fieldType.equals(byte.class)) {
 				jedis.hincrBy(cacheKey, field.getName(), Long.parseLong(field.get(t).toString()));
 				n++;
 			}
-			if (fieldType.equals(Float.class) || fieldType.equals(Double.class)
+			else if (fieldType.equals(Float.class) || fieldType.equals(Double.class)
 					|| fieldType.equals(BigDecimal.class)
 					|| fieldType.equals(float.class) || fieldType.equals(double.class)) {
 				jedis.hincrByFloat(cacheKey, field.getName(), Double.parseDouble(field.get(t).toString()));
