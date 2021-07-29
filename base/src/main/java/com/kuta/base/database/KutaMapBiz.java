@@ -13,6 +13,7 @@ import com.kuta.base.cache.JedisUtil;
 import com.kuta.base.exception.KutaIllegalArgumentException;
 import com.kuta.base.exception.KutaRuntimeException;
 import com.kuta.base.util.KutaBeanUtil;
+import com.kuta.base.util.KutaConsoleUtil;
 import com.kuta.base.util.KutaRedisUtil;
 import com.kuta.base.util.KutaUtil;
 
@@ -64,7 +65,7 @@ public abstract class KutaMapBiz<T extends KutaDBEntity, TKey extends Number> ex
 				throw new IllegalArgumentException("请传入JEDIS.KEY格式化参数");
 			}
 			final String cacheKey = cacheName;
-			logger.debug("缓存键:{}", cacheKey);
+//			jedis.hset(cacheKey, map);
 			map.forEach((key,value)->{
 				if(value!=null && !value.equals("null")) {
 					jedis.hset(cacheKey, key, value);
@@ -249,6 +250,7 @@ public abstract class KutaMapBiz<T extends KutaDBEntity, TKey extends Number> ex
 					throw new IllegalArgumentException("请传入JEDIS.KEY格式化参数");
 				}
 				Map<String, String> map = jedis.hgetAll(cacheKey);
+				
 				if (KutaUtil.isEmptyMap(map)) {
 					List<T> list = select(session, param);
 					if(KutaUtil.isEmptyColl(list)) {
