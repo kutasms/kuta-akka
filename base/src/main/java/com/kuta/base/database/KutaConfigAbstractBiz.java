@@ -140,6 +140,7 @@ public abstract class KutaConfigAbstractBiz<T extends KutaDBEntity> {
 	public boolean fullValid(SqlSession session,JedisClient jedis, String key) {
 		Map<String, String> map = getMap(session);
 		jedis.hset(CACHE_KEY, map);
+		jedis.expire(CACHE_KEY, 30 * 60);
 		return map.containsKey(key);
 	}
 	public boolean fullValid(SqlSession session,JedisClient jedis, String key, int expire) {
@@ -152,6 +153,7 @@ public abstract class KutaConfigAbstractBiz<T extends KutaDBEntity> {
 	public void cacheAllToHash(SqlSession session,Transaction jedis) throws Exception {
 		Map<String, String> map = getMap(session);
 		jedis.hset(CACHE_KEY, map);
+		jedis.expire(CACHE_KEY, 30 * 60);
 	}
 
 	public void cacheAllToHash(SqlSession session,Transaction jedis, int expire) throws Exception {
@@ -167,6 +169,7 @@ public abstract class KutaConfigAbstractBiz<T extends KutaDBEntity> {
 		KutaSQLUtil.exec(session -> {
 			Map<String, String> map = getMap(session);
 			jedis.hset(CACHE_KEY, map);
+			jedis.expire(CACHE_KEY, 30 * 60);
 		});
 	}
 	/**
@@ -184,6 +187,7 @@ public abstract class KutaConfigAbstractBiz<T extends KutaDBEntity> {
 		KutaSQLUtil.exec(session -> {
 			Map<String, String> map = getMap(session);
 			jedis.hset(CACHE_KEY, map);
+			jedis.expire(CACHE_KEY, 30 * 60);
 		});
 	}
 	public void cacheAllToHash(Transaction jedis, int expire) throws Exception {
@@ -202,6 +206,7 @@ public abstract class KutaConfigAbstractBiz<T extends KutaDBEntity> {
 	 * */
 	public void dbCache(SqlSession session,JedisClient jedis,Map<String, String> map) {
 		jedis.hset(CACHE_KEY, map);
+		jedis.expire(CACHE_KEY, 30 * 60);
 		update(session,map);
 	}
 	/**
