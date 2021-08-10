@@ -2,7 +2,6 @@ package com.kuta.akka.base.service;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 
@@ -43,7 +42,7 @@ public abstract class KutaClusterNodeElectActor extends KutaActorWithClusterQuar
 			logger.info("创建推举MapKey:{}", electName);
 			electMap.put(electName, new HashMap<String, ElectMessage>());
 		}
-		Random random = new Random();
+//		Random random = new Random();
 		// min:5,max:50 0-45
 //		int seed = random.nextInt((max - min)) + min;
 		ElectMessage electMessage = new ElectMessage();
