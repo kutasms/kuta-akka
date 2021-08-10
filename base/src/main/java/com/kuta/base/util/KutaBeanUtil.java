@@ -136,6 +136,9 @@ public class KutaBeanUtil {
 				}
 				
 				String val = map.get(field.getName());
+				if(val == null) {
+					continue;
+				}
 				if(val.startsWith("\"") && val.endsWith("\"")) {
 					Object ins = JSONObject.parseObject(val,field.getType());
 					field.set(obj, ins);
