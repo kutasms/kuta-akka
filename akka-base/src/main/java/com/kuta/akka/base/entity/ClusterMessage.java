@@ -7,7 +7,7 @@ import akka.actor.ActorRef;
 /**
  * 集群消息，包含用户消息通道和代理
  * */
-public class ClusterMessage extends KutaSerialMessage {
+public class ClusterMessage extends KutaSerialMessage implements Cloneable {
 	/**
 	 * 用户消息通道
 	 * */
@@ -62,4 +62,10 @@ public class ClusterMessage extends KutaSerialMessage {
 	public void setCode(Integer code) {
 		this.code = code;
 	}
+	@Override
+	protected Object clone() throws CloneNotSupportedException {
+		// TODO Auto-generated method stub
+		return super.clone();
+	}
+	
 }
