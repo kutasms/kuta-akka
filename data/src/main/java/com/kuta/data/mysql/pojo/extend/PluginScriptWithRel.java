@@ -1,9 +1,5 @@
 package com.kuta.data.mysql.pojo.extend;
 
-import java.util.Date;
-
-import org.slf4j.LoggerFactory;
-
 import com.kuta.data.mysql.pojo.Script;
 
 public class PluginScriptWithRel extends Script{

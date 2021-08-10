@@ -8,6 +8,7 @@ import org.apache.ibatis.session.SqlSession;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.kuta.base.cache.JedisClient;
+import com.kuta.base.database.DataSessionFactory;
 import com.kuta.base.database.KutaExpireMapBiz;
 import com.kuta.base.database.KutaSQLUtil;
 import com.kuta.base.entity.KutaConstants;
@@ -62,7 +63,7 @@ public class OrganizationBiz extends KutaExpireMapBiz<Organization, Integer> {
 		// TODO Auto-generated method stub
 		return null;
 	}
-	
+	@Deprecated
 	public  Organization getMaster(JedisClient jedis) {
 		String cacheKey = "organization_master";
 		if(jedis.exists(cacheKey)) {
@@ -109,7 +110,24 @@ public class OrganizationBiz extends KutaExpireMapBiz<Organization, Integer> {
 			}
 		}
 	}
-	
+	public static Organization getMaster(DataSessionFactory factory) {
+		String cacheKey = "organization_master";
+		if(factory.getJedis().exists(cacheKey)) {
+			Map<String, String> map = factory.getJedis().hgetAll(cacheKey);
+			return KutaBeanUtil.map2Bean(map, Organization.class);
+		} else {
+			OrganizationExample example = new OrganizationExample();
+			example.createCriteria().andParentOidEqualTo(0);
+			List<Organization> list = factory.getSqlSession().getMapper(OrganizationMapper.class).selectByExample(example);
+			if(KutaUtil.isEmptyColl(list)) {
+				return null;
+			} else {
+				Map<String, String> map = KutaBeanUtil.bean2Map(list.get(0));
+				factory.getJedis().hset(cacheKey, map);
+				return list.get(0);
+			}
+		}
+	}
 	public PageWrapper<Organization> search(SqlSession session, String key, int parentId, int pageNum, int pageSize){
 		OrganizationExample example = new OrganizationExample();
 		Criteria criteria = example.createCriteria();

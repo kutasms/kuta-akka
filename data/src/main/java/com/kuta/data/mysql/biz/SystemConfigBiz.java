@@ -11,6 +11,7 @@ import org.apache.ibatis.session.SqlSession;
 
 import com.alibaba.fastjson.JSONObject;
 import com.kuta.base.cache.JedisClient;
+import com.kuta.base.database.DataSessionFactory;
 import com.kuta.base.database.KutaConfigAbstractBiz;
 import com.kuta.base.database.KutaSQLUtil;
 import com.kuta.base.util.KutaRedisUtil;
@@ -91,6 +92,7 @@ public class SystemConfigBiz extends KutaConfigAbstractBiz<SystemConfig> {
 		}
 		return result;
 	}
+	@Deprecated
 	public String query(String key, SqlSession session, JedisClient jedis) {
 		String result = jedis.hget(CACHE_KEY, key);
 		if (KutaUtil.isEmptyString(result)) {
@@ -109,9 +111,35 @@ public class SystemConfigBiz extends KutaConfigAbstractBiz<SystemConfig> {
 		}
 		return result;
 	}
-
+	public String query(String key, DataSessionFactory f) {
+		String result = f.getJedis().hget(CACHE_KEY, key);
+		if (KutaUtil.isEmptyString(result)) {
+			try {
+				if(fullValid(f, key)) {
+					return query(key, f); 
+				}
+				else {
+					return null;
+				}
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return null;
+			}
+		}
+		return result;
+	}
+	@Deprecated
 	public BigInteger queryBigInteger(String key, SqlSession session, JedisClient jedis) {
 		String result = query(key, session, jedis);
+		if (KutaUtil.isEmptyString(result)) {
+			throw new IllegalArgumentException("未查询到相关的配置");
+		}
+		return new BigInteger(result);
+	}
+	
+	public BigInteger queryBigInteger(String key, DataSessionFactory f) {
+		String result = query(key, f);
 		if (KutaUtil.isEmptyString(result)) {
 			throw new IllegalArgumentException("未查询到相关的配置");
 		}
@@ -125,9 +153,17 @@ public class SystemConfigBiz extends KutaConfigAbstractBiz<SystemConfig> {
 		}
 		return new BigInteger(result);
 	}
-	
+	@Deprecated
 	public Integer queryInt(String key, SqlSession session, JedisClient jedis) {
 		String result = query(key, session, jedis);
+		if (KutaUtil.isEmptyString(result)) {
+			throw new IllegalArgumentException("未查询到相关的配置");
+		}
+		return Integer.parseInt(result);
+	}
+	
+	public Integer queryInt(String key, DataSessionFactory f) {
+		String result = query(key, f);
 		if (KutaUtil.isEmptyString(result)) {
 			throw new IllegalArgumentException("未查询到相关的配置");
 		}
@@ -149,6 +185,13 @@ public class SystemConfigBiz extends KutaConfigAbstractBiz<SystemConfig> {
 		}
 		return Long.parseLong(result);
 	}
+	public Long queryLong(String key, DataSessionFactory f) {
+		String result = query(key, f);
+		if (KutaUtil.isEmptyString(result)) {
+			throw new IllegalArgumentException("未查询到相关的配置");
+		}
+		return Long.parseLong(result);
+	}
 
 	public Long queryLong(String key, JedisClient jedis) {
 		String result = query(key, jedis);
@@ -165,7 +208,14 @@ public class SystemConfigBiz extends KutaConfigAbstractBiz<SystemConfig> {
 
 		return Double.parseDouble(result);
 	}
+	public Double queryDouble(String key, DataSessionFactory f) {
+		String result = query(key, f);
+		if (KutaUtil.isEmptyString(result)) {
+			throw new IllegalArgumentException("未查询到相关的配置");
+		}
 
+		return Double.parseDouble(result);
+	}
 	public Double queryDouble(String key, JedisClient jedis) {
 		String result = query(key, jedis);
 		if (KutaUtil.isEmptyString(result)) {
@@ -182,7 +232,13 @@ public class SystemConfigBiz extends KutaConfigAbstractBiz<SystemConfig> {
 		}
 		return Boolean.parseBoolean(result);
 	}
-
+	public Boolean queryBoolean(String key, DataSessionFactory f) {
+		String result = query(key, f);
+		if (KutaUtil.isEmptyString(result)) {
+			throw new IllegalArgumentException("未查询到相关的配置");
+		}
+		return Boolean.parseBoolean(result);
+	}
 	public Boolean queryBoolean(String key, JedisClient jedis) {
 		String result = query(key, jedis);
 		if (KutaUtil.isEmptyString(result)) {

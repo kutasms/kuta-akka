@@ -18,7 +18,7 @@ import com.kuta.data.mysql.pojo.ScriptExample;
 
 public class ScriptBiz extends KutaExpireMapBiz<Script, Long> {
 
-	private OrganizationBiz organizationBiz = new OrganizationBiz();
+//	private OrganizationBiz organizationBiz = new OrganizationBiz();
 	
 	public ScriptBiz() {
 		super("Script_%s", 30 * 60);
@@ -68,7 +68,7 @@ public class ScriptBiz extends KutaExpireMapBiz<Script, Long> {
 		ScriptExample example = new ScriptExample();
 		List<Integer> oids = new ArrayList<Integer>();
 		if(mergeMaster != null && mergeMaster) {
-			Organization master = organizationBiz.getMaster(jedis);
+			Organization master = OrganizationBiz.getMaster(session,jedis);
 			oids.add(master.getOid());
 		}
 		if(oid!= null && !oids.contains(oid)) {
