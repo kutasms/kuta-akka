@@ -227,6 +227,7 @@ public class JedisClient {
 				Transaction tran = JedisClusterTransactionManager.getTxByKey(new String(key));
 //				logger.info("hincrBy,key:{},field:{},value:{}", key, field,value);
 				tran.hincrBy(key, field, value);
+				logger.debug("hincrBy");
 				return null;
 			}
 //			logger.info("hincrBy,key:{},field:{},value:{}", key, field,value);
