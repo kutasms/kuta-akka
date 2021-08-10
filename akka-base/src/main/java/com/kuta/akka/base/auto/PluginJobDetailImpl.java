@@ -6,8 +6,6 @@ import org.quartz.JobDataMap;
 import org.quartz.JobKey;
 import org.quartz.impl.JobDetailImpl;
 
-import com.kuta.akka.base.KutaActor;
-
 import akka.actor.ActorRef;
 
 public class PluginJobDetailImpl<T extends PluginTaskData> extends JobDetailImpl implements PluginJobDetail<T> {
