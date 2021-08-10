@@ -10,7 +10,6 @@ import com.kuta.base.cache.JedisUtil;
 import com.kuta.base.exception.KutaRuntimeException;
 import com.kuta.base.util.KutaUtil;
 
-import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;
 
 public abstract class KutaJsonBiz<T extends KutaDBEntity,TKey extends Number> extends KutaAbstractBiz<T, TKey>{
@@ -120,6 +119,7 @@ public abstract class KutaJsonBiz<T extends KutaDBEntity,TKey extends Number> ex
 	}
 
 	@Override
+	@Deprecated
 	public T getOne(JSONObject param, JedisClient jedis, Object... args) throws Exception {
 		// TODO Auto-generated method stub
 		String cacheKey = CACHE_KEY;
@@ -147,6 +147,7 @@ public abstract class KutaJsonBiz<T extends KutaDBEntity,TKey extends Number> ex
 	}
 
 	@Override
+	@Deprecated
 	public T getOne(TKey key, JedisClient jedis, Object... args) throws Exception {
 		// TODO Auto-generated method stub
 		String cacheKey = CACHE_KEY;
