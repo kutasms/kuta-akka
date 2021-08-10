@@ -3,14 +3,12 @@ package com.kuta.akka.base;
 import java.time.Duration;
 
 import com.kuta.akka.base.entity.CalcFinishMessage;
-import com.kuta.akka.base.entity.CalcInitMessage;
-import com.kuta.akka.base.entity.CalcUnitCompleted;
 import com.kuta.akka.base.entity.DataScanStartNotice;
-import com.kuta.akka.base.entity.RedisScanResultMessage;
 import com.kuta.akka.base.entity.DistributeMessage;
 import com.kuta.akka.base.entity.ElectCompleted;
 import com.kuta.akka.base.entity.FragmentCalculateCompleted;
 import com.kuta.akka.base.entity.KutaAkkaConstants;
+import com.kuta.akka.base.entity.RedisScanResultMessage;
 import com.kuta.akka.base.entity.RegistrationMessage;
 import com.kuta.akka.base.entity.ScanCompletedMessage;
 import com.kuta.akka.base.entity.ScanStartedMessage;
@@ -33,7 +31,7 @@ public abstract class TaskDistributeActor extends KutaActorWithTimers {
 	/**
 	 * 	目标Actor
 	 * */
-	private ActorRef targetActor;
+	protected ActorRef targetActor;
 	
 	/**
 	 * 	计算器类型
