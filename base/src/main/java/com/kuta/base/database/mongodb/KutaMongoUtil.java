@@ -14,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.parser.Feature;
 import com.alibaba.fastjson.parser.ParserConfig;
 import com.alibaba.fastjson.serializer.SerializeConfig;
 import com.kuta.base.json.BsonLong2JSONDeserializer;
@@ -29,7 +28,6 @@ import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
-import com.mongodb.client.model.Filters;
 
 /**
  * mongodb工具箱
@@ -79,7 +77,7 @@ public class KutaMongoUtil {
 		ServerAddress serverAddress = new ServerAddress(MONGO_HOST, MONGO_PORT);
 		List<ServerAddress> addrs = new ArrayList<ServerAddress>();
 		addrs.add(serverAddress);
-		boolean isCluster = PropertyUtil.getBoolean("mongo", "mongo.cluster.enable");
+//		boolean isCluster = PropertyUtil.getBoolean("mongo", "mongo.cluster.enable");
 		
 		List<MongoCredential> credentials = new ArrayList<MongoCredential>();
 		MongoCredential credential = MongoCredential.createCredential(MONGO_USER, MONGO_DBNM, MONGO_PSWD.toCharArray());
