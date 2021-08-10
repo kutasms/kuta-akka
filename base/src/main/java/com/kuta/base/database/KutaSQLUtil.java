@@ -3,14 +3,12 @@ package com.kuta.base.database;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.function.Function;
 
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.TransactionIsolationLevel;
 
-import com.kuta.base.annotation.IncrIgoneColumn;
 import com.kuta.base.annotation.PrimaryKey;
 import com.kuta.base.util.ThrowingConsumer;
 import com.kuta.base.util.ThrowingFunction;
