@@ -7,12 +7,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-import org.apache.commons.lang3.builder.StandardToStringStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,14 +25,10 @@ import com.kuta.base.util.ThrowingFunction;
 import akka.actor.Scheduler;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.Pipeline;
-import redis.clients.jedis.Response;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.exceptions.JedisDataException;
-import redis.clients.jedis.exceptions.JedisMovedDataException;
-import scala.annotation.meta.param;
 import scala.concurrent.ExecutionContext;
 
 public class JedisUtil {
@@ -829,7 +824,6 @@ public class JedisUtil {
 		JedisClient jedis = null;
 		try {
 			jedis = JedisPoolUtil.getJedis();
-			int res = 0;
 			List<byte[]> list = new ArrayList<>();
 			for (T t : value) {
 				byte[] data = ProtostuffUtil.serialize(t);
