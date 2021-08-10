@@ -4,11 +4,9 @@ import java.util.Map;
 
 import org.apache.ibatis.session.SqlSession;
 
-import com.alibaba.fastjson.JSONObject;
 import com.kuta.base.cache.JedisClient;
 import com.kuta.base.util.KutaRedisUtil;
 
-import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Transaction;
 
 /**
@@ -143,10 +141,16 @@ public abstract class KutaConfigAbstractBiz<T extends KutaDBEntity> {
 		jedis.expire(CACHE_KEY, 30 * 60);
 		return map.containsKey(key);
 	}
-	public boolean fullValid(SqlSession session,JedisClient jedis, String key, int expire) {
-		Map<String, String> map = getMap(session);
-		jedis.hset(CACHE_KEY, map);
-		jedis.expire(CACHE_KEY, expire);
+	public boolean fullValid(DataSessionFactory f, String key) {
+		Map<String, String> map = getMap(f.getSqlSession());
+		f.getJedis().hset(CACHE_KEY, map);
+		f.getJedis().expire(CACHE_KEY, 30 * 60);
+		return map.containsKey(key);
+	}
+	public boolean fullValid(DataSessionFactory f, String key, int expire) {
+		Map<String, String> map = getMap(f.getSqlSession());
+		f.getJedis().hset(CACHE_KEY, map);
+		f.getJedis().expire(CACHE_KEY, expire);
 		return map.containsKey(key);
 	}
 	
