@@ -1,7 +1,5 @@
 package com.kuta.base.util.email;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Map;
 import java.util.Random;
 
@@ -153,29 +151,29 @@ public class AliyunEmailUtil {
         return jsonObject;
     }
     
-    private JSONObject querySendDetails(String bizId,String phoneNum,Date sendDate) throws ClientException {
-    	return querySendDetails(bizId,phoneNum,sendDate, "1");
-    }
-    /**
-     * 查询发送详情
-     */
-    private JSONObject querySendDetails(String bizId,String phoneNum,Date sendDate,String currentPage) throws ClientException {
-        CommonRequest request = new CommonRequest();
-        request.setSysDomain("dysmsapi.aliyuncs.com");
-        request.setSysVersion("2017-05-25");
-        request.setSysAction("QuerySendDetails");
-        // 接收短信的手机号码
-        request.putQueryParameter("PhoneNumber", phoneNum);
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd");
-        // 短信发送日期，支持查询最近30天的记录。格式为yyyyMMdd，例如20191010。
-        request.putQueryParameter("SendDate", formatter.format(sendDate));
-        // 分页记录数量
-        request.putQueryParameter("PageSize", PropertyUtil.getProperty("email", "aliyun.query.pagesize"));
-        // 分页当前页码
-        request.putQueryParameter("CurrentPage", currentPage);
-        // 发送回执ID，即发送流水号。
-        request.putQueryParameter("BizId", bizId);
-        CommonResponse response = client.getCommonResponse(request);
-        return JSONObject.parseObject(response.getData());
-    }
+//    private JSONObject querySendDetails(String bizId,String phoneNum,Date sendDate) throws ClientException {
+//    	return querySendDetails(bizId,phoneNum,sendDate, "1");
+//    }
+//    /**
+//     * 查询发送详情
+//     */
+//    private JSONObject querySendDetails(String bizId,String phoneNum,Date sendDate,String currentPage) throws ClientException {
+//        CommonRequest request = new CommonRequest();
+//        request.setSysDomain("dysmsapi.aliyuncs.com");
+//        request.setSysVersion("2017-05-25");
+//        request.setSysAction("QuerySendDetails");
+//        // 接收短信的手机号码
+//        request.putQueryParameter("PhoneNumber", phoneNum);
+//        SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd");
+//        // 短信发送日期，支持查询最近30天的记录。格式为yyyyMMdd，例如20191010。
+//        request.putQueryParameter("SendDate", formatter.format(sendDate));
+//        // 分页记录数量
+//        request.putQueryParameter("PageSize", PropertyUtil.getProperty("email", "aliyun.query.pagesize"));
+//        // 分页当前页码
+//        request.putQueryParameter("CurrentPage", currentPage);
+//        // 发送回执ID，即发送流水号。
+//        request.putQueryParameter("BizId", bizId);
+//        CommonResponse response = client.getCommonResponse(request);
+//        return JSONObject.parseObject(response.getData());
+//    }
 }

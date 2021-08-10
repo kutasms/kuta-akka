@@ -21,12 +21,13 @@ import sun.misc.BASE64Encoder;
 /**
  * 图片工具
  */
+@SuppressWarnings("restriction")
 public class PictureUtil {
 
 	/**
 	 * 基础宽度750, 多端基本使用此宽度
 	 */
-	private static final Double BASE_WIDTH = 750.00;
+//	private static final Double BASE_WIDTH = 750.00;
 
 	/**
 	 * 导入本地图片到缓冲区

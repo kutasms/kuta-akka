@@ -7,8 +7,6 @@ import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
-import com.aliyuncs.utils.Base64Helper;
-
 /**
  * 加密工具类
  * */

@@ -2,10 +2,8 @@ package com.kuta.base.util;
 
 import com.kuta.base.cache.JedisClient;
 import com.kuta.base.cache.JedisPoolUtil;
-import com.kuta.base.util.MD5Util;
 
 import akka.actor.ActorRef;
-import redis.clients.jedis.Jedis;
 
 /**
  * Player验证工具

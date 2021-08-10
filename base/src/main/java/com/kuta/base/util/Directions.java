@@ -1,7 +1,5 @@
 package com.kuta.base.util;
 
-import java.util.Arrays;
-
 public enum Directions {
 	UP("向上",0),
 	DOWN("向下",1);

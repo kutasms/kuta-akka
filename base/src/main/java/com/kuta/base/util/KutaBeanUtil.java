@@ -5,7 +5,6 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -13,12 +12,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.enterprise.inject.New;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSONObject;
+
+import akka.protobufv3.internal.Value;
 
 /**
  * Java实体对象序列化工具
@@ -68,6 +67,7 @@ public class KutaBeanUtil {
 					continue;
 				}
 				if(field.getName().equals("serialVersionUID")) {
+					logger.debug("dump serialVersionUID");
 					continue;
 				}
 				Type declareType = field.getGenericType();
@@ -136,6 +136,9 @@ public class KutaBeanUtil {
 				}
 				
 				String val = map.get(field.getName());
+				if(val == null || val.equals("null")) {
+					continue;
+				}
 				if(val.startsWith("\"") && val.endsWith("\"")) {
 					Object ins = JSONObject.parseObject(val,field.getType());
 					field.set(obj, ins);

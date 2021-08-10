@@ -1,14 +1,9 @@
 package com.kuta.base.util;
 
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import com.kuta.base.cache.JedisClient;
 import com.kuta.base.cache.JedisPoolUtil;
-
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisCluster;
-import redis.clients.jedis.Transaction;
 
 public class KutaRedisUtil {
 	
