@@ -3,7 +3,6 @@ package com.kuta.base.json;
 import java.lang.reflect.Type;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 
 import com.alibaba.fastjson.parser.DefaultJSONParser;
 import com.alibaba.fastjson.parser.deserializer.ObjectDeserializer;
@@ -41,12 +40,13 @@ public class DateWithMills2JSONDeserializer implements ObjectDeserializer {
 	 * @param fieldName 字段名称
 	 * @return 日期
 	 * */
+	@SuppressWarnings("unchecked")
 	@Override
-	public Date deserialze(DefaultJSONParser parser, Type type, Object fieldName) {
+	public <T> T deserialze(DefaultJSONParser parser, Type type, Object fieldName) {
 		// TODO Auto-generated method stub
 		String str = parser.getLexer().stringVal();
 		try {
-			return formatter.parse(str);
+			return (T) formatter.parse(str);
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

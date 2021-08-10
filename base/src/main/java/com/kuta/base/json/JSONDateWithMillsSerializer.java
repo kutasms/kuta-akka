@@ -3,12 +3,10 @@ package com.kuta.base.json;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 
 import com.alibaba.fastjson.serializer.JSONSerializer;
 import com.alibaba.fastjson.serializer.ObjectSerializer;
 import com.alibaba.fastjson.serializer.SerializeWriter;
-import com.kuta.base.util.KutaTimeUtil;
 
 public class JSONDateWithMillsSerializer implements ObjectSerializer {
 

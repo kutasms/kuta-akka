@@ -8,17 +8,19 @@ import com.alibaba.fastjson.parser.deserializer.ObjectDeserializer;
 
 public class BigDecimalDeserializer implements ObjectDeserializer {
 
-	@Override
-	public BigDecimal deserialze(DefaultJSONParser parser, Type type, Object fieldName) {
-		// TODO Auto-generated method stub
-		
-		return new BigDecimal(parser.getLexer().stringVal());
-	}
+	
 
 	@Override
 	public int getFastMatchToken() {
 		// TODO Auto-generated method stub
 		return 0;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public <T> T deserialze(DefaultJSONParser parser, Type type, Object fieldName) {
+		// TODO Auto-generated method stub
+		return (T) new BigDecimal(parser.getLexer().stringVal());
 	}
 
 }

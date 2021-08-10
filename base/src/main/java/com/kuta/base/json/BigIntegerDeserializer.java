@@ -8,10 +8,11 @@ import com.alibaba.fastjson.parser.deserializer.ObjectDeserializer;
 
 public class BigIntegerDeserializer implements ObjectDeserializer{
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public BigInteger deserialze(DefaultJSONParser parser, Type type, Object fieldName) {
+	public <T> T deserialze(DefaultJSONParser parser, Type type, Object fieldName) {
 		// TODO Auto-generated method stub
-		return new BigInteger(parser.lexer.stringVal());
+		return (T) new BigInteger(parser.lexer.stringVal());
 	}
 
 	@Override
