@@ -8,18 +8,13 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.alibaba.fastjson.JSONObject;
 import com.kuta.base.util.KutaUtil;
-import com.kuta.base.util.ThrowingConsumer;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
-import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.Transaction;
-import redis.clients.jedis.exceptions.JedisMovedDataException;
 import redis.clients.jedis.util.JedisClusterCRC16;
-import redis.clients.jedis.util.SafeEncoder;
 
 public class JedisClusterTransactionManager {
 	
@@ -157,9 +152,10 @@ public class JedisClusterTransactionManager {
      * 提交
      */
     public static void exec() {
-        Map<String,TransactionWrapper> map = (Map<String,TransactionWrapper> )txThreadLocal.get();
+        @SuppressWarnings("unchecked")
+		Map<String,TransactionWrapper> map = (Map<String,TransactionWrapper> )txThreadLocal.get();
         if(KutaUtil.isEmptyMap(map)) {
-//        	logger.info("exec-map empty.");
+        	logger.debug("exec-map empty.");
         	return;
         }
         for(Entry<String,TransactionWrapper> entry:map.entrySet()) {
@@ -173,7 +169,8 @@ public class JedisClusterTransactionManager {
      * 回滚
      */
     public static void discard() {
-        Map<String,TransactionWrapper> map = (Map<String,TransactionWrapper> )txThreadLocal.get();
+        @SuppressWarnings("unchecked")
+		Map<String,TransactionWrapper> map = (Map<String,TransactionWrapper> )txThreadLocal.get();
         
         if(KutaUtil.isEmptyMap(map)) {
 //        	logger.info("exec-map empty.");
@@ -194,7 +191,8 @@ public class JedisClusterTransactionManager {
     public static Transaction getTxByKey(String key) {
         
     	JedisCluster cluster = clusterThreadLocal.get();
-        Map<String, TransactionWrapper> res = (Map<String, TransactionWrapper>)txThreadLocal.get();
+        @SuppressWarnings("unchecked")
+		Map<String, TransactionWrapper> res = (Map<String, TransactionWrapper>)txThreadLocal.get();
 //        logger.info("获取事务对象,key:{},res:{}",key,res == null);
         if(res == null) {
             res = new HashMap<>();
