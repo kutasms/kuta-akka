@@ -5,7 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 /**
  * 网关消息
  * */
-public class GatewayMessage extends ClusterMessage {
+public class GatewayMessage extends ClusterMessage implements Cloneable {
 
 	/**
 	 * 	参数
@@ -43,4 +43,14 @@ public class GatewayMessage extends ClusterMessage {
 		this.protocol = protocol;
 	}
 	
+	public GatewayMessage clone() {
+		try {
+			Object obj = super.clone();
+			return (GatewayMessage) obj;
+		} catch (CloneNotSupportedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+	}
 }
