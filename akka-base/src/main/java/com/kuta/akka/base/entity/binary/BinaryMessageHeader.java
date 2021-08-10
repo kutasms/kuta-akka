@@ -14,7 +14,7 @@ public class BinaryMessageHeader {
 	private boolean isFinal;
 	private Integer sid;
 	private Integer appId;
-	private Integer contentLen;
+//	private Integer contentLen;
 	public Integer getCode() {
 		return code;
 	}
