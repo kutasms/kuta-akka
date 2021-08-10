@@ -93,6 +93,8 @@ public class KutaConstants {
 	
 	public final static String PARAM_CODE = "code";
 	public final static String PARAM_ACTION = "action";
+	public final static String PARAM_CHECKED = "checked";
+	public final static String PARAM_SELECTED = "selected";
 	public final static String PARAM_APP_VERSION = "app_ver";
 	public final static String PARAM_APP_ID = "app_id";
 	public final static String PARAM_DEVICE = "device";
@@ -131,6 +133,7 @@ public class KutaConstants {
 	public final static String PARAM_INDEX = "index";
 	public final static String PARAM_JSON = "json";
 	public final static String PARAM_UID = "uid";
+	public final static String PARAM_CHANNEL_UID = "channel_uid";
 	public final static String PARAM_DISPLAY = "display";
 	public final static String PARAM_TOTAL = "total";
 	public final static String PARAM_DATA = "data";
