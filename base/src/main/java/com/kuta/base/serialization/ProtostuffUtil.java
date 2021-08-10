@@ -17,13 +17,13 @@ import java.util.TreeMap;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+
 import com.kuta.base.exception.KutaIllegalArgumentException;
 import com.kuta.base.util.KutaUtil;
 
 import akka.actor.ActorRef;
 import akka.actor.ExtendedActorSystem;
 import io.protostuff.LinkedBuffer;
-import io.protostuff.ProtobufIOUtil;
 import io.protostuff.ProtostuffIOUtil;
 import io.protostuff.Schema;
 import io.protostuff.runtime.DefaultIdStrategy;
@@ -57,11 +57,13 @@ public class ProtostuffUtil {
 	/**
 	 * 序列化/反序列化包装类 Class 对象
 	 */
+	@SuppressWarnings("rawtypes")
 	private static final Class<ProtostuffObjectWrapper> wrapperClass = ProtostuffObjectWrapper.class;
 
 	/**
 	 * 序列化/反序列化包装类 Schema 对象
 	 */
+	@SuppressWarnings("rawtypes")
 	private static final Schema<ProtostuffObjectWrapper> wrapperSchema = RuntimeSchema.createFrom(wrapperClass);
 
 	/**
@@ -92,7 +94,7 @@ public class ProtostuffUtil {
 	 * @param clazz
 	 *            需要包装的类型 Class 对象
 	 */
-	public static void registerWrapperClass(Class clazz) {
+	public static void registerWrapperClass(Class<?> clazz) {
 		wrapperSet.add(clazz);
 	}
 
@@ -132,6 +134,7 @@ public class ProtostuffUtil {
 		LinkedBuffer buffer = LinkedBuffer.allocate(LinkedBuffer.DEFAULT_BUFFER_SIZE);
 		try {
 			Object serializeObject = obj;
+			@SuppressWarnings("rawtypes")
 			Schema schema = wrapperSchema;
 			if (!wrapperSet.contains(clazz)) {
 				schema = getSchema(clazz);
@@ -200,7 +203,6 @@ public class ProtostuffUtil {
 	 * @throws IllegalStateException
 	 *             发生异常时抛出
 	 */
-	@SuppressWarnings("unchecked")
 	public static <T> T deserialize(byte[] data, Class<T> clazz) throws IllegalStateException {
 		try {
 			if (!wrapperSet.contains(clazz)) {
@@ -229,17 +231,19 @@ public class ProtostuffUtil {
 	 * @throws IllegalStateException
 	 *             发生异常时抛出
 	 */
-	public static Object deserializeWithoutT(byte[] data, Class clazz) {
+	public static Object deserializeWithoutT(byte[] data, @SuppressWarnings("rawtypes") Class clazz) {
 		try {
 			// 判断是否是不可序列化对象，若是不能序列化对象，将对象进行包装
 			if (wrapperSet.contains(clazz)) {
 				// SerializeDeserializeWrapper<T> wrapper =
 				// SerializeDeserializeWrapper.builder(clazz.newInstance());
+				@SuppressWarnings("rawtypes")
 				ProtostuffObjectWrapper wrapper = new ProtostuffObjectWrapper();
 				ProtostuffIOUtil.mergeFrom(data, wrapper, wrapperSchema);
 				return wrapper.getData();
 			} else {
 				Object message = clazz.newInstance();
+				@SuppressWarnings("unchecked")
 				Schema<Object> schema = getSchema(clazz);
 				ProtostuffIOUtil.mergeFrom(data, message, schema);
 				return message;
@@ -308,7 +312,6 @@ public class ProtostuffUtil {
 	 * @throws KutaIllegalArgumentException
 	 *             参数错误时抛出
 	 */
-	@SuppressWarnings("unchecked")
 	public static <T> List<T> deserializeList(byte[] data, Class<T> targetClass)
 			throws IOException, KutaIllegalArgumentException {
 		if (data == null || data.length == 0) {

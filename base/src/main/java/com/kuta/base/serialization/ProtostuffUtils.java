@@ -28,12 +28,14 @@ public class ProtostuffUtils {
     /**
      * 序列化/反序列化包装类 Class 对象
      */
-    private static final Class<ProtostuffObjectWrapper> WRAPPER_CLASS = ProtostuffObjectWrapper.class;
+    @SuppressWarnings("rawtypes")
+	private static final Class<ProtostuffObjectWrapper> WRAPPER_CLASS = ProtostuffObjectWrapper.class;
 
     /**
      * 序列化/反序列化包装类 Schema 对象
      */
-    private static final Schema<ProtostuffObjectWrapper> WRAPPER_SCHEMA = RuntimeSchema.createFrom(WRAPPER_CLASS);
+    @SuppressWarnings("rawtypes")
+	private static final Schema<ProtostuffObjectWrapper> WRAPPER_SCHEMA = RuntimeSchema.createFrom(WRAPPER_CLASS);
 
     /**
      * 缓存对象及对象schema信息集合
@@ -66,7 +68,7 @@ public class ProtostuffUtils {
      *
      * @param clazz 需要包装的类型 Class 对象
      */
-    public static void registerWrapperClass(Class clazz) {
+    public static void registerWrapperClass(@SuppressWarnings("rawtypes") Class clazz) {
         WRAPPER_SET.add(clazz);
     }
 
@@ -101,7 +103,8 @@ public class ProtostuffUtils {
         LinkedBuffer buffer = LinkedBuffer.allocate(LinkedBuffer.DEFAULT_BUFFER_SIZE);
         try {
             Object serializeObject = obj;
-            Schema schema = WRAPPER_SCHEMA;
+            @SuppressWarnings("rawtypes")
+			Schema schema = WRAPPER_SCHEMA;
             if (!WRAPPER_SET.contains(clazz)) {
                 schema = getSchema(clazz);
             } else {
