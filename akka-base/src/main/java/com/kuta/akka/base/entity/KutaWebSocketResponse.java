@@ -1,11 +1,6 @@
 package com.kuta.akka.base.entity;
 
 import java.io.Serializable;
-import java.util.List;
-
-import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.annotation.JSONField;
-import com.alibaba.fastjson.serializer.SimplePropertyPreFilter;
 
 /**
  * WebSocket回复消息
