@@ -6,16 +6,13 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.List;
 
 import com.kuta.base.util.KutaBeanUtil;
 import com.kuta.base.util.KutaStringUtil;
-import com.kuta.base.util.KutaUtil;
 
 /**
  * MYSQL数据导入REDIS的SQL文件生成工具
