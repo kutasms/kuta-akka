@@ -9,8 +9,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.kuta.akka.base.entity.RegistrationMessage;
 import com.kuta.base.collection.KutaHashSet;
 import com.kuta.data.akka.pojo.AkkaNodeInfo;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
 
 import akka.cluster.Cluster;
 import akka.cluster.ClusterEvent;
@@ -19,7 +17,6 @@ import akka.cluster.ClusterEvent.MemberRemoved;
 import akka.cluster.ClusterEvent.MemberUp;
 import akka.cluster.ClusterEvent.UnreachableMember;
 import akka.japi.pf.ReceiveBuilder;
-import akka.routing.FromConfig;
 
 
 /**
