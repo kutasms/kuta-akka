@@ -1,7 +1,6 @@
 package com.kuta.akka.base.util;
 
 import com.kuta.akka.base.entity.DBExecRequestMessage;
-import com.kuta.base.exception.KutaError;
 import com.kuta.base.exception.KutaRuntimeException;
 import com.kuta.base.util.KutaUtil;
 
