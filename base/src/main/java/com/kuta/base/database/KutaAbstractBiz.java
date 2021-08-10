@@ -1,6 +1,5 @@
 package com.kuta.base.database;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.math.BigDecimal;
@@ -8,14 +7,12 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.IntStream;
 
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSONObject;
-import com.kuta.base.annotation.PrimaryKey;
 import com.kuta.base.cache.JedisClient;
 import com.kuta.base.exception.KutaError;
 import com.kuta.base.exception.KutaIllegalArgumentException;
@@ -25,10 +22,7 @@ import com.kuta.base.util.KutaRedisUtil;
 import com.kuta.base.util.KutaTimeUtil;
 import com.kuta.base.util.KutaUtil;
 
-import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;
-import redis.clients.jedis.Response;
-import redis.clients.jedis.Transaction;
 
 /**
  * <b>抽象数据处理器，包括对redis，mysql数据的处理</b>
@@ -99,10 +93,28 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 	 * @return 受影响的数据行数
 	 * @throws KutaRuntimeException KSF运行时异常
 	 * */
+	@Deprecated
 	public int remove(SqlSession session,JedisClient jedis, TKey key, Object... args) throws KutaRuntimeException {
 		int result = this.remove(session, key);
 		String cacheKey = formatCacheKey(args);
 		jedis.del(cacheKey);
+		return result;
+	}
+	
+	/**
+	 * <p>删除缓存和数据库中的数据</p>
+	 * <p>先删除数据库中的数据并返回受影响的数据行数</p>
+	 * <p>由于mybatis批量删除可能不会返回受影响行数，所以直接删除缓存内容</p>
+	 * @param factory 数据session工厂
+	 * @param key 数据主键值
+	 * @param args 缓存键格式化参数
+	 * @return 受影响的数据行数
+	 * @throws KutaRuntimeException KSF运行时异常
+	 * */
+	public int remove(DataSessionFactory factory, TKey key, Object... args) throws KutaRuntimeException {
+		int result = this.remove(factory.getSqlSession(), key);
+		String cacheKey = formatCacheKey(args);
+		factory.getJedis().del(cacheKey);
 		return result;
 	}
 	
@@ -144,10 +156,28 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 	/**
 	 * <p>删除缓存和数据库中的数据</p>
 	 * <p>先删除数据库中的数据并返回受影响的数据行数</p>
+	 * <p>由于mybatis批量删除可能不会返回受影响行数，所以直接删除缓存内容</p>
+	 * @param factory 数据Session工厂
+	 * @param jedis redis连接
 	 * @param key 数据主键值
 	 * @return 受影响的数据行数
 	 * @throws KutaRuntimeException KSF运行时异常
 	 * */
+	public int remove(DataSessionFactory factory, TKey key) throws KutaRuntimeException {
+		int result = this.remove(factory.getSqlSession(), key);
+		String cacheKey = formatCacheKeyByTKey(key);
+		factory.getJedis().del(cacheKey);
+		return result;
+	}
+	
+	/**
+	 * <p>删除缓存和数据库中的数据</p>
+	 * <p>先删除数据库中的数据并返回受影响的数据行数</p>
+	 * @param key 数据主键值
+	 * @return 受影响的数据行数
+	 * @throws KutaRuntimeException KSF运行时异常
+	 * */
+	@Deprecated
 	public int remove(TKey key) throws Exception {
 		return KutaSQLUtil.exec(session->{
 			return KutaRedisUtil.exec(jedis->{
@@ -158,7 +188,7 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 			});
 		});
 	}
-	
+
 	/**
 	 * 抽象的删除数据方法，在实现类中实现此方法以支持从数据库中删除数据
 	 * @param session 数据库连接
@@ -286,6 +316,18 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 	 * */
 	public abstract T getOne(SqlSession session,TKey key, JedisClient jedis, String cacheKey) throws Exception;
 	/**
+	 * <p>获取一个数据对象</p>
+	 * <p>先从redis中获取，如果找不到则从数据库中获取</p>
+	 * <p>如果成功从数据库中加载数据，则将数据加入缓存，然后返回该数据</p>
+	 * @param factory 数据session工厂
+	 * @param key 数据主键，根据此主键查询
+	 * @param cacheKey 缓存键
+	 * @return T 获取的数据对象
+	 * @throws Exception 内部异常
+	 * */
+	public abstract T getOne(DataSessionFactory factory,TKey key, String cacheKey) throws Exception;
+	public abstract T getOne(DataSessionFactory factory,TKey key, Object... args) throws Exception;
+	/**
 	 * <p>获取一个数据对象,数据库连接和redis连接都从外部传递</p>
 	 * <p>先从redis中获取，如果找不到则从数据库中获取</p>
 	 * <p>如果成功从数据库中加载数据，则将数据加入缓存，然后返回该数据</p>
@@ -364,11 +406,22 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 	 * @return T 获取的数据对象
 	 * @throws Exception 内部异常
 	 * */
+	@Deprecated
 	public T getOneByKey(SqlSession session, JedisClient jedis, TKey key) throws Exception {
 		String cacheKey = formatCacheKeyByTKey(key);
 		return getOne(session, key, jedis, cacheKey);
 	}
-	
+	/**
+	 * 使用base64加密的数据主键查询一条数据
+	 * @param factory 数据session工厂
+	 * @param key 数据主键，根据此主键查询
+	 * @return T 获取的数据对象
+	 * @throws Exception 内部异常
+	 * */
+	public T getOneByKey(DataSessionFactory factory, TKey key) throws Exception {
+		String cacheKey = formatCacheKeyByTKey(key);
+		return getOne(factory, key, cacheKey);
+	}
 	/**
 	 * 将数据主键以base64作为field写入缓存，并写入数据库
 	 * @param session 数据库连接
@@ -391,6 +444,7 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 	 * @return 受影响的数据行数
 	 * @throws Exception 内部异常
 	 * */
+	@Deprecated
 	public int dbCacheWithKey(SqlSession session,JedisClient jedis,T entity) throws Exception {
 		TKey key = getKey(entity);
 		if(key == null) {
@@ -398,6 +452,21 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 		}
 		String cacheKey = formatCacheKeyByTKey(getKey(entity));
 		return dbCache(session,jedis,entity, cacheKey);
+	}
+	/**
+	 * 将数据主键以base64作为field写入缓存，并写入数据库
+	 * @param factory 数据Session工厂,用于生成SqlSession和JedisClient
+	 * @param entity 数据实体
+	 * @return 受影响的数据行数
+	 * @throws Exception 内部异常
+	 * */
+	public int dbCacheWithKey(DataSessionFactory factory,T entity) throws Exception {
+		TKey key = getKey(entity);
+		if(key == null) {
+			throw new KutaIllegalArgumentException("entity.key is null.");
+		}
+		String cacheKey = formatCacheKeyByTKey(getKey(entity));
+		return dbCache(factory, entity, cacheKey);
 	}
 	
 	/**
@@ -407,6 +476,7 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 	 * @return 受影响的数据行数
 	 * @throws Exception 内部异常
 	 * */
+	@Deprecated
 	public int dbCache(T entity, Object... args) throws Exception {
 		int result = KutaSQLUtil.exec(x -> {
 			return update(x, entity);
@@ -424,6 +494,7 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 	 * @return 受影响的数据行数
 	 * @throws Exception 内部异常
 	 * */
+	@Deprecated
 	public int dbCache(SqlSession session,JedisClient jedis,T entity, String cacheKey) throws Exception {
 		TKey key = getKey(entity);
 		if(key == null) {
@@ -431,6 +502,23 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 		}
 		int result = update(session, entity);
 		cache(entity,jedis, cacheKey);
+		return result;
+	}
+	/**
+	 * 将数据写入缓存，并写入数据库
+	 * @param factory 数据session工厂
+	 * @param entity 数据实体
+	 * @param cacheKey 已格式化的缓存键
+	 * @return 受影响的数据行数
+	 * @throws Exception 内部异常
+	 * */
+	public int dbCache(DataSessionFactory factory,T entity, String cacheKey) throws Exception {
+		TKey key = getKey(entity);
+		if(key == null) {
+			throw new KutaIllegalArgumentException("请设置实体的主键");
+		}
+		int result = update(factory.getSqlSession(), entity);
+		cache(entity,factory.getJedis(), cacheKey);
 		return result;
 	}
 	/**
@@ -442,9 +530,22 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 	 * @return 受影响的数据行数
 	 * @throws Exception 内部异常
 	 * */
+	@Deprecated
 	public int dbCacheWithArgs(SqlSession session,JedisClient jedis,T entity,Object... args) throws Exception {
 		String cacheKey = formatCacheKey(args);
 		return dbCache(session,jedis,entity,cacheKey);
+	}
+	/**
+	 * 将数据写入缓存，并写入数据库
+	 * @param session 数据session工厂
+	 * @param entity 数据实体
+	 * @param args 缓存参数集
+	 * @return 受影响的数据行数
+	 * @throws Exception 内部异常
+	 * */
+	public int dbCacheWithArgs(DataSessionFactory factory,T entity,Object... args) throws Exception {
+		String cacheKey = formatCacheKey(args);
+		return dbCache(factory, entity, cacheKey);
 	}
 	/**
 	 * 插入数据至数据库并将数据缓存
@@ -453,6 +554,7 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 	 * @return 受影响的数据行数
 	 * @throws Exception 内部异常
 	 * */
+	@Deprecated
 	public int insertCache(T entity, Object... args) throws Exception {
 		int result = KutaSQLUtil.exec(x -> {
 			return insert(x, entity);
@@ -470,9 +572,23 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 	 * @return 受影响的数据行数
 	 * @throws Exception 内部异常
 	 * */
+	@Deprecated
 	public int insertCache(SqlSession session,JedisClient jedis, T entity, Object... args) throws Exception {
 		int result = insert(session, entity);
 		cache(entity,jedis,args);
+		return result;
+	}
+	/**
+	 * 插入数据至数据库并将数据缓存(外部传入数据库和缓存连接)
+	 * @param factory 数据session工厂
+	 * @param entity 数据实体 
+	 * @param args 缓存键格式化参数
+	 * @return 受影响的数据行数
+	 * @throws Exception 内部异常
+	 * */
+	public int insertCache(DataSessionFactory factory, T entity, Object... args) throws Exception {
+		int result = insert(factory.getSqlSession(), entity);
+		cache(entity,factory.getJedis(),args);
 		return result;
 	}
 	/**
@@ -483,13 +599,24 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 	 * @return 受影响的数据行数
 	 * @throws Exception 内部异常
 	 * */
+	@Deprecated
 	public int insertCache(SqlSession session,JedisClient jedis, T entity) throws Exception {
 		int result = insert(session, entity);
 		cache(entity,jedis, formatCacheKeyByTKey(getKey(entity)));
 		return result;
 	}
-	
-	
+	/**
+	 * 插入数据至数据库并将数据缓存(外部传入数据库和缓存连接)
+	 * @param factory 数据session工厂
+	 * @param entity 数据实体 
+	 * @return 受影响的数据行数
+	 * @throws Exception 内部异常
+	 * */
+	public int insertCache(DataSessionFactory factory, T entity) throws Exception {
+		int result = insert(factory.getSqlSession(), entity);
+		cache(entity,factory.getJedis(), formatCacheKeyByTKey(getKey(entity)));
+		return result;
+	}
 	/**
 	 * 使用json键值对查询数据
 	 * @param param json键值对(当使用field无法从redis中查询数据时使用此条件从数据库中加载数据)
@@ -498,6 +625,7 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 	 * @return 查询结果
 	 * @throws Exception 内部异常
 	 * */
+	@Deprecated
 	public String query(JSONObject param, String field, Object... keyArgs) throws Exception {
 		return KutaRedisUtil.exec(jedis -> {
 			String cacheKey = CACHE_KEY;
@@ -550,12 +678,35 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 		return val;
 	}
 	/**
+	 * 使用数据主键查询数据
+	 * @param factory 数据session工厂
+	 * @param field 查询键
+	 * @param key 数据主键值
+	 * @return 查询结果
+	 * @throws Exception 内部异常
+	 * */
+	public String queryByKey(DataSessionFactory factory,String field, TKey key) throws Exception {
+		String cacheKey = formatCacheKeyByTKey(key);
+		String val = factory.getJedis().hget(cacheKey, field);
+		if(KutaUtil.isEmptyString(val)) {
+			T t = get(factory.getSqlSession(), key);
+			if(KutaUtil.isValueNull(t)) {
+				return null;
+			}
+			cache(t, factory.getJedis(), cacheKey);
+			return queryByKey(factory,field,key);
+		}
+		return val;
+	}
+	/**
 	 * 使用数据主键查询数据(内部创建数据库和redis连接)
 	 * @param field 查询键
 	 * @param key 数据主键值
 	 * @return 查询结果
 	 * @throws Exception 内部异常
 	 * */
+	@SuppressWarnings("deprecation")
+	@Deprecated
 	public String queryByKey(String field, TKey key) throws Exception {
 		return KutaRedisUtil.exec(jedis->{
 			return KutaSQLUtil.exec(session->{
@@ -584,7 +735,6 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 		if (!KutaUtil.isValueNull(args)) {
 			cacheKey = formatCacheKey(args);
 		}
-		int n = 0;
 		for (Field field : fields) {
 			field.setAccessible(true);
 			Object fieldObj = field.get(t);
@@ -600,23 +750,20 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 			Class<?> fieldType = field.getType();
 			if(fieldType.equals(Date.class)) {
 				String date = KutaTimeUtil.formatWithMill((Date)field.get(t));
-				logger.info("hset date:{}", date);
 				jedis.hset(cacheKey, field.getName(), date);
 			}
 			else if (fieldType.equals(Integer.class) || fieldType.equals(Long.class)
 					|| fieldType.equals(Short.class) || fieldType.equals(Byte.class)
 					|| fieldType.equals(int.class) || fieldType.equals(long.class)
 					|| fieldType.equals(short.class) || fieldType.equals(byte.class)) {
-				logger.info("累加操作: hincrBy key:{},field:{},value:{}", cacheKey, field.getName(),field.get(t));
+				logger.debug("累加操作: hincrBy key:{},field:{},value:{}", cacheKey, field.getName(),field.get(t));
 				jedis.hincrBy(cacheKey, field.getName(), Long.parseLong(field.get(t).toString()));
-				n++;
 			}
 			else if (fieldType.equals(Float.class) || fieldType.equals(Double.class)
 					|| fieldType.equals(BigDecimal.class)
 					|| fieldType.equals(float.class) || fieldType.equals(double.class)) {
-				logger.info("累加操作:hincrByFloat key:{},field:{},value:{}", cacheKey, field.getName(),field.get(t));
+				logger.debug("累加操作:hincrByFloat key:{},field:{},value:{}", cacheKey, field.getName(),field.get(t));
 				jedis.hincrByFloat(cacheKey, field.getName(), Double.parseDouble(field.get(t).toString()));
-				n++;
 			}
 		}
 	}
@@ -645,7 +792,6 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 				cacheKey = formatCacheKey(KutaUtil.intToBase64(key.intValue()));
 			}
 		}
-		int n = 0;
 		for (Field field : fields) {
 			field.setAccessible(true);
 			Object fieldObj = field.get(t);
@@ -668,13 +814,11 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 					|| fieldType.equals(int.class) || fieldType.equals(long.class)
 					|| fieldType.equals(short.class) || fieldType.equals(byte.class)) {
 				jedis.hincrBy(cacheKey, field.getName(), Long.parseLong(field.get(t).toString()));
-				n++;
 			}
 			else if (fieldType.equals(Float.class) || fieldType.equals(Double.class)
 					|| fieldType.equals(BigDecimal.class)
 					|| fieldType.equals(float.class) || fieldType.equals(double.class)) {
 				jedis.hincrByFloat(cacheKey, field.getName(), Double.parseDouble(field.get(t).toString()));
-				n++;
 			}
 		}
 	}

@@ -4,8 +4,6 @@ import java.io.Serializable;
 
 import org.quartz.JobDetail;
 
-import com.kuta.akka.base.KutaActor;
-
 import akka.actor.ActorRef;
 
 public interface PluginJobDetail<T extends PluginTaskData> extends JobDetail,Cloneable, Serializable {

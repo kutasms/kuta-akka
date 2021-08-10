@@ -6,21 +6,14 @@ import java.util.Map;
 import org.apache.ibatis.session.SqlSession;
 
 import com.alibaba.fastjson.JSONObject;
-import com.kuta.base.annotation.PrimaryKey;
 import com.kuta.base.cache.JedisClient;
-import com.kuta.base.cache.JedisPoolUtil;
-import com.kuta.base.cache.JedisUtil;
 import com.kuta.base.exception.KutaIllegalArgumentException;
 import com.kuta.base.exception.KutaRuntimeException;
 import com.kuta.base.util.KutaBeanUtil;
-import com.kuta.base.util.KutaConsoleUtil;
 import com.kuta.base.util.KutaRedisUtil;
 import com.kuta.base.util.KutaUtil;
 
-import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;
-import redis.clients.jedis.Response;
-import redis.clients.jedis.Transaction;
 
 public abstract class KutaMapBiz<T extends KutaDBEntity, TKey extends Number> extends KutaAbstractBiz<T, TKey>{
 
@@ -30,6 +23,8 @@ public abstract class KutaMapBiz<T extends KutaDBEntity, TKey extends Number> ex
 		super(cacheName);
 		// TODO Auto-generated constructor stub
 	}
+
+	
 
 	@Override
 	public void cache(T ins, Pipeline pipe, Object... args) throws KutaRuntimeException {
@@ -190,6 +185,7 @@ public abstract class KutaMapBiz<T extends KutaDBEntity, TKey extends Number> ex
 	}
 	
 	@Override
+	@Deprecated
 	public T getOne(TKey key, JedisClient jedis, String cacheKey) throws Exception {
 		// TODO Auto-generated method stub
 
@@ -213,6 +209,7 @@ public abstract class KutaMapBiz<T extends KutaDBEntity, TKey extends Number> ex
 	
 	
 	@Override
+	@Deprecated
 	public T getOne(JSONObject param, JedisClient jedis, Object... args) throws Exception {
 		// TODO Auto-generated method stub
 		String cacheKey = CACHE_KEY;
@@ -240,6 +237,7 @@ public abstract class KutaMapBiz<T extends KutaDBEntity, TKey extends Number> ex
 		return KutaBeanUtil.map2Bean(map, entityClazz);
 	}
 	@Override
+	@Deprecated
 	public T getOne(JSONObject param,SqlSession session, JedisClient jedis, Object... args) throws Exception{
 		// TODO Auto-generated method stub
 				String cacheKey = CACHE_KEY;
@@ -262,6 +260,7 @@ public abstract class KutaMapBiz<T extends KutaDBEntity, TKey extends Number> ex
 				return KutaBeanUtil.map2Bean(map, entityClazz);
 	}
 	@Override
+	@Deprecated
 	public T getOne(TKey key, SqlSession session, JedisClient jedis, Object... args) throws Exception {
 		// TODO Auto-generated method stub
 				String cacheKey = CACHE_KEY;
@@ -282,7 +281,11 @@ public abstract class KutaMapBiz<T extends KutaDBEntity, TKey extends Number> ex
 				}
 				return KutaBeanUtil.map2Bean(map, entityClazz);
 	}
+	
+	
+	
 	@Override
+	@Deprecated
 	public T getOne(TKey key, JedisClient jedis, Object... args) throws Exception {
 		// TODO Auto-generated method stub
 		String cacheKey = CACHE_KEY;
@@ -309,7 +312,48 @@ public abstract class KutaMapBiz<T extends KutaDBEntity, TKey extends Number> ex
 		}
 		return KutaBeanUtil.map2Bean(map, entityClazz);
 	}
+	@Override
+	public T getOne(DataSessionFactory factory, TKey key, String cacheKey) throws Exception {
+		// TODO Auto-generated method stub
+		Map<String, String> map = factory.getJedis().hgetAll(cacheKey);
+		if (KutaUtil.isEmptyMap(map)) {
+				T obj = get(factory.getSqlSession(), key);
+				if(KutaUtil.isValueNull(obj)) {
+					return null;
+				}
+				cache(obj, factory.getJedis(), cacheKey);
+				return obj;
+		}
+		return KutaBeanUtil.map2Bean(map, entityClazz);
+	}
 
+
+
+	@Override
+	public T getOne(DataSessionFactory factory, TKey key, Object... args) throws Exception {
+		// TODO Auto-generated method stub
+		String cacheKey = CACHE_KEY;
+		if(!KutaUtil.isValueNull(args)) {
+			cacheKey = formatCacheKey(args);
+		}
+		else {
+			throw new IllegalArgumentException("请传入JEDIS.KEY格式化参数");
+		}
+		Map<String, String> map = factory.getJedis().hgetAll(cacheKey);
+		if (KutaUtil.isEmptyMap(map)) {
+			T ins = get(factory.getSqlSession(), key);
+			if(KutaUtil.isValueNull(ins)) {
+				return null;
+			} 
+			cache(ins, factory.getJedis(), args);
+			return ins;
+		}
+		return KutaBeanUtil.map2Bean(map, entityClazz);
+	}
+
+	
+
+	
 	
 	
 }
