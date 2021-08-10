@@ -4,9 +4,6 @@ import org.apache.ibatis.session.SqlSession;
 
 import com.kuta.base.cache.JedisClient;
 
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.Transaction;
-
 /**
  * 附带原子增加功能的数据处理器
  * */
