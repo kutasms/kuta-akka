@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
+import redis.clients.jedis.Response;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.Transaction;
@@ -98,6 +99,22 @@ public class JedisClient {
 		}
 		return jedis.set(key,value);
 	}
+	
+	public Long incr(String key) {
+		if(JedisPoolUtil.useCluster()) {
+			if(txOpened) {
+				Response<Long> rsp = JedisClusterTransactionManager.incr(key);
+				return rsp.get();
+			}
+			return cluster.incr(key);
+		}
+		if(txOpened) {
+			Response<Long> rsp = transaction.incr(key);
+			return rsp.get();
+		}
+		return jedis.incr(key);
+	}
+	
 	public String set(byte[] key, byte[] value) {
 		if(JedisPoolUtil.useCluster()) {
 			if(txOpened) {
@@ -143,21 +160,6 @@ public class JedisClient {
 			return null;
 		}
 		return jedis.setex(key, seconds, value);
-	}
-	public Long incr(String key) {
-		if(JedisPoolUtil.useCluster()) {
-			if(txOpened) {
-				Transaction tran = JedisClusterTransactionManager.getTxByKey(new String(key));
-				tran.incr(key);
-				return null;
-			}
-			return cluster.incr(key);
-		}
-		if(txOpened) {
-			transaction.incr(key);
-			return null;
-		}
-		return jedis.incr(key);
 	}
 	public Long incrBy(String key, long increment) {
 		if(JedisPoolUtil.useCluster()) {
