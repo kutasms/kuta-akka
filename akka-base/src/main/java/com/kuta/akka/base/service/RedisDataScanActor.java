@@ -94,6 +94,7 @@ public class RedisDataScanActor extends KutaActor {
 			logger.info("收到{}Key扫描请求...", msg.getName());
 			this.name = msg.getName();
 			this.pattern = msg.getPattern();
+			logger.info("通知数据扫描已经开始...");
 			ScanStartedMessage scanStartedMessage = new ScanStartedMessage();
 			scanStartedMessage.setName(msg.getName());
 			broadcastRouter.tell(scanStartedMessage, self());
