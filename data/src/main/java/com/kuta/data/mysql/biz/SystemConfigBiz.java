@@ -28,6 +28,7 @@ public class SystemConfigBiz extends KutaConfigAbstractBiz<SystemConfig> {
 		super("system-config");
 		// TODO Auto-generated constructor stub
 	}
+	
 
 	@Override
 	protected String getJson(SqlSession session) {
