@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSONObject;
 import com.kuta.base.cache.JedisClient;
+import com.kuta.base.common.KutaCommonSettings;
 import com.kuta.base.exception.KutaError;
 import com.kuta.base.exception.KutaIllegalArgumentException;
 import com.kuta.base.exception.KutaRuntimeException;
@@ -50,13 +51,14 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 	 * */
 	private final Class<TKey> fieldClazz;
 
+	
 	/**
 	 * 构造函数
 	 * @param cacheKey 缓存键
 	 * */
 	@SuppressWarnings("unchecked")
 	public KutaAbstractBiz(String cacheKey) {
-		this.CACHE_KEY = cacheKey;
+		this.CACHE_KEY = String.format("%s_%s", KutaCommonSettings.getCacheKeyPrefix(),cacheKey);
 		this.entityClazz = (Class<T>) ((ParameterizedType) this.getClass().getGenericSuperclass())
 				.getActualTypeArguments()[0];
 		
@@ -64,6 +66,7 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 				.getActualTypeArguments()[1];
 	}
 
+	
 	/**
 	 * 使用指定的参数集合格式化缓存键
 	 * @param args 缓存键格式化参数
@@ -695,6 +698,33 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 			}
 			cache(t, factory.getJedis(), cacheKey);
 			return queryByKey(factory,field,key);
+		}
+		return val;
+	}
+	public String queryByKeyArgs(DataSessionFactory factory,String field,TKey key, Object... args) throws Exception {
+		String cacheKey = formatCacheKey(args);
+		String val = factory.getJedis().hget(cacheKey, field);
+		if(KutaUtil.isEmptyString(val)) {
+			T t = get(factory.getSqlSession(), key);
+			if(KutaUtil.isValueNull(t)) {
+				return null;
+			}
+			cache(t, factory.getJedis(), cacheKey);
+			return queryByKeyArgs(factory, field, key, args);
+		}
+		return val;
+	}
+	@Deprecated
+	public String queryByKeyArgs(SqlSession session, JedisClient jedis,String field,TKey key, Object... args) throws Exception {
+		String cacheKey = formatCacheKey(args);
+		String val = jedis.hget(cacheKey, field);
+		if(KutaUtil.isEmptyString(val)) {
+			T t = get(session, key);
+			if(KutaUtil.isValueNull(t)) {
+				return null;
+			}
+			cache(t, jedis, cacheKey);
+			return queryByKeyArgs(session,jedis,field,key,args);
 		}
 		return val;
 	}
