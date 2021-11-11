@@ -17,14 +17,14 @@ public class PlayerVerifyUtil {
 	 * @param uid actor编号
 	 * @return true:是玩家自己的操作 false:非法操作
 	 * */
-	public static boolean self(JedisClient jedis, Long pid, int uid) {
+	public static boolean self(JedisClient jedis, int pid, int uid) {
 		String md5 = KutaUtil.intToBase64(uid);
 		String val = jedis.hget("map_player_channel", md5);
 		if(val == null) {
 			System.out.println("未查到相关链接的映射信息");
 			return false;
 		}
-		if(val.equals(KutaUtil.intToBase64(pid.intValue()))) {
+		if(val.equals(KutaUtil.intToBase64(pid))) {
 			return true;
 		}
 		return false;
@@ -36,7 +36,7 @@ public class PlayerVerifyUtil {
 	 * @return true:是玩家自己的操作 false:非法操作
 	 * @throws Exception 
 	 * */
-	public static boolean self(Long pid, ActorRef actorRef) {
+	public static boolean self(int pid, ActorRef actorRef) {
 		try {
 			return KutaRedisUtil.exec(jedis->{
 				return self(jedis, pid, actorRef.path().uid());
@@ -54,7 +54,7 @@ public class PlayerVerifyUtil {
 	 * @return true:是玩家自己的操作 false:非法操作
 	 * @throws Exception 
 	 * */
-	public static boolean self(Long pid, int uid) throws Exception {
+	public static boolean self(int pid, int uid) throws Exception {
 		return KutaRedisUtil.exec(jedis->{
 			jedis = JedisPoolUtil.getJedis();
 			return self(jedis, pid, uid);
