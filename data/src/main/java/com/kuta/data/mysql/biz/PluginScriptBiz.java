@@ -19,7 +19,6 @@ public class PluginScriptBiz  extends KutaExpireMapBiz<PluginScriptRel, PluginSc
 		super("PluginScript_%s_%s", 30 * 60);
 		// TODO Auto-generated constructor stub
 	}
-
 	@Override
 	protected int remove(SqlSession session, PluginScriptRelKey key) {
 		// TODO Auto-generated method stub
