@@ -17,7 +17,6 @@ public class PluginOrganizationParamBiz extends KutaExpireMapBiz<PluginOrganizat
 		super("PluginOrganizationParam_%s", 30 * 60);
 		// TODO Auto-generated constructor stub
 	}
-
 	@Override
 	protected int remove(SqlSession session, PluginOrganizationParamKey key) {
 		// TODO Auto-generated method stub
