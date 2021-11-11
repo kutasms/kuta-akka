@@ -24,7 +24,6 @@ public class ScriptBiz extends KutaExpireMapBiz<Script, Long> {
 		super("Script_%s", 30 * 60);
 		// TODO Auto-generated constructor stub
 	}
-
 	@Override
 	protected int remove(SqlSession session, Long key) {
 		// TODO Auto-generated method stub
