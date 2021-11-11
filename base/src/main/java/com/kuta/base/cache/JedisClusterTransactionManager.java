@@ -27,7 +27,7 @@ public class JedisClusterTransactionManager {
     }
 
     /**
-     * 保存string数据类型
+     * 	保存string数据类型
      * @param key
      * @param value
      */
@@ -35,9 +35,13 @@ public class JedisClusterTransactionManager {
         Transaction tx = getTxByKey(key);
         return tx.set(key, value);
     }
-
+    
+    public static Response<Long> incr(String key) {
+    	Transaction tx = getTxByKey(key);
+    	return tx.incr(key);
+    }
     /**
-     * 批量保存string数据类型
+     * 	批量保存string数据类型
      * @param key
      * @param value
      */
