@@ -20,7 +20,6 @@ public class RoleBiz extends KutaExpireMapBiz<Role, Integer> {
 		super("Role_%s", 30 * 60);
 		// TODO Auto-generated constructor stub
 	}
-
 	@Override
 	protected int remove(SqlSession session, Integer key) {
 		// TODO Auto-generated method stub
