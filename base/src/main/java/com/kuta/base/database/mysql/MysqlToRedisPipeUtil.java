@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.kuta.common.config.utils.PropertyUtil;
 
@@ -22,6 +24,8 @@ import redis.clients.jedis.HostAndPort;
  * */
 public class MysqlToRedisPipeUtil {
 	
+	private final static Logger logger = LoggerFactory.getLogger(MysqlToRedisPipeUtil.class);
+	
 	/**
 	 * 执行导入操作
 	 * @param sqlFileName sql文件地址
@@ -29,6 +33,7 @@ public class MysqlToRedisPipeUtil {
 	 * @return 执行结果
 	 * */
 	public static boolean execute(String sqlFileName, String desc, HostAndPort hostAndPort) {
+		logger.info("开始执行MYSQL数据批量导入...");
 		URL url = MysqlToRedisPipeUtil.class.getClassLoader().getResource(sqlFileName);
 		String sqlPath = url.getPath();
 
@@ -37,7 +42,7 @@ public class MysqlToRedisPipeUtil {
 		command.add("sh");
 		command.add("-c");
 		arguments.add("mysql");
-		arguments.add("-uroot");
+		arguments.add(String.format("-u%s", PropertyUtil.getProperty("jdbc", "jdbc.username")));
 		String password = PropertyUtil.getProperty("jdbc", "jdbc.password");
 		if(password.contains("&")) {
 			password = password.replace("&", "\\&");
@@ -64,7 +69,7 @@ public class MysqlToRedisPipeUtil {
 		arguments.add("-c");
 		arguments.add("--pipe");
 		command.add(StringUtils.join(arguments, " "));
-		System.out.println(Arrays.deepToString(arguments.toArray()));
+		logger.info(Arrays.deepToString(arguments.toArray()));
 		ProcessBuilder pb = new ProcessBuilder(command);
 
 		File file = new File(url.getPath());
