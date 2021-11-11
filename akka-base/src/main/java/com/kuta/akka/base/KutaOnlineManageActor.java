@@ -1,6 +1,8 @@
 package com.kuta.akka.base;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.kuta.akka.base.entity.ActiveMessage;
@@ -79,29 +81,44 @@ public class KutaOnlineManageActor extends KutaActor {
 	 * */
 	private void Offline(ActiveMessage message) {
 		if(this.channelMap.containsKey(message.getPid())) {
-			if(this.channelMap.get(message.getPid()).getUid().equals(message.getUid())) {
+			if(message.isForce() || this.channelMap.get(message.getPid()).getUid().equals(message.getUid())) {
 				logger.info("从online-Map中清除用户:{}", message.getPid());
 				this.channelMap.remove(message.getPid());
 			} else {
 				logger.info("UID不同不能移除玩家");
 			}
 		}
-		
 	}
 	/**
 	 * 转发用户消息
 	 * @param message 用户在线离线消息包装
 	 * */
 	private void forward(ForwardWebSocketResponse message) {
+		final List<Integer> needRemove = new ArrayList<Integer>();
 		if(message.getPid().equals(KutaConstants.BROADCAST_ALL)) {
 			this.channelMap.forEach((pid,item)->{
-				message.setPid(pid);
-				item.getChannel().tell(message.toJSONString(), self());
+				if(!item.getChannel().isTerminated()) {
+					message.setPid(pid);
+					item.getChannel().tell(message.toJSONString(), self());
+				} else {
+					needRemove.add(pid);
+				}
 			});
+			if(needRemove.size() > 0) {
+				needRemove.forEach(pid->{
+					this.channelMap.remove(pid);
+				});
+			}
 			return;
 		}
+		
 		if(this.channelMap.containsKey(message.getPid())) {
-			this.channelMap.get(message.getPid()).getChannel().tell(message.toJSONString(), self());
+			Item item = this.channelMap.get(message.getPid());
+			if(!item.getChannel().isTerminated()) {
+				this.channelMap.get(message.getPid()).getChannel().tell(message.toJSONString(), self());
+			} else {
+				this.channelMap.remove(message.getPid());
+			}
 		} else {
 			//该用户已下线，由下游Actor处理
 			if(message.isSaveOffline() && this.offlineMsgHandlerClazz != null) {
