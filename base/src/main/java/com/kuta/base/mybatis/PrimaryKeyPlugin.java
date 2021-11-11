@@ -181,7 +181,11 @@ public class PrimaryKeyPlugin extends org.mybatis.generator.api.PluginAdapter {
 	
 	private void addXmlMaxNode(Document document, IntrospectedTable introspectedTable) {
 		String columnName = introspectedTable.getTableConfigurationProperty("generateMax");
+		if(columnName == null) {
+			return;
+		}
 		List<IntrospectedColumn> columns = introspectedTable.getAllColumns();
+		String tableName = introspectedTable.getFullyQualifiedTableNameAtRuntime();
 		columns.forEach(column -> {
 			if (column.getActualColumnName().equals(columnName)) {
 				String javaProperty = column.getJavaProperty();
@@ -193,8 +197,10 @@ public class PrimaryKeyPlugin extends org.mybatis.generator.api.PluginAdapter {
 				eleSelect.addAttribute(new Attribute("resultType", 
 						column.getFullyQualifiedJavaType().getFullyQualifiedName()));
 				new  CommentGenerator().addComment(eleSelect);
-				eleSelect.addElement(new TextElement("select IFNULL(max(`" + column.getActualColumnName() + "`),0) from "
-						+ introspectedTable.getFullyQualifiedTableNameAtRuntime()));
+				String selectContent = "select IFNULL(max(`" + column.getActualColumnName() + "`),0) from "
+						+ tableName;
+				TextElement mainElem = new TextElement(selectContent);
+				eleSelect.addElement(mainElem);
 
 				String generateMaxParams = introspectedTable.getTableConfigurationProperty("generateMaxParams");
 				if (!KutaUtil.isEmptyString(generateMaxParams)) {
@@ -227,11 +233,8 @@ public class PrimaryKeyPlugin extends org.mybatis.generator.api.PluginAdapter {
 						}
 					}
 					 eleSelect.addElement(new TextElement(sb.toString()));
-					 
-					 
-					document.getRootElement().addElement(eleSelect);
 				}
-
+				document.getRootElement().addElement(eleSelect);
 			}
 		});
 	}
