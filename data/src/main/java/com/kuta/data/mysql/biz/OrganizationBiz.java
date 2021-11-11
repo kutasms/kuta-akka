@@ -28,6 +28,7 @@ public class OrganizationBiz extends KutaExpireMapBiz<Organization, Integer> {
 		// TODO Auto-generated constructor stub
 	}
 
+	
 	@Override
 	protected int remove(SqlSession session, Integer key) {
 		// TODO Auto-generated method stub
