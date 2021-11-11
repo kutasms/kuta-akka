@@ -21,11 +21,7 @@ public class KutaTimeUtil {
 	/**
 	 * 带3位毫秒的时间格式化器
 	 * */
-	private static final SimpleDateFormat formatterWithMill = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-	/**
-	 * 不带毫秒的时间格式化器
-	 * */
-	private static final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
 	
 	public static Date getBaseLineDate() {
 		try {
@@ -46,6 +42,7 @@ public class KutaTimeUtil {
 		if(KutaUtil.isValueNull(date)) {
 			return null;
 		}
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		return formatter.format(date);
 	}
 	/**
@@ -58,6 +55,7 @@ public class KutaTimeUtil {
 		if(KutaUtil.isValueNull(s)) {
 			return null;
 		}
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		return formatter.parse(s);
 	}
 	/**
@@ -71,8 +69,10 @@ public class KutaTimeUtil {
 			return null;
 		}
 		try {
-		return formatterWithMill.parse(s);
+			SimpleDateFormat formatterWithMill = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+			return formatterWithMill.parse(s);
 		}catch (ParseException e) {
+			SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			return formatter.parse(s);
 		}
 	}
@@ -85,6 +85,7 @@ public class KutaTimeUtil {
 		if(KutaUtil.isValueNull(date)) {
 			return null;
 		}
+		SimpleDateFormat formatterWithMill = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 		return formatterWithMill.format(date);
 	}
 	
