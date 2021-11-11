@@ -5,6 +5,8 @@ import java.util.Map;
 import org.apache.ibatis.session.SqlSession;
 
 import com.kuta.base.cache.JedisClient;
+import com.kuta.base.common.KutaCommonSettings;
+import com.kuta.base.exception.KutaIllegalArgumentException;
 import com.kuta.base.util.KutaRedisUtil;
 
 import redis.clients.jedis.Transaction;
@@ -20,13 +22,14 @@ public abstract class KutaConfigAbstractBiz<T extends KutaDBEntity> {
 	 * */
 	protected String CACHE_KEY = "UNKNOWN_CACHE_KEY";
 	
+	
 	/**
 	 * 构造函数
 	 * @param cacheKey 缓存键名
 	 * */
 	public KutaConfigAbstractBiz(String cacheKey) {
 		// TODO Auto-generated constructor stub
-		this.CACHE_KEY = cacheKey;
+		this.CACHE_KEY = String.format("%s_%s", KutaCommonSettings.getCacheKeyPrefix(), cacheKey);
 	}
 
 	/**
@@ -35,6 +38,9 @@ public abstract class KutaConfigAbstractBiz<T extends KutaDBEntity> {
 	 * @return 包含所有相关配置的json字符串
 	 * */
 	protected abstract String getJson(SqlSession session);
+	protected String getJson(SqlSession session, int pageNum, int pageSize) {
+		return getJson(session);
+	}
 	/**
 	 * 更新配置数据至数据库
 	 * @param session 数据库连接
@@ -48,7 +54,11 @@ public abstract class KutaConfigAbstractBiz<T extends KutaDBEntity> {
 	 * @return 键值对
 	 * */
 	protected abstract Map<String, String> getMap(SqlSession session);
-
+	
+	protected Map<String, String> getMap(SqlSession session, int pageNum, int pageSize){
+		return getMap(session);
+	}
+	
 	/**
 	 * 将所有相关配置数据以json字符串的形式加载到缓存
 	 * */
@@ -57,6 +67,21 @@ public abstract class KutaConfigAbstractBiz<T extends KutaDBEntity> {
 			try {
 				KutaRedisUtil.exec(redis -> {
 					redis.set(CACHE_KEY, getJson(x));
+				});
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		});
+	}
+	/**
+	 * 将所有相关配置数据以json字符串的形式加载到缓存
+	 * */
+	public void cacheAllWithJson(int pageNum, int pageSize) throws Exception {
+		KutaSQLUtil.exec(x -> {
+			try {
+				KutaRedisUtil.exec(redis -> {
+					redis.set(CACHE_KEY, getJson(x, pageNum, pageSize));
 				});
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
@@ -80,6 +105,42 @@ public abstract class KutaConfigAbstractBiz<T extends KutaDBEntity> {
 			}
 		});
 	}
+	
+	/**
+	 * 将所有相关配置数据以json字符串的形式加载到缓存
+	 * */
+	public void cacheAllWithJson(int expire, int pageNum, int pageSize) throws Exception {
+		KutaSQLUtil.exec(x -> {
+			try {
+				KutaRedisUtil.exec(redis -> {
+					redis.setex(CACHE_KEY, expire, getJson(x, pageNum, pageSize));
+				});
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		});
+	}
+	/**
+	 * 将所有相关配置数据以json字符串的形式加载到缓存
+	 * */
+	public void cacheAllWithJson(SqlSession session, JedisClient jedis, int expire, int pageNum, int pageSize) throws Exception {
+		jedis.setex(CACHE_KEY, expire, getJson(session, pageNum, pageSize));
+	}
+	
+	public String getCollJson(DataSessionFactory f, int expire, int pageNum, int pageSize) throws Exception {
+		String data = f.getJedis().get(CACHE_KEY);
+		if(data == null) {
+			String json = getJson(f.getSqlSession(), pageNum, pageSize);
+			if(json == null) {
+				return null;
+			}
+			f.getJedis().setex(CACHE_KEY, expire, json);
+			return json;
+		}
+		return data;
+	}
+	
 	
 	/**
 	 * 	将所有相关配置数据以hashmap的形式加载到缓存
@@ -132,6 +193,16 @@ public abstract class KutaConfigAbstractBiz<T extends KutaDBEntity> {
 	 * */
 	public void cacheAllToHash(SqlSession session,JedisClient jedis, int expire) throws Exception {
 		Map<String, String> map = getMap(session);
+		jedis.hset(CACHE_KEY, map);
+		jedis.expire(CACHE_KEY, expire);
+	}
+	/**
+	 * 将所有相关配置数据以hashmap的形式加载到缓存
+	 * @param session 数据库连接
+	 * @param jedis redis连接
+	 * */
+	public void cacheAllToHash(SqlSession session,JedisClient jedis, int expire, int pageNum, int pageSize) throws Exception {
+		Map<String, String> map = getMap(session, pageNum, pageSize);
 		jedis.hset(CACHE_KEY, map);
 		jedis.expire(CACHE_KEY, expire);
 	}
