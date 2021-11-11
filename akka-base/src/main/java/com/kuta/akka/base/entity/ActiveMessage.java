@@ -14,6 +14,10 @@ public class ActiveMessage extends KutaSerialMessage {
 	 * */
 	private ActorRef channel;
 	/**
+	 * 	强制下线
+	 * */
+	private boolean force = false;
+	/**
 	 * 用户编号
 	 * */
 	private Integer pid;
@@ -72,5 +76,11 @@ public class ActiveMessage extends KutaSerialMessage {
 	}
 	public void setUid(Integer uid) {
 		this.uid = uid;
+	}
+	public boolean isForce() {
+		return force;
+	}
+	public void setForce(boolean force) {
+		this.force = force;
 	}
 }
