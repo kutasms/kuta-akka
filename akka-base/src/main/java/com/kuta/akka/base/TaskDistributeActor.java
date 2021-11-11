@@ -2,7 +2,6 @@ package com.kuta.akka.base;
 
 import java.time.Duration;
 
-import com.kuta.akka.base.entity.CalcFinishMessage;
 import com.kuta.akka.base.entity.DataScanStartNotice;
 import com.kuta.akka.base.entity.DistributeMessage;
 import com.kuta.akka.base.entity.ElectCompleted;
@@ -20,6 +19,7 @@ import akka.actor.Cancellable;
 import akka.actor.PoisonPill;
 import akka.actor.Props;
 import akka.japi.pf.ReceiveBuilder;
+import akka.routing.ConsistentHashingRouter.ConsistentHashableEnvelope;
 import scala.concurrent.ExecutionContext;
 
 
@@ -28,6 +28,11 @@ import scala.concurrent.ExecutionContext;
  * */
 public abstract class TaskDistributeActor extends KutaActorWithTimers {
 
+	/**
+	 * 	当数据扫描完成后需要通知的router
+	 * */
+	protected ActorRef router;
+	
 	/**
 	 * 	目标Actor
 	 * */
@@ -42,9 +47,9 @@ public abstract class TaskDistributeActor extends KutaActorWithTimers {
 	 * */
 	protected Cancellable cancellable;
 	/**
-	 *	 扫描是否已开始
+	 *	 扫描是否正在运行
 	 * */
-	protected boolean isScanStarted = false;
+	protected boolean scanRunning = false;
 	/**
 	 * 	最大任务数
 	 * */
@@ -67,6 +72,8 @@ public abstract class TaskDistributeActor extends KutaActorWithTimers {
 	 * 	任务间隔, 默认1000毫秒
 	 * */
 	protected final long interval;
+	
+	protected boolean isMaster;
 	/**
 	 * 	等待分发的键集合
 	 * */
@@ -116,9 +123,9 @@ public abstract class TaskDistributeActor extends KutaActorWithTimers {
 			Class<T> clazz,
 			Integer maxTaskSize,
 			String name,
-			long interval) {
+			long interval,boolean isLimited) {
 		return Props.create(clazz,
-				maxTaskSize,name, interval);
+				maxTaskSize,name, interval, isLimited);
 	}
 	
 	@Override
@@ -149,6 +156,11 @@ public abstract class TaskDistributeActor extends KutaActorWithTimers {
 	
 	public abstract Props calcActorProps(DistributeMessage msg);
 	
+	public abstract void onTaskCompleted();
+	
+	private int distributed = 0;
+	private int completed = 0;
+	
 	@Override
 	public void onReceive(ReceiveBuilder rb) {
 		// TODO Auto-generated method stub
@@ -167,24 +179,24 @@ public abstract class TaskDistributeActor extends KutaActorWithTimers {
 				} else {
 					message.setValues(this.waitDisKeys.pop(this.waitDisKeys.size()));
 				}
+				distributed += message.getValues().size();
 				ActorRef buildCalcActor = getContext().actorOf(
-					calcActorProps(msg)
-					.withDispatcher(KutaAkkaConstants.BLOCKING_DISPATCHER), 
-						String.format("bld_calc_%s", 
-								System.currentTimeMillis()));
+						calcActorProps(msg)
+						.withDispatcher(
+								KutaAkkaConstants.BLOCKING_DISPATCHER), 
+								String.format("bld_calc_%s", System.currentTimeMillis()));
 				buildCalcActor.tell(message, self());
 			}
-			
-			if(this.waitDisKeys.size() == 0 && !isScanStarted) {
+			logger.info("distributed:{},completed:{}", distributed, completed);
+			if(distributed == completed && !scanRunning) {
+				
 				cancellable.cancel();
 				this.addedTaskSize = 0;
-				
-				CalcFinishMessage finishMessage = new CalcFinishMessage();
-				finishMessage.setName(name);
-				getContext().parent().tell(finishMessage, self());
+				this.onTaskCompleted();
+				this.isMaster = false;
 			}
 		}).match(ScanStartedMessage.class, msg->{
-			isScanStarted = true;
+			scanRunning = true;
 			if(isLimited) {
 				//开启限流
 				DistributeMessage distributeMessage = new DistributeMessage();
@@ -195,18 +207,19 @@ public abstract class TaskDistributeActor extends KutaActorWithTimers {
 						ActorRef.noSender());
 			}
 		}).match(ScanCompletedMessage.class, msg->{
-			isScanStarted = false;
+			scanRunning = false;
 		}).match(FragmentCalculateCompleted.class, msg->{
-			sender().tell(PoisonPill.getInstance(), ActorRef.noSender());
+			logger.info("收到任务单元完成消息");
 			if(addedTaskSize>0) {
 				addedTaskSize--;
 			}
+			completed += msg.getCount();
 		}).match(RedisScanResultMessage.class, msg -> {
 			if(isLimited) {
 				this.waitDisKeys.addAll(msg.getValues());
 			} else {
 				ActorRef buildCalcActor = getContext().actorOf(
-						Props.create(targetClazz)
+						calcActorProps(null)
 						.withDispatcher(
 								KutaAkkaConstants.BLOCKING_DISPATCHER), 
 								String.format("bld_calc_%s", System.currentTimeMillis()));
