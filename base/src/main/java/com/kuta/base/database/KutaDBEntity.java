@@ -3,6 +3,7 @@ package com.kuta.base.database;
 import java.io.Serializable;
 
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.annotation.JSONField;
 
 /**
  * 数据实体基类
@@ -17,6 +18,7 @@ public class KutaDBEntity extends Number implements Serializable {
 	/**
 	 * 缓存field
 	 * */
+	@JSONField(serialize = false)
 	private Number cacheField;
 
 	/**
