@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import com.kuta.base.common.KutaCommonSettings;
 import com.kuta.base.util.KutaBeanUtil;
 import com.kuta.base.util.KutaStringUtil;
 
@@ -78,7 +79,7 @@ public class RedisImportSqlFileGenerator {
 		builder.append("FROM (\r\n" + 
 				"SELECT\r\n" + 
 				"'HMSET' AS redis_cmd, \r\n");
-		builder.append(String.format("CONCAT('%s_',%s) AS redis_key,\r\n", clazz.getSimpleName().toLowerCase(), cacheKey));
+		builder.append(String.format("CONCAT('%s_%s_',%s) AS redis_key,\r\n", KutaCommonSettings.getCacheKeyPrefix(), clazz.getSimpleName().toLowerCase(), cacheKey));
 		
 		for(int i=0;i<fieldNames.size();i++) {
 			String underLineName = KutaStringUtil.humpToUnderline(fieldNames.get(i));
@@ -163,7 +164,7 @@ public class RedisImportSqlFileGenerator {
 		builder.append("FROM (\r\n" + 
 				"SELECT\r\n" + 
 				"'HMSET' AS redis_cmd, \r\n");
-		builder.append(String.format("CONCAT('%s_',`%s`,'_',`%s`) AS redis_key,\r\n", cacheKeyPrefix == null ? clazz.getSimpleName().toLowerCase() : cacheKeyPrefix, cacheKey1, cacheKey2));
+		builder.append(String.format("CONCAT('%s_%s_',`%s`,'_',`%s`) AS redis_key,\r\n", KutaCommonSettings.getCacheKeyPrefix(), cacheKeyPrefix == null ? clazz.getSimpleName().toLowerCase() : cacheKeyPrefix, cacheKey1, cacheKey2));
 		
 		for(int i=0;i<fields.length;i++) {
 			if(fields[i] == null) {
@@ -250,7 +251,7 @@ public class RedisImportSqlFileGenerator {
 		builder.append("FROM (\r\n" + 
 				"SELECT\r\n" + 
 				"'HMSET' AS redis_cmd, \r\n");
-		builder.append(String.format("CONCAT('%s_',%s) AS redis_key,\r\n", clazz.getSimpleName().toLowerCase(), cacheKey));
+		builder.append(String.format("CONCAT('%s_%s_',%s) AS redis_key,\r\n", KutaCommonSettings.getCacheKeyPrefix(), clazz.getSimpleName().toLowerCase(), cacheKey));
 		
 		for(int i=0;i<fieldNames.size();i++) {
 			String underLineName = KutaStringUtil.humpToUnderline(fieldNames.get(i));
