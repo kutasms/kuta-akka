@@ -20,6 +20,7 @@ import org.mybatis.generator.api.dom.xml.Document;
 import org.mybatis.generator.api.dom.xml.TextElement;
 import org.mybatis.generator.api.dom.xml.XmlElement;
 
+import com.alibaba.fastjson.annotation.JSONField;
 import com.kuta.base.annotation.IncrIgoneColumn;
 import com.kuta.base.annotation.PrimaryKey;
 import com.kuta.base.util.KutaUtil;
@@ -41,7 +42,7 @@ public class PrimaryKeyPlugin extends org.mybatis.generator.api.PluginAdapter {
 
 	private FullyQualifiedJavaType primaryKey;
 	private FullyQualifiedJavaType incrIgoneColumn;
-	
+	private FullyQualifiedJavaType jsonField;
 	
 	@Override
 	public boolean validate(List<String> warnings) {
@@ -53,6 +54,7 @@ public class PrimaryKeyPlugin extends org.mybatis.generator.api.PluginAdapter {
 		super();
 		primaryKey = new FullyQualifiedJavaType(PrimaryKey.class.getName());
 		incrIgoneColumn = new FullyQualifiedJavaType(IncrIgoneColumn.class.getName());
+		jsonField = new FullyQualifiedJavaType(JSONField.class.getName());
 	}
 
 	@Override
@@ -65,10 +67,38 @@ public class PrimaryKeyPlugin extends org.mybatis.generator.api.PluginAdapter {
 			field.addAnnotation("@PrimaryKey");
 		}
 		this.addIncrIgoneAnn(field, topLevelClass, introspectedColumn, introspectedTable, modelClassType);
+		this.addJSONFieldAnn(field, topLevelClass, introspectedColumn, introspectedTable, modelClassType);
 		return true;
 //		return super.modelFieldGenerated(field, topLevelClass, introspectedColumn, introspectedTable, modelClassType);
 	}
 
+	private void addJSONFieldAnn(Field field, TopLevelClass topLevelClass, IntrospectedColumn introspectedColumn,
+			IntrospectedTable introspectedTable, ModelClassType modelClassType) {
+		String columns = introspectedTable.getTableConfigurationProperty("nonserializable");
+		boolean importAdded = false;
+		
+		if(columns!=null) {
+			String[] list = columns.split(",");
+			for(String item : list) {
+				if(introspectedColumn.getActualColumnName().equals(item)) {
+					if(!importAdded) {
+						topLevelClass.addImportedType(jsonField);
+						importAdded = true;
+					}
+					if(introspectedColumn.getJdbcTypeName().equals("TIMESTAMP")) {
+						field.addAnnotation("@JSONField(serialize = false, format = \"yyyy-MM-dd HH:mm:ss SSS\")");
+					} else {
+						field.addAnnotation("@JSONField(serialize = false)");
+					}
+				} 
+			}	
+		}
+		if(!importAdded && introspectedColumn.getJdbcTypeName().equals("TIMESTAMP")) {
+			topLevelClass.addImportedType(jsonField);
+			field.addAnnotation("@JSONField(format = \"yyyy-MM-dd HH:mm:ss SSS\")");
+		}
+	}
+	
 	private void addIncrIgoneAnn(Field field, TopLevelClass topLevelClass, IntrospectedColumn introspectedColumn,
 			IntrospectedTable introspectedTable, ModelClassType modelClassType) {
 		String columns = introspectedTable.getTableConfigurationProperty("incrIgoneColumnList");
