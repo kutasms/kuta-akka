@@ -11,12 +11,13 @@ import com.auth0.jwt.interfaces.JWTVerifier;
 
 public class KutaAuthUtil {
 	//设置过期时间
-    private static final long EXPIRE_DATE=30*60*100000;
+    private static final long EXPIRE_DATE=30*60*1000;
     //token秘钥
     private static final String TOKEN_SECRET = "QCEQIUBFKSABFBZ2021BQFE";
     
-    public static String token (String hex,String password){
-    	 
+    
+    
+    public static String token(String key1,String key2){
         String token = "";
         try {
             //过期时间
@@ -30,8 +31,9 @@ public class KutaAuthUtil {
             //携带hex，password信息,生成签名
             token = JWT.create()
                     .withHeader(header)
-                    .withClaim("username",hex)
-                    .withClaim("password",password).withExpiresAt(date)
+                    .withClaim("key1",key1)
+                    .withClaim("key2",key2)
+                    .withExpiresAt(date)
                     .sign(algorithm);
         }catch (Exception e){
             e.printStackTrace();
@@ -55,4 +57,9 @@ public class KutaAuthUtil {
             return  false;
         }
     }
+    
+    public static DecodedJWT decode(String token) {
+    	return JWT.decode(token);
+    }
+    
 }
