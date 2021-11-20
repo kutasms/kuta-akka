@@ -36,4 +36,4 @@ If you see an issue that you'd like to see fixed, the best way to make it happen
 License
 -------
 
-Akka is Open Source and available under the Apache 2 License.
+kuta-akka is Open Source and available under the Apache 2 License.
