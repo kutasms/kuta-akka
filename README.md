@@ -3,7 +3,7 @@
 ![](https://img.shields.io/badge/akka-2.6%2B-orange)
 ![](https://img.shields.io/badge/java-1.8%2B-green)
 
-Although springboot is very popular,but I prefer the actor model. Akka is a great actor model implementation. For ease of use, I have integrated redis, mysql, mongodb and other common libraries.Akka platform has many development packages, including Akka-HTTP, Akka-stream (reactive streams), akka-actor, akka-cluster, etc. Kuta-akka will integrate them to make it easier for you to use.
+Although springboot is very popular,but I prefer the actor model. Akka is a great actor model implementation. For ease of use, I have integrated redis, mysql, mongodb and other common libraries.Akka platform has many development packages, including Akka-HTTP, Akka-stream (reactive streams), Akka-actor, Akka-cluster, etc. Kuta-akka will integrate them to make it easier for you to use.
 
 The reference documentation about akka is available at [doc.akka.io](http://doc.akka.io),
 for [Scala](http://doc.akka.io/docs/akka/current/scala.html) and [Java](http://doc.akka.io/docs/akka/current/java.html).
