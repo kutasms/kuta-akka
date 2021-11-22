@@ -13,6 +13,9 @@
    		<property name="javaFileEncoding" value="UTF-8"/>
    		<plugin type="org.mybatis.generator.plugins.SerializablePlugin" />  
    		<plugin type="com.kuta.base.mybatis.PrimaryKeyPlugin"></plugin>
+   		<plugin type="com.kuta.base.mybatis.JSONFiledPlugin"></plugin>
+   		<plugin type="com.kuta.base.mybatis.ConditionalExamplePlugin"></plugin>
+   		<plugin type="com.kuta.base.mybatis.MaxMethodPlugin"></plugin>
    		<plugin type="com.itfsw.mybatis.generator.plugins.BatchInsertPlugin"/>
    		<plugin type="com.kuta.base.mybatis.KutaBatchUpdatePlugin"/>
         <!--optional,指在创建class时，对注释进行控制-->
