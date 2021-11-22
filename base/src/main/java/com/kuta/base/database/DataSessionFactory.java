@@ -1,5 +1,9 @@
 package com.kuta.base.database;
 
+import java.io.Closeable;
+import java.io.IOException;
+import java.sql.SQLException;
+
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.TransactionIsolationLevel;
@@ -9,14 +13,14 @@ import org.slf4j.LoggerFactory;
 import com.kuta.base.cache.JedisClient;
 import com.kuta.base.cache.JedisPoolUtil;
 
-public class DataSessionFactory {
+public class DataSessionFactory implements Closeable {
 	private final Logger logger = LoggerFactory.getLogger(DataSessionFactory.class);
 	private SqlSession session;
 	private JedisClient jedis;
 	private boolean usedRedisTx = false;
 	private boolean usedSqlBatchMode = false;
 	private DataSessionFactory() {
-		
+	
 	}
 	public JedisClient getJedis() {
 		return getJedis(false);
@@ -42,6 +46,12 @@ public class DataSessionFactory {
 			} else {
 				session = MybatisUtil.getSession();
 			}
+		}
+		try {
+			session.getConnection().setAutoCommit(false);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		return session;
 	}
@@ -84,5 +94,11 @@ public class DataSessionFactory {
 	
 	public static DataSessionFactory create() {
 		return new DataSessionFactory();
+	}
+	
+	@Override
+	public void close() throws IOException {
+		// TODO Auto-generated method stub
+		release();
 	}
 }
