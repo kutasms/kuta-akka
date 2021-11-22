@@ -36,17 +36,6 @@ public class KutaSQLUtil {
 		return false;
 	}
 	
-	public static boolean isIncrIgoneColumn(Field field) {
-		Annotation[] anns = field.getAnnotations();
-		if(anns!=null && anns.length > 0) {
-			for(int i=0;i<anns.length;i++) {
-				if(anns[i].annotationType().getName().equals(PrimaryKey.class.getName())) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
 	
 	/**
 	 * 执行数据库相关操作
