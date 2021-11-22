@@ -771,9 +771,9 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 			if (fieldObj == null) {
 				continue;
 			}
-			if(KutaSQLUtil.isPrimaryKey(field) || KutaSQLUtil.isIncrIgoneColumn(field)) {
-				continue;
-			}
+//			if(KutaSQLUtil.isPrimaryKey(field) || KutaSQLUtil.isIncrIgoneColumn(field)) {
+//				continue;
+//			}
 			if(field.getName().equals("serialVersionUID")) {
 				continue;
 			}
@@ -828,9 +828,9 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 			if (KutaUtil.isValueNull(fieldObj)) {
 				continue;
 			}
-			if(KutaSQLUtil.isPrimaryKey(field) || KutaSQLUtil.isIncrIgoneColumn(field)) {
-				continue;
-			}
+//			if(KutaSQLUtil.isPrimaryKey(field) || KutaSQLUtil.isIncrIgoneColumn(field)) {
+//				continue;
+//			}
 			if(field.getName().equals("serialVersionUID")) {
 				continue;
 			}
