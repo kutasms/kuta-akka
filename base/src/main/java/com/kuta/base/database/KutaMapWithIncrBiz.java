@@ -8,12 +8,15 @@ import com.kuta.base.cache.JedisClient;
  * 附带原子增加功能的数据处理器
  * */
 public abstract class KutaMapWithIncrBiz<T extends KutaDBEntity, TKey extends Number> extends KutaMapBiz<T, TKey>{
+	
+	private final int CACHE_EXPIRE;
 	/**
 	 * 构造函数
 	 * @param cacheKey 缓存键
 	 * */
-	public KutaMapWithIncrBiz(String cacheKey) {
+	public KutaMapWithIncrBiz(String cacheKey, int expire) {
 		super(cacheKey);
+		this.CACHE_EXPIRE = expire;
 		// TODO Auto-generated constructor stub
 	}
 
@@ -34,11 +37,18 @@ public abstract class KutaMapWithIncrBiz<T extends KutaDBEntity, TKey extends Nu
 	 * @param key 数据主键值
 	 * @throws Exception 内部异常
 	 * */
+	@Deprecated
 	public void incrCacheDB(SqlSession session,JedisClient jedis,T t, TKey key) throws Exception {
-		cacheIncr(jedis, t, key);
+		
 		incrDBByKey(session,t, key);
+		getOneByKey(session, jedis, key);
+		jedis.expire(formatCacheKeyByTKey(key), CACHE_EXPIRE);
 	}
-	
+	public void incrCacheDB(DataSessionFactory f,T t, TKey key) throws Exception {
+		incrDBByKey(f.getSqlSession(),t, key);
+		getOneByKey(f, key);
+		f.getJedis().expire(formatCacheKeyByTKey(key), CACHE_EXPIRE);
+	}
 	/**
 	 * 缓存和数据库指定列增加值
 	 * @param session 数据库连接
@@ -48,8 +58,17 @@ public abstract class KutaMapWithIncrBiz<T extends KutaDBEntity, TKey extends Nu
 	 * @param args 缓存键格式化参数
 	 * @throws Exception 内部异常
 	 * */
+	@Deprecated
 	public void incrCacheDBWithArgs(SqlSession session,JedisClient jedis,T t,TKey key, Object... args) throws Exception {
-		cacheIncr(jedis, t, args);
 		incrDBByKey(session, t, key);
+		getOneByKey(session, jedis, key);
+		jedis.expire(formatCacheKey(args), CACHE_EXPIRE);
 	}
+	
+	public void incrCacheDBWithArgs(DataSessionFactory f,T t,TKey key, Object... args) throws Exception {
+		incrDBByKey(f.getSqlSession(), t, key);
+		getOneByKey(f, key);
+		f.getJedis().expire(formatCacheKey(args), CACHE_EXPIRE);
+	}
+	
 }
