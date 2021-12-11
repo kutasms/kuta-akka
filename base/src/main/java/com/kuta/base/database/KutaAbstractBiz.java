@@ -481,11 +481,15 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 	 * */
 	@Deprecated
 	public int dbCache(T entity, Object... args) throws Exception {
-		int result = KutaSQLUtil.exec(x -> {
-			return update(x, entity);
+		T result = KutaSQLUtil.exec(x -> {
+			update(x, entity);
+			return get(x, getKey(entity));
 		});
-		cache(entity, args);
-		return result;
+		if(result != null) {
+			cache(result, args);
+			return 1;
+		}
+		return 0;
 	}
 	
 	/**
@@ -503,8 +507,10 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 		if(key == null) {
 			throw new KutaIllegalArgumentException("请设置实体的主键");
 		}
+		jedis.del(cacheKey);
 		int result = update(session, entity);
-		cache(entity,jedis, cacheKey);
+		T fullyEntity = get(session, getKey(entity));
+		cache(fullyEntity,jedis, cacheKey);
 		return result;
 	}
 	/**
@@ -520,8 +526,10 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 		if(key == null) {
 			throw new KutaIllegalArgumentException("请设置实体的主键");
 		}
+		factory.getJedis().del(cacheKey);
 		int result = update(factory.getSqlSession(), entity);
-		cache(entity,factory.getJedis(), cacheKey);
+		T fullyEntity = get(factory.getSqlSession(), getKey(entity));
+		cache(fullyEntity,factory.getJedis(), cacheKey);
 		return result;
 	}
 	/**
@@ -559,11 +567,16 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 	 * */
 	@Deprecated
 	public int insertCache(T entity, Object... args) throws Exception {
-		int result = KutaSQLUtil.exec(x -> {
-			return insert(x, entity);
+		T result = KutaSQLUtil.exec(x -> {
+			int r = insert(x, entity);
+			T fullyEntity = get(x, getKey(entity));
+			return fullyEntity;
 		});
-		cache(entity, args);
-		return result;
+		if(result != null) {
+			cache(result, args);
+			return 1;
+		}
+		return 0;
 	}
 
 	/**
