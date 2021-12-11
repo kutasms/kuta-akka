@@ -350,10 +350,4 @@ public abstract class KutaMapBiz<T extends KutaDBEntity, TKey extends Number> ex
 		}
 		return KutaBeanUtil.map2Bean(map, entityClazz);
 	}
-
-	
-
-	
-	
-	
 }
