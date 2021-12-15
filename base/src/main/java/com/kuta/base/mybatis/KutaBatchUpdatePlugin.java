@@ -71,7 +71,7 @@ public class KutaBatchUpdatePlugin extends org.mybatis.generator.api.PluginAdapt
         return super.sqlMapDocumentGenerated(document, introspectedTable);
     }
     /**
-     * 生成xml文档
+     * generate xml docoment
      * @param document xml文档描述
      * @param introspectedTable 是MBG提供的一个比较基础的扩展类，相当于可以重新定义一个runtime，同时，IntrospectedTable也是一个比较低级的扩展点，比较适合做低级的扩展，比如想使用FreeMarker或者Velocity来生成代码
      * */
