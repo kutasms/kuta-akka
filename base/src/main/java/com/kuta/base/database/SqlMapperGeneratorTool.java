@@ -32,7 +32,7 @@ public class SqlMapperGeneratorTool {
 
 
     /**
-     * 基础XmlElement构造器.
+     * 	Base XmlElement Constructor.
      *
      * @param sqlElementType the sql element type
      * @param sqlMapperId    the sql mapper id
@@ -42,20 +42,15 @@ public class SqlMapperGeneratorTool {
      * @since hui_project v1
      */
     public static XmlElement baseElementGenerator(String sqlElementType, String sqlMapperId,FullyQualifiedJavaType parameterType){
-
-
         XmlElement baseElement = new XmlElement(sqlElementType);
-
         baseElement.addAttribute(new Attribute("id", sqlMapperId));
-
         baseElement.addAttribute(new Attribute("parameterType", parameterType.getFullyQualifiedName()));
-
         return baseElement;
     }
 
 
     /**
-     *基础foreach Element构造器.
+     * Base foreach Element Constructor.
      *
      * @param collectionName the collection name
      * @param itemName       the item name
@@ -84,7 +79,7 @@ public class SqlMapperGeneratorTool {
 
 
     /**
-     * 基础IF Element构造器.
+     * Base IF Element Constructor.
      *
      * @param columnJavaTypeName the column java type name
      * @param sql                the sql
