@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kuta.data.mysql.dao.extend.UserPermRelMapperExt">
+
+  <select id="getPidList" resultType="java.lang.Integer">
+  select P.pid from BS_UserPermRel UPR LEFT JOIN 
+BS_Permission P on UPR.pid = P.pid
+WHERE UPR.uid = #{uid,jdbcType=INTEGER}
+  </select>
+</mapper>
