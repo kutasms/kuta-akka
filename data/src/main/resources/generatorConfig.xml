@@ -29,8 +29,8 @@
         </commentGenerator>
         <!--jdbc的数据库连接 wg_insert 为数据库名字-->
         <jdbcConnection driverClass="com.mysql.jdbc.Driver"  
-            connectionURL="jdbc:mysql://122.112.150.53:31000/finder?useUnicode=true&amp;characterEncoding=UTF-8"
-            userId="root" password="1qaz2wsx">
+            connectionURL="jdbc:mysql://****:****/finder?useUnicode=true&amp;characterEncoding=UTF-8"
+            userId="root" password="*****">
         </jdbcConnection> 
         <!--非必须，类型处理器，在数据库类型和java类型之间的转换控制-->
         <javaTypeResolver>

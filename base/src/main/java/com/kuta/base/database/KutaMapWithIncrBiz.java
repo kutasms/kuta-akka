@@ -42,12 +42,16 @@ public abstract class KutaMapWithIncrBiz<T extends KutaDBEntity, TKey extends Nu
 		
 		incrDBByKey(session,t, key);
 		getOneByKey(session, jedis, key);
-		jedis.expire(formatCacheKeyByTKey(key), CACHE_EXPIRE);
+		if(CACHE_EXPIRE != -1) {
+			jedis.expire(formatCacheKeyByTKey(key), CACHE_EXPIRE);
+		}
 	}
 	public void incrCacheDB(DataSessionFactory f,T t, TKey key) throws Exception {
 		incrDBByKey(f.getSqlSession(),t, key);
 		getOneByKey(f, key);
-		f.getJedis().expire(formatCacheKeyByTKey(key), CACHE_EXPIRE);
+		if(CACHE_EXPIRE != -1) {
+			f.getJedis().expire(formatCacheKeyByTKey(key), CACHE_EXPIRE);
+		}
 	}
 	/**
 	 * 缓存和数据库指定列增加值
@@ -60,15 +64,21 @@ public abstract class KutaMapWithIncrBiz<T extends KutaDBEntity, TKey extends Nu
 	 * */
 	@Deprecated
 	public void incrCacheDBWithArgs(SqlSession session,JedisClient jedis,T t,TKey key, Object... args) throws Exception {
+		jedis.del(formatCacheKey(args));
 		incrDBByKey(session, t, key);
-		getOneByKey(session, jedis, key);
-		jedis.expire(formatCacheKey(args), CACHE_EXPIRE);
+		getOne(key, session, jedis, args);
+		if(CACHE_EXPIRE != -1) {
+			jedis.expire(formatCacheKey(args), CACHE_EXPIRE);
+		}
 	}
 	
 	public void incrCacheDBWithArgs(DataSessionFactory f,T t,TKey key, Object... args) throws Exception {
+		f.getJedis().del(formatCacheKey(args));
 		incrDBByKey(f.getSqlSession(), t, key);
-		getOneByKey(f, key);
-		f.getJedis().expire(formatCacheKey(args), CACHE_EXPIRE);
+		getOne(f, key, args);
+		if(CACHE_EXPIRE != -1) {
+			f.getJedis().expire(formatCacheKey(args), CACHE_EXPIRE);
+		}
 	}
 	
 }

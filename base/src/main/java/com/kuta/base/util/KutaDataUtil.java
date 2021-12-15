@@ -9,7 +9,7 @@ import com.kuta.base.cache.JedisClient;
 import com.kuta.base.database.KutaSQLUtil;
 
 public class KutaDataUtil {
-	public static void execute(BiConsumer<SqlSession,JedisClient> consumer) throws Exception {
+	public static void execute(KutaBiConsumer<SqlSession,JedisClient,Exception> consumer) throws Exception {
 		KutaSQLUtil.exec(session->{
 			KutaRedisUtil.exec(jedis->{
 				consumer.accept(session, jedis);
