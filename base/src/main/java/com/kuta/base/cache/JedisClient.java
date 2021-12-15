@@ -1,6 +1,7 @@
 package com.kuta.base.cache;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -8,12 +9,15 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import redis.clients.jedis.Builder;
+import redis.clients.jedis.BuilderFactory;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.Transaction;
+import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.util.JedisClusterCRC16;
 
 public class JedisClient {
@@ -25,6 +29,47 @@ public class JedisClient {
 	
 	public JedisClient() {
 		
+	}
+	/**
+	 * process eval method of jedis
+	 * */
+	public Object eval(final String script, final String key, final List<String> args) {	
+		if(JedisPoolUtil.useCluster()) {
+			if(txOpened) {
+				return JedisClusterTransactionManager.eval(script, key, args);
+			}
+			return cluster.eval(script, Collections.singletonList(key), args);
+		}
+		if(txOpened) {
+			return transaction.eval(script, Collections.singletonList(key), args);
+		}
+		return jedis.eval(script, Collections.singletonList(key), args);
+	}
+	
+	public Response<String> getDistributedLocked(String key, String value,int expire) {
+		//SET lock_key random_value NX PX 5000
+		SetParams params = new SetParams();
+		params.ex(expire);
+		params.nx();
+		
+		if(JedisPoolUtil.useCluster()) {
+			if(txOpened) {
+				return JedisClusterTransactionManager.set(key, value);
+			}
+			String result = cluster.set(key, value, params);
+			logger.info("分布式锁结果:{}", result);
+			Response<String> rsp = new Response<String>(BuilderFactory.STRING);
+			rsp.set(result != null ? result.getBytes() : null);
+			return rsp;
+		}
+		if(txOpened) {
+			return transaction.set(key, value,params);
+		}
+		String result = jedis.set(key,value, params);
+		logger.info("分布式锁结果:{}", result);
+		Response<String> rsp = new Response<String>(BuilderFactory.STRING);
+		rsp.set(result != null ? result.getBytes() : null);
+		return rsp;
 	}
 	
 	public void multi() {
