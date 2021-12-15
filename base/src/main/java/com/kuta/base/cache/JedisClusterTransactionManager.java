@@ -1,6 +1,8 @@
 package com.kuta.base.cache;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
@@ -34,6 +36,11 @@ public class JedisClusterTransactionManager {
     public static Response<String> set(String key,String value) {
         Transaction tx = getTxByKey(key);
         return tx.set(key, value);
+    }
+    
+    public static Object eval(String script, String key, List<String> args) {
+    	Transaction tx = getTxByKey(key);
+    	return tx.eval(script, Collections.singletonList(key), args);
     }
     
     public static Response<Long> incr(String key) {
