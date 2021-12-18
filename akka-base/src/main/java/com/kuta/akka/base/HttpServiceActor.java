@@ -150,7 +150,7 @@ public abstract class HttpServiceActor extends KutaActor {
 			f.release();
 			if(f.isReprocessOnErrorOccurred() 
 					&& f.isRollbacked()) {
-				self().tell(msg, sender());
+				sender().tell(msg, self());
 			}
 		}
 	}
