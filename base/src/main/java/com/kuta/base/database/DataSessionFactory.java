@@ -20,7 +20,7 @@ public class DataSessionFactory implements Closeable {
 	private boolean usedRedisTx = false;
 	private boolean usedSqlBatchMode = false;
 	private boolean rollbacked = false;
-	private boolean reprocessOnErrorOccurred = false;
+	private boolean reprocessOnErrorOccurred = true;
 	private DataSessionFactory() {
 	
 	}
