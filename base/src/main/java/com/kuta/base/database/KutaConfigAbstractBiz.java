@@ -33,6 +33,10 @@ public abstract class KutaConfigAbstractBiz<T extends KutaDBEntity> {
 		this.CACHE_KEY = String.format("%s_%s", KutaCommonSettings.getCacheKeyPrefix(), cacheKey);
 	}
 
+	public String getCacheKey() {
+		return CACHE_KEY;
+	}
+	
 	/**
 	 * 从数据库中加载配置数据，并将数据组装为一个String。
 	 * @param session 数据库连接
