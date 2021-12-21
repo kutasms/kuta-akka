@@ -1,6 +1,7 @@
 package com.kuta.data.mysql.biz;
 
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.List;
@@ -144,6 +145,14 @@ public class SystemConfigBiz extends KutaConfigAbstractBiz<SystemConfig> {
 			throw new IllegalArgumentException("未查询到相关的配置");
 		}
 		return new BigInteger(result);
+	}
+	
+	public BigDecimal queryBigDecimal(String key, DataSessionFactory f) {
+		String result = query(key, f);
+		if (KutaUtil.isEmptyString(result)) {
+			throw new IllegalArgumentException("未查询到相关的配置");
+		}
+		return new BigDecimal(result);
 	}
 
 	public BigInteger queryBigInteger(String key, JedisClient jedis) {
