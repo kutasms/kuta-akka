@@ -218,17 +218,17 @@ public abstract class KutaConfigAbstractBiz<T extends KutaDBEntity> {
 		jedis.expire(CACHE_KEY, 30 * 60);
 		return map.containsKey(key);
 	}
-	public boolean fullValid(DataSessionFactory f, String key) {
+	public Map<String,String> loadAllFromDB(DataSessionFactory f, String key) {
 		Map<String, String> map = getMap(f.getSqlSession());
 		f.getJedis().hset(CACHE_KEY, map);
 		f.getJedis().expire(CACHE_KEY, 30 * 60);
-		return map.containsKey(key);
+		return map;
 	}
-	public boolean fullValid(DataSessionFactory f, String key, int expire) {
+	public Map<String,String> fullValid(DataSessionFactory f, String key, int expire) {
 		Map<String, String> map = getMap(f.getSqlSession());
 		f.getJedis().hset(CACHE_KEY, map);
 		f.getJedis().expire(CACHE_KEY, expire);
-		return map.containsKey(key);
+		return map;
 	}
 	
 	public void cacheAllToHash(SqlSession session,Transaction jedis) throws Exception {

@@ -116,12 +116,8 @@ public class SystemConfigBiz extends KutaConfigAbstractBiz<SystemConfig> {
 		String result = f.getJedis().hget(CACHE_KEY, key);
 		if (KutaUtil.isEmptyString(result)) {
 			try {
-				if(fullValid(f, key)) {
-					return query(key, f); 
-				}
-				else {
-					return null;
-				}
+				Map<String, String> map = loadAllFromDB(f, key);
+				return map.get(key);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

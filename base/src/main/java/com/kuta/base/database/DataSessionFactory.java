@@ -21,6 +21,7 @@ public class DataSessionFactory implements Closeable {
 	private boolean usedSqlBatchMode = false;
 	private boolean rollbacked = false;
 	private boolean reprocessOnErrorOccurred = true;
+	private boolean committed = false;
 	private DataSessionFactory() {
 	
 	}
@@ -95,24 +96,37 @@ public class DataSessionFactory implements Closeable {
 			}
 		}
 	}
+	
+	public void commit() {
+		if(!committed && !rollbacked && session!=null) {
+			session.commit();
+		}
+		if(!committed && !rollbacked && usedRedisTx) {
+			jedis.exec();
+		}
+		committed = true;
+	}
 	public void release() {
+		
 		logger.debug("sqlbatchmode:{}",usedSqlBatchMode);
 		try {
-			if(!rollbacked && session!=null) {
+			if(!committed && !rollbacked && session!=null) {
 				session.commit();
 			}
-			if(!rollbacked && usedRedisTx) {
+			if(!committed && !rollbacked && usedRedisTx) {
 				jedis.exec();
 			}
+			committed = true;
 		}
 		catch (Exception e) {
 			// TODO: handle exception
-			if(session!=null) {
+			if(session!=null && !rollbacked) {
 				session.rollback();
 			}
-			if(usedRedisTx) {
+			if(usedRedisTx && !rollbacked) {
 				jedis.discard();
 			}
+			this.rollbacked = true;
 		} finally {
 			if(session!=null) {
 				logger.info("销毁SQL数据对象");
@@ -122,6 +136,7 @@ public class DataSessionFactory implements Closeable {
 				logger.info("销毁Jedis数据对象");
 				JedisPoolUtil.release(jedis.getJedis());
 			}
+			
 		}
 	}
 	
