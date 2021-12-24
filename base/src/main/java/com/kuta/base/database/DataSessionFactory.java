@@ -15,16 +15,31 @@ import com.kuta.base.cache.JedisPoolUtil;
 
 public class DataSessionFactory implements Closeable {
 	private final Logger logger = LoggerFactory.getLogger(DataSessionFactory.class);
-	private SqlSession session;
-	private JedisClient jedis;
+	private SqlSession session = null;
+	private JedisClient jedis = null;
 	private boolean usedRedisTx = false;
 	private boolean usedSqlBatchMode = false;
+	private boolean rollbacked = false;
+	private boolean reprocessOnErrorOccurred = true;
+	private boolean committed = false;
 	private DataSessionFactory() {
 	
 	}
 	public JedisClient getJedis() {
 		return getJedis(false);
 	}
+	
+	public boolean isRollbacked() {
+		return rollbacked;
+	}
+	
+	public void enableJedisTrans() {
+		if(!this.usedRedisTx) {
+			this.usedRedisTx = true;
+			jedis.multi();
+		}
+	}
+	
 	public JedisClient getJedis(boolean usedRedisTx) {
 		if(jedis == null) {
 			jedis = JedisPoolUtil.getJedis();
@@ -62,24 +77,56 @@ public class DataSessionFactory implements Closeable {
 		return session;
 	}
 	
+	/**
+	 * <p>Rollback database and cached data</p>
+	 * This method is very important. When an error occurs, 
+	 * you may need to roll back the data. Please note that 
+	 * the latest database snapshot will be obtained after 
+	 * the rollback.
+	 * */
+	public void rollback() {
+		if(!this.rollbacked) {
+			logger.info("回滚数据");
+			this.rollbacked = true;
+			if(this.session != null) {
+				session.rollback();
+			}
+			if(usedRedisTx && this.jedis!=null) {
+				this.jedis.discard();
+			}
+		}
+	}
+	
+	public void commit() {
+		if(!committed && !rollbacked && session!=null) {
+			session.commit();
+		}
+		if(!committed && !rollbacked && usedRedisTx) {
+			jedis.exec();
+		}
+		committed = true;
+	}
 	public void release() {
+		
 		logger.debug("sqlbatchmode:{}",usedSqlBatchMode);
 		try {
-			if(session!=null) {
+			if(!committed && !rollbacked && session!=null) {
 				session.commit();
 			}
-			if(usedRedisTx) {
+			if(!committed && !rollbacked && usedRedisTx) {
 				jedis.exec();
 			}
+			committed = true;
 		}
 		catch (Exception e) {
 			// TODO: handle exception
-			if(session!=null) {
+			if(session!=null && !rollbacked) {
 				session.rollback();
 			}
-			if(usedRedisTx) {
+			if(usedRedisTx && !rollbacked) {
 				jedis.discard();
 			}
+			this.rollbacked = true;
 		} finally {
 			if(session!=null) {
 				logger.info("销毁SQL数据对象");
@@ -89,6 +136,7 @@ public class DataSessionFactory implements Closeable {
 				logger.info("销毁Jedis数据对象");
 				JedisPoolUtil.release(jedis.getJedis());
 			}
+			
 		}
 	}
 	
@@ -100,5 +148,11 @@ public class DataSessionFactory implements Closeable {
 	public void close() throws IOException {
 		// TODO Auto-generated method stub
 		release();
+	}
+	public boolean isReprocessOnErrorOccurred() {
+		return reprocessOnErrorOccurred;
+	}
+	public void setReprocessOnErrorOccurred(boolean reprocessOnErrorOccurred) {
+		this.reprocessOnErrorOccurred = reprocessOnErrorOccurred;
 	}
 }

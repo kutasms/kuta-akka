@@ -117,6 +117,7 @@ public abstract class HttpServiceActor extends KutaActor {
 		} 
 		catch(KutaIllegalArgumentException ex) {
 			logger.error(ex,ex.getMessage());
+			f.rollback();
 			if(isWebsocket) {
 				websocketRsp.setMessage(ex.getMessage());
 				websocketRsp.setStatus(ex.getErrorCode());
@@ -131,7 +132,7 @@ public abstract class HttpServiceActor extends KutaActor {
 		}
 		catch (Exception ex) {
 			logger.error(ex,ex.getMessage());
-			
+			f.rollback();
 			if(isWebsocket) {
 				websocketRsp.setMessage(ex.getMessage());
 				websocketRsp.setStatus(ResponseStatus.UNKNOWN_ERROR);
@@ -147,6 +148,10 @@ public abstract class HttpServiceActor extends KutaActor {
 			}
 		} finally {
 			f.release();
+			if(f.isReprocessOnErrorOccurred() 
+					&& f.isRollbacked()) {
+				sender().tell(msg, self());
+			}
 		}
 	}
 	

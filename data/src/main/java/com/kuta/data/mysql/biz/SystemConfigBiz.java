@@ -1,6 +1,7 @@
 package com.kuta.data.mysql.biz;
 
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.List;
@@ -8,12 +9,15 @@ import java.util.Map;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.ibatis.session.SqlSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSONObject;
 import com.kuta.base.cache.JedisClient;
 import com.kuta.base.database.DataSessionFactory;
 import com.kuta.base.database.KutaConfigAbstractBiz;
 import com.kuta.base.database.KutaSQLUtil;
+import com.kuta.base.exception.KutaIllegalArgumentException;
 import com.kuta.base.util.KutaRedisUtil;
 import com.kuta.base.util.KutaUtil;
 import com.kuta.data.mysql.dao.SystemConfigMapper;
@@ -72,11 +76,7 @@ public class SystemConfigBiz extends KutaConfigAbstractBiz<SystemConfig> {
 		SystemConfigMapper mapper = session.getMapper(SystemConfigMapper.class);
 		SystemConfigExample example = new SystemConfigExample();
 		example.createCriteria().andKeyEqualTo(key);
-		List<SystemConfig> list = mapper.selectByExample(example);
-		if (KutaUtil.isEmptyColl(list)) {
-			return null;
-		}
-		return list.get(0);
+		return mapper.selectByPrimaryKey(key);
 	}
 
 	public String query(String key, JedisClient jedis) {
@@ -116,12 +116,8 @@ public class SystemConfigBiz extends KutaConfigAbstractBiz<SystemConfig> {
 		String result = f.getJedis().hget(CACHE_KEY, key);
 		if (KutaUtil.isEmptyString(result)) {
 			try {
-				if(fullValid(f, key)) {
-					return query(key, f); 
-				}
-				else {
-					return null;
-				}
+				Map<String, String> map = loadAllFromDB(f, key);
+				return map.get(key);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -145,6 +141,14 @@ public class SystemConfigBiz extends KutaConfigAbstractBiz<SystemConfig> {
 			throw new IllegalArgumentException("未查询到相关的配置");
 		}
 		return new BigInteger(result);
+	}
+	
+	public BigDecimal queryBigDecimal(String key, DataSessionFactory f) {
+		String result = query(key, f);
+		if (KutaUtil.isEmptyString(result)) {
+			throw new IllegalArgumentException("未查询到相关的配置");
+		}
+		return new BigDecimal(result);
 	}
 
 	public BigInteger queryBigInteger(String key, JedisClient jedis) {
@@ -262,7 +266,7 @@ public class SystemConfigBiz extends KutaConfigAbstractBiz<SystemConfig> {
 			}
 		}
 	}
-
+	private Logger logger = LoggerFactory.getLogger(SystemConfigBiz.class);
 
 	public Map<String, String> get(SqlSession session, JedisClient jedis) throws Exception {
 		if (jedis.exists(CACHE_KEY)) {
@@ -273,7 +277,7 @@ public class SystemConfigBiz extends KutaConfigAbstractBiz<SystemConfig> {
 				return get(jedis);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
+				logger.error("获取数据库配置时发生故障",e);
 				return null;
 			}
 		}
@@ -297,11 +301,8 @@ public class SystemConfigBiz extends KutaConfigAbstractBiz<SystemConfig> {
 	
 	public int update(SystemConfig config) throws Exception {
 		return KutaSQLUtil.func(session -> {
-			return KutaRedisUtil.func(jedis -> {
-				int result = session.getMapper(SystemConfigMapper.class).updateByPrimaryKey(config);
-				jedis.hset(this.CACHE_KEY, config.getKey(), config.getValue());
-				return result;
-			});
+			int result = session.getMapper(SystemConfigMapper.class).updateByPrimaryKey(config);
+			return result;
 		});
 	}
 
@@ -363,16 +364,9 @@ public class SystemConfigBiz extends KutaConfigAbstractBiz<SystemConfig> {
 		}
 	}
 	
-	public int update(SqlSession session, SystemConfig config) throws Exception {
-		return KutaRedisUtil.exec(jedis -> {
-			SystemConfigExample example = new SystemConfigExample();
-			example.createCriteria().andKeyEqualTo(config.getKey());
-			int result = session.getMapper(SystemConfigMapper.class).updateByExampleSelective(config, example);
-			if (result > 0) {
-				jedis.hset(this.CACHE_KEY, config.getKey(), config.getValue());
-			}
-			return result;
-		});
+	public int update(SqlSession session, SystemConfig config) {
+		int result = session.getMapper(SystemConfigMapper.class).updateByPrimaryKeySelective(config);
+		return result;
 	}
 
 	@Override
@@ -386,6 +380,23 @@ public class SystemConfigBiz extends KutaConfigAbstractBiz<SystemConfig> {
 			session.getMapper(SystemConfigMapper.class).updateByPrimaryKeySelective(config);
 		});
 		return map.size();
+	}
+
+
+	@Override
+	public int updateWithOptimisticLock(SqlSession session, SystemConfig entity) {
+		// TODO Auto-generated method stub
+		if(entity.getKey() == null) {
+			throw new KutaIllegalArgumentException("must input config.key");
+		}
+		try {
+			int result = session.getMapper(SystemConfigMapper.class).updateWithOptimisticLock(entity);
+			return result;
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return 0;
+		}
 	}
 
 }

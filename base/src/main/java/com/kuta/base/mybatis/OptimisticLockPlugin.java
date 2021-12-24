@@ -1,0 +1,152 @@
+package com.kuta.base.mybatis;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
+import org.mybatis.generator.api.CommentGenerator;
+import org.mybatis.generator.api.IntrospectedColumn;
+import org.mybatis.generator.api.IntrospectedTable;
+import org.mybatis.generator.api.PluginAdapter;
+import org.mybatis.generator.api.dom.java.FullyQualifiedJavaType;
+import org.mybatis.generator.api.dom.java.Interface;
+import org.mybatis.generator.api.dom.java.JavaVisibility;
+import org.mybatis.generator.api.dom.java.Method;
+import org.mybatis.generator.api.dom.java.Parameter;
+import org.mybatis.generator.api.dom.java.TopLevelClass;
+import org.mybatis.generator.api.dom.xml.Document;
+import org.mybatis.generator.api.dom.xml.TextElement;
+import org.mybatis.generator.api.dom.xml.XmlElement;
+import org.mybatis.generator.codegen.mybatis3.MyBatis3FormattingUtilities;
+import org.mybatis.generator.config.Context;
+import org.mybatis.generator.config.MergeConstants;
+
+import com.kuta.base.database.SqlMapperGeneratorTool;
+
+public class OptimisticLockPlugin extends PluginAdapter{
+
+	/**
+	 * 批量更新字符定义
+	 * */
+	private final static String METHOD_NAME = "updateWithOptimisticLock";
+	
+	@Override
+	public boolean validate(List<String> warnings) {
+		// TODO Auto-generated method stub
+		return true;
+	}
+
+	/**
+     * Generate updateWithOptimisticLock Method when the version of mybatis is MYBATIS3
+     * @param interfaze 对类的封装
+     * @param topLevelClass 对Java类的DOM封装
+     * @param introspectedTable 是MBG提供的一个比较基础的扩展类，相当于可以重新定义一个runtime，同时，IntrospectedTable也是一个比较低级的扩展点，比较适合做低级的扩展，比如想使用FreeMarker或者Velocity来生成代码
+     * @return 执行结果
+     * */
+    @Override
+    public boolean clientGenerated(Interface interfaze, TopLevelClass topLevelClass, IntrospectedTable introspectedTable) {
+
+        if (introspectedTable.getTargetRuntime().equals(IntrospectedTable.TargetRuntime.MYBATIS3)) {
+        	genJavaMethod(MethodGeneratorTool.UPDATE, interfaze, introspectedTable, context);
+        }
+        return super.clientGenerated(interfaze, topLevelClass, introspectedTable);
+    }
+    
+    public static void genJavaMethod(Integer type,Interface interfaze,IntrospectedTable introspectedTable, Context context){
+        //JAVA导入基础包
+        Set<FullyQualifiedJavaType> importedTypes = MethodGeneratorTool.importedBaseTypesGenerator(introspectedTable);
+
+
+        Method method = MethodGeneratorTool.methodGenerator(METHOD_NAME,
+                JavaVisibility.DEFAULT,
+                FullyQualifiedJavaType.getIntInstance(),
+                new Parameter(introspectedTable.getRules().calculateAllFieldsClass(), "record"));
+
+        CommentGenerator commentGenerator = context.getCommentGenerator();
+        commentGenerator.addGeneralMethodComment(method, introspectedTable);
+
+        interfaze.addImportedTypes(importedTypes);
+        interfaze.addMethod(method);
+    }
+    
+    /**
+     * 	当运行时为MYBATIS3时生成xml文档
+     * @param document xml文档描述
+     * @param introspectedTable 是MBG提供的一个比较基础的扩展类，相当于可以重新定义一个runtime，同时，IntrospectedTable也是一个比较低级的扩展点，比较适合做低级的扩展，比如想使用FreeMarker或者Velocity来生成代码
+     * @return 执行结果
+     * */
+    @Override
+    public boolean sqlMapDocumentGenerated(Document document, IntrospectedTable introspectedTable) {
+        if (introspectedTable.getTargetRuntime().equals(IntrospectedTable.TargetRuntime.MYBATIS3)) {
+            addSqlMapper(document, introspectedTable);
+        }
+        return super.sqlMapDocumentGenerated(document, introspectedTable);
+    }
+    
+    /**
+     * generate xml docoment
+     * @param document xml文档描述
+     * @param introspectedTable 是MBG提供的一个比较基础的扩展类，相当于可以重新定义一个runtime，同时，IntrospectedTable也是一个比较低级的扩展点，比较适合做低级的扩展，比如想使用FreeMarker或者Velocity来生成代码
+     * */
+    public void addSqlMapper(Document document, IntrospectedTable introspectedTable) {
+    	List<IntrospectedColumn> columnList = introspectedTable.getAllColumns();
+    	
+        Optional<IntrospectedColumn> optional = columnList.parallelStream().filter(predicate->predicate.getActualColumnName().equals("op_version")).findFirst();
+        
+        if(!optional.isPresent()) {
+        	return;
+        }
+        
+    	String tableName = introspectedTable.getFullyQualifiedTableNameAtRuntime();
+        
+        //primaryKey的JDBC名字
+        String primaryKeyName = introspectedTable.getPrimaryKeyColumns().get(0).getActualColumnName();
+
+        //primaryKey的JAVA变量
+        String primaryKeyParameterClause = MyBatis3FormattingUtilities.getParameterClause(introspectedTable.getPrimaryKeyColumns().get(0));
+
+        //primaryKey的JAVA名字
+//        String primaryKeyJavaName = introspectedTable.getPrimaryKeyColumns().get(0).getJavaProperty();
+        
+
+        XmlElement updateXmlElement = SqlMapperGeneratorTool.baseElementGenerator(SqlMapperGeneratorTool.UPDATE,
+                METHOD_NAME,
+                introspectedTable.getRules().calculateAllFieldsClass());
+        updateXmlElement.addElement(new TextElement("<!-- generated by Kuta OptimisticLock Plugin - " 
+                + MergeConstants.NEW_ELEMENT_TAG + " -->"));
+        updateXmlElement.addElement(new TextElement(String.format("update %s ", tableName)));
+
+        XmlElement setElement = new XmlElement("set");
+        
+        for (int i = 0; i < columnList.size(); i++) {
+        	
+            IntrospectedColumn introspectedColumn = columnList.get(i);
+
+            String columnName = introspectedColumn.getActualColumnName();
+
+            String columnJavaTypeName = introspectedColumn.getJavaProperty();
+
+            if (introspectedTable.getPrimaryKeyColumns().contains(introspectedColumn)) {
+            	System.out.println("主键:" + introspectedColumn.getActualColumnName() + "跳过");
+                continue;
+            }
+            if(introspectedColumn.getActualColumnName().equals("op_version")) {
+            	String versionSql = String.format("`op_version` = %s + 1%s",
+            			MyBatis3FormattingUtilities.getParameterClause(introspectedColumn),
+            			i == columnList.size()-1 ? "" : ",");
+            	TextElement element = new TextElement(versionSql);
+            	setElement.addElement(element);
+            } else {
+            	String ifSql = String.format("`%s` = %s,", columnName, MyBatis3FormattingUtilities.getParameterClause(introspectedColumn));
+                XmlElement ifElement = SqlMapperGeneratorTool.baseIfJudgeElementGen(columnJavaTypeName, ifSql, false);
+                setElement.addElement(ifElement);
+            }
+        }
+
+        updateXmlElement.addElement(setElement);
+
+        updateXmlElement.addElement(new TextElement(String.format("where `%s` = %s and `op_version`= %s or `op_version` is null", primaryKeyName, primaryKeyParameterClause,MyBatis3FormattingUtilities.getParameterClause(optional.get()))));
+        
+        document.getRootElement().addElement(updateXmlElement);
+    }
+}

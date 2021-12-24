@@ -115,6 +115,7 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 	 * @throws KutaRuntimeException KSF运行时异常
 	 * */
 	public int remove(DataSessionFactory factory, TKey key, Object... args) throws KutaRuntimeException {
+		factory.enableJedisTrans();
 		int result = this.remove(factory.getSqlSession(), key);
 		String cacheKey = formatCacheKey(args);
 		factory.getJedis().del(cacheKey);
@@ -167,6 +168,7 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 	 * @throws KutaRuntimeException KSF运行时异常
 	 * */
 	public int remove(DataSessionFactory factory, TKey key) throws KutaRuntimeException {
+		factory.enableJedisTrans();
 		int result = this.remove(factory.getSqlSession(), key);
 		String cacheKey = formatCacheKeyByTKey(key);
 		factory.getJedis().del(cacheKey);
@@ -469,6 +471,7 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 			throw new KutaIllegalArgumentException("entity.key is null.");
 		}
 		String cacheKey = formatCacheKeyByTKey(getKey(entity));
+		factory.enableJedisTrans();
 		return dbCache(factory, entity, cacheKey);
 	}
 	
@@ -526,6 +529,7 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 		if(key == null) {
 			throw new KutaIllegalArgumentException("请设置实体的主键");
 		}
+		factory.enableJedisTrans();
 		factory.getJedis().del(cacheKey);
 		int result = update(factory.getSqlSession(), entity);
 		T fullyEntity = get(factory.getSqlSession(), getKey(entity));
@@ -603,6 +607,7 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 	 * @throws Exception 内部异常
 	 * */
 	public int insertCache(DataSessionFactory factory, T entity, Object... args) throws Exception {
+		factory.enableJedisTrans();
 		int result = insert(factory.getSqlSession(), entity);
 		cache(entity,factory.getJedis(),args);
 		return result;
@@ -629,6 +634,7 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 	 * @throws Exception 内部异常
 	 * */
 	public int insertCache(DataSessionFactory factory, T entity) throws Exception {
+		factory.enableJedisTrans();
 		int result = insert(factory.getSqlSession(), entity);
 		cache(entity,factory.getJedis(), formatCacheKeyByTKey(getKey(entity)));
 		return result;
@@ -705,6 +711,7 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 		String cacheKey = formatCacheKeyByTKey(key);
 		String val = factory.getJedis().hget(cacheKey, field);
 		if(KutaUtil.isEmptyString(val)) {
+			factory.enableJedisTrans();
 			T t = get(factory.getSqlSession(), key);
 			if(KutaUtil.isValueNull(t)) {
 				return null;
@@ -718,6 +725,7 @@ public abstract class KutaAbstractBiz<T extends KutaDBEntity, TKey extends Numbe
 		String cacheKey = formatCacheKey(args);
 		String val = factory.getJedis().hget(cacheKey, field);
 		if(KutaUtil.isEmptyString(val)) {
+			factory.enableJedisTrans();
 			T t = get(factory.getSqlSession(), key);
 			if(KutaUtil.isValueNull(t)) {
 				return null;

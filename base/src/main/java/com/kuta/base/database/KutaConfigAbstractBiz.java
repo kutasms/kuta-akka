@@ -7,6 +7,7 @@ import org.apache.ibatis.session.SqlSession;
 import com.kuta.base.cache.JedisClient;
 import com.kuta.base.common.KutaCommonSettings;
 import com.kuta.base.exception.KutaIllegalArgumentException;
+import com.kuta.base.util.KutaBeanUtil;
 import com.kuta.base.util.KutaRedisUtil;
 
 import redis.clients.jedis.Transaction;
@@ -32,6 +33,10 @@ public abstract class KutaConfigAbstractBiz<T extends KutaDBEntity> {
 		this.CACHE_KEY = String.format("%s_%s", KutaCommonSettings.getCacheKeyPrefix(), cacheKey);
 	}
 
+	public String getCacheKey() {
+		return CACHE_KEY;
+	}
+	
 	/**
 	 * 从数据库中加载配置数据，并将数据组装为一个String。
 	 * @param session 数据库连接
@@ -48,6 +53,7 @@ public abstract class KutaConfigAbstractBiz<T extends KutaDBEntity> {
 	 * @return 受影响的数据行数
 	 * */
 	protected abstract int update(SqlSession session,Map<String, String> map);
+	public abstract int updateWithOptimisticLock(SqlSession session,T entity);
 	/**
 	 * 从数据库中加载配置数据并将数据转换为HashMap
 	 * @param session 数据库连接
@@ -212,17 +218,17 @@ public abstract class KutaConfigAbstractBiz<T extends KutaDBEntity> {
 		jedis.expire(CACHE_KEY, 30 * 60);
 		return map.containsKey(key);
 	}
-	public boolean fullValid(DataSessionFactory f, String key) {
+	public Map<String,String> loadAllFromDB(DataSessionFactory f, String key) {
 		Map<String, String> map = getMap(f.getSqlSession());
 		f.getJedis().hset(CACHE_KEY, map);
 		f.getJedis().expire(CACHE_KEY, 30 * 60);
-		return map.containsKey(key);
+		return map;
 	}
-	public boolean fullValid(DataSessionFactory f, String key, int expire) {
+	public Map<String,String> fullValid(DataSessionFactory f, String key, int expire) {
 		Map<String, String> map = getMap(f.getSqlSession());
 		f.getJedis().hset(CACHE_KEY, map);
 		f.getJedis().expire(CACHE_KEY, expire);
-		return map.containsKey(key);
+		return map;
 	}
 	
 	public void cacheAllToHash(SqlSession session,Transaction jedis) throws Exception {
@@ -294,5 +300,14 @@ public abstract class KutaConfigAbstractBiz<T extends KutaDBEntity> {
 		jedis.hset(CACHE_KEY, map);
 		jedis.expire(CACHE_KEY, expire);
 		update(session,map);
+	}
+	
+	public int dbCacheWithOptimisticLock(SqlSession session,JedisClient jedis, T entity, int expire) {
+		int result = updateWithOptimisticLock(session, entity);
+		if(result > 0) {
+			jedis.hset(CACHE_KEY, KutaBeanUtil.bean2Map(entity));
+			jedis.expire(CACHE_KEY, expire);
+		}
+		return result;
 	}
 }

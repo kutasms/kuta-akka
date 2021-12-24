@@ -47,6 +47,7 @@ public abstract class KutaMapWithIncrBiz<T extends KutaDBEntity, TKey extends Nu
 		}
 	}
 	public void incrCacheDB(DataSessionFactory f,T t, TKey key) throws Exception {
+		f.enableJedisTrans();
 		incrDBByKey(f.getSqlSession(),t, key);
 		getOneByKey(f, key);
 		if(CACHE_EXPIRE != -1) {
@@ -73,6 +74,7 @@ public abstract class KutaMapWithIncrBiz<T extends KutaDBEntity, TKey extends Nu
 	}
 	
 	public void incrCacheDBWithArgs(DataSessionFactory f,T t,TKey key, Object... args) throws Exception {
+		f.enableJedisTrans();
 		f.getJedis().del(formatCacheKey(args));
 		incrDBByKey(f.getSqlSession(), t, key);
 		getOne(f, key, args);
