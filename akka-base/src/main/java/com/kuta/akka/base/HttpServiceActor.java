@@ -89,7 +89,7 @@ public abstract class HttpServiceActor extends KutaActor {
 		KutaHttpResponse httpRsp = null;
 		KutaWebSocketResponse websocketRsp = null;
 		boolean isWebsocket = msg.getProtocol().equals(KutaConstants.PROTOCAL_WEBSOCKET);
-		DataSessionFactory dataSessionFactory = DataSessionFactory.create();
+		DataSessionFactory f = DataSessionFactory.create();
 		if(isWebsocket) {
 			websocketRsp = new KutaWebSocketResponse();
 			websocketRsp.setCode(msg.getCode());
@@ -109,9 +109,9 @@ public abstract class HttpServiceActor extends KutaActor {
 				}
 			}
 			if(isWebsocket) {
-				rsp.accept(websocketRsp,dataSessionFactory);
+				rsp.accept(websocketRsp,f);
 			} else {
-				rsp.accept(httpRsp,dataSessionFactory);
+				rsp.accept(httpRsp,f);
 			}
 			
 		} 
@@ -131,6 +131,7 @@ public abstract class HttpServiceActor extends KutaActor {
 		}
 		catch (Exception ex) {
 			logger.error(ex,ex.getMessage());
+			
 			if(isWebsocket) {
 				websocketRsp.setMessage(ex.getMessage());
 				websocketRsp.setStatus(ResponseStatus.UNKNOWN_ERROR);
@@ -145,7 +146,7 @@ public abstract class HttpServiceActor extends KutaActor {
 				msg.getChannel().tell(httpRsp, self());
 			}
 		} finally {
-			dataSessionFactory.release();
+			f.release();
 		}
 	}
 	

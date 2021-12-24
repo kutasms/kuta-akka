@@ -79,6 +79,9 @@ public class KutaBatchUpdatePlugin extends org.mybatis.generator.api.PluginAdapt
     	String tableName = introspectedTable.getFullyQualifiedTableNameAtRuntime();
         List<IntrospectedColumn> columnList = introspectedTable.getAllColumns();
         //primaryKey的JDBC名字
+//        if(introspectedTable.getPrimaryKeyColumns().size() == 0) {
+//        	return;
+//        }
         String primaryKeyName = introspectedTable.getPrimaryKeyColumns().get(0).getActualColumnName();
 
         //primaryKey的JAVA变量

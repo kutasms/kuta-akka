@@ -3,17 +3,15 @@ SET FOREIGN_KEY_CHECKS=0;
 -- ----------------------------
 -- Table structure for BS_SystemConfig
 -- ----------------------------
-DROP TABLE IF EXISTS `BS_SystemConfig`;
-CREATE TABLE `BS_SystemConfig` (
-  `cid` int(11) NOT NULL AUTO_INCREMENT,
-  `key` varchar(50) COLLATE utf8mb4_bin DEFAULT NULL,
-  `value` varchar(255) COLLATE utf8mb4_bin DEFAULT NULL,
-  `default_val` varchar(255) COLLATE utf8mb4_bin DEFAULT NULL COMMENT '默认值',
+DROP TABLE IF EXISTS `BS_Config`;
+CREATE TABLE `BS_Config` (
+  `key` varchar(50) COLLATE utf8mb4_bin NOT NULL,
+  `value` varchar(256) COLLATE utf8mb4_bin DEFAULT NULL,
+  `default_val` varchar(256) COLLATE utf8mb4_bin DEFAULT NULL COMMENT '默认值',
   `remark` varchar(255) COLLATE utf8mb4_bin DEFAULT NULL,
   `val_type` varchar(10) COLLATE utf8mb4_bin DEFAULT NULL,
-  PRIMARY KEY (`cid`) USING BTREE,
-  UNIQUE KEY `IX_KEY` (`key`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ROW_FORMAT=COMPACT;
+  `op_version` bigint(20) DEFAULT '0'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ROW_FORMAT=COMPACT;
 
 -- ----------------------------
 -- Table structure for BS_Department
