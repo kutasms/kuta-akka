@@ -1,8 +1,8 @@
 package com.kuta.base.util;
 
 public enum Directions {
-	UP("向上",0),
-	DOWN("向下",1);
+	UP("up",0),
+	DOWN("down",1);
 	
 	private String name;
 	private Integer val;

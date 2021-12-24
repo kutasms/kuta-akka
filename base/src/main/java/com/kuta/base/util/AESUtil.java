@@ -13,18 +13,18 @@ import com.kuta.base.exception.KutaIllegalArgumentException;
 public class AESUtil {
 	
 	/**
-	 * key长度不是16位的字符描述
+	 * The length of the private key is not 16 bits
 	 * */
-	private static final String KEY_LENGTH_NOT_16 = "Key长度不是16位";
+	private static final String KEY_LENGTH_NOT_16 = "The length of the private key is not 16 bits.";
 	
 	
 	
 	/**
-	 * 执行AES加密
-	 * @param src 需加密的字符串
-	 * @param secretKey 秘钥
-	 * @return 加密的字符串
-	 * @throws Exception 当发生异常时抛出
+	 * Perform AES encryption
+	 * @param src Source string
+	 * @param secretKey private key
+	 * @return Encrypted string
+	 * @throws Exception Thrown when an exception occurs
 	 * */
     public static String Encrypt(String src, String secretKey) throws Exception {
         if (secretKey == null) {
@@ -44,11 +44,11 @@ public class AESUtil {
     }
 
     /**
-	 * 执行AES解密
-	 * @param src 需解密的字符串
-	 * @param secretKey 秘钥
-	 * @return 解密的字符串
-	 * @throws Exception 当发生异常时抛出
+	 * Perform AES decryption
+	 * @param src String to decrypt
+	 * @param secretKey Private Key
+	 * @return Decrypted string
+	 * @throws Exception Thrown when an exception occurs
 	 * */
     public static String Decrypt(String src, String secretKey) throws Exception {
         try {

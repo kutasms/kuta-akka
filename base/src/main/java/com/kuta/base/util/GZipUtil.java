@@ -8,15 +8,15 @@ import java.util.zip.GZIPOutputStream;
 import com.kuta.base.entity.KutaConstants;
 
 /**
- * gzip工具类
+ * Gzip compression and decompression tool class
  * */
 public class GZipUtil {
 	
 	/**
-	 * 压缩
-	 * @param src 待压缩的字符串
-	 * @param encoding 字符编码方式
-	 * @return 压缩后的byte数组
+	 * Compress string
+	 * @param src String to be compressed
+	 * @param encoding Character encoding method
+	 * @return Compressed byte array
 	 * */
     public static byte[] compress(String src, String encoding) {
         if (src == null || src.length() == 0) {
@@ -35,18 +35,18 @@ public class GZipUtil {
     }
     
     /**
-	 * 压缩
-	 * @param src 待压缩的字符串
-	 * @return 压缩后的byte数组
+	 * Compress string
+	 * @param src String to be compressed
+	 * @return Compressed byte array
 	 * */
     public static byte[] compress(String str) throws IOException {  
         return compress(str, KutaConstants.ENCODE_UTF_8);  
     }
     
     /**
-     * 解压缩
-     * @param bytes 待解压缩的byte数组
-     * @return 解压后的byte数组
+     * Decompress byte array
+     * @param bytes Byte array to be decompressed
+     * @return Decompressed byte array
      * */
     public static byte[] uncompress(byte[] bytes) {
         if (bytes == null || bytes.length == 0) {
@@ -71,10 +71,10 @@ public class GZipUtil {
     }
     
     /**
-     * 解压缩
-     * @param bytes 待解压缩的byte数组
-     * @param encoding 字符编码方式
-     * @return 解压后的字符串
+     * Decompress byte array
+     * @param bytes Byte array to be decompressed
+     * @param encoding Character encoding method
+     * @return Decompressed string
      * */
     public static String uncompressToString(byte[] bytes, String encoding) {  
         if (bytes == null || bytes.length == 0) {  
@@ -96,9 +96,9 @@ public class GZipUtil {
         return null;
     }
     /**
-     * 解压缩
-     * @param bytes 待解压缩的byte数组
-     * @return 解压后的字符串
+     * Decompress byte array
+     * @param bytes Byte array to be decompressed
+     * @return Decompressed string
      * */
     public static String uncompressToString(byte[] bytes) {  
         return uncompressToString(bytes, KutaConstants.ENCODE_UTF_8);  

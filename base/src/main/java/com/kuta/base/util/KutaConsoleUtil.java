@@ -3,20 +3,20 @@ package com.kuta.base.util;
 import com.alibaba.fastjson.JSONObject;
 
 /**
- * 控制台工具
+ * Print tool
  * */
 public class KutaConsoleUtil {
 	/**
-	 * 打印对象
-	 * @param object Java对象
+	 * Print object
+	 * @param object Java object
 	 * */
 	public static void printObj(Object object) {
 		System.out.println(JSONObject.toJSONString(object));
 	}
 	/**
-	 * 打印对象
-	 * @param object Java对象
-	 * @param prettyFormat 是否打印为格式化的json格式
+	 * Print object
+	 * @param object Java object
+	 * @param prettyFormat Print in formatted JSON format
 	 * */
 	public static void printObj(Object object, boolean prettyFormat) {
 		System.out.println(JSONObject.toJSONString(object,prettyFormat));

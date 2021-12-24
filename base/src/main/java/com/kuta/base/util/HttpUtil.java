@@ -17,41 +17,41 @@ import java.util.zip.GZIPInputStream;
 import com.kuta.base.entity.KutaConstants;
 
 /**
- * http工具类
+ * HTTP tool class
  * */
 public class HttpUtil {
 	
 	/**
-	 * 执行一个get请求
+	 * Execute a get request
 	 *
-	 * @param url 网址
-	 * @return http返回的结果
-	 * @throws IOException 发生IO异常时抛出
+	 * @param url Website url
+	 * @return HTTP returned results
+	 * @throws IOException Thrown when an IO exception occurs
 	 */
 	public static String get(String url) throws IOException {
 		return get(url, null);
 	}
 
 	/**
-	 * 执行一个get请求
+	 * Execute a get request
 	 *
-	 * @param url 网址
-	 * @param headers header定义
-	 * @return http返回的结果
-	 * @throws IOException 发生IO异常时抛出
+	 * @param url Website url
+	 * @param headers Header definition
+	 * @return HTTP returned results
+	 * @throws IOException Thrown when an IO exception occurs
 	 */
 	public static String get(String url, Map<String, String> headers) throws IOException {
 		return fetch("GET", url, null, headers);
 	}
 
 	/**
-	 * 执行一个post请求
+	 * Execute a post request
 	 *
-	 * @param url 网址
-	 * @param body 请求的参数
-	 * @param headers header定义
-	 * @return http返回的结果
-	 * @throws IOException 发生IO异常时抛出
+	 * @param url Website url
+	 * @param body Requested parameters
+	 * @param headers Header definition
+	 * @return HTTP returned results
+	 * @throws IOException Thrown when an IO exception occurs
 	 */
 	public static String post(String url, String body, Map<String, String> headers) 
 			throws IOException {
@@ -59,37 +59,37 @@ public class HttpUtil {
 	}
 
 	/**
-	 * 执行一个post请求
+	 * Execute a post request
 	 *
-	 * @param url 网址
-	 * @param body 请求的参数
-	 * @return http返回的结果
-	 * @throws IOException 发生IO异常时抛出
+	 * @param url Website url
+	 * @param body Requested parameters
+	 * @return HTTP returned results
+	 * @throws IOException Thrown when an IO exception occurs
 	 */
 	public static String post(String url, String body) throws IOException {
 		return post(url, body, null);
 	}
 
 	/**
-	 * 执行一个post请求,content-type为application/x-www-form-urlencoded
+	 * Execute a post request,Content-Type is application/x-www-form-urlencoded
 	 *
-	 * @param url 网址
-	 * @param params 请求的参数
-	 * @return http返回的结果
-	 * @throws IOException 发生IO异常时抛出
+	 * @param url Website url
+	 * @param params Requested parameters
+	 * @return HTTP returned results
+	 * @throws IOException Thrown when an IO exception occurs
 	 */
 	public static String postForm(String url, Map<String, String> params) throws IOException {
 		return postForm(url, params, null);
 	}
 
 	/**
-	 * 执行一个post请求,content-type为application/x-www-form-urlencoded
+	 * Execute a post request,Content-Type is application/x-www-form-urlencoded
 	 *
-	 * @param url 网址
-	 * @param params 请求的参数
-	 * @param headers header定义
-	 * @return http返回的结果
-	 * @throws IOException 发生IO异常时抛出
+	 * @param url Website url
+	 * @param params Requested parameters
+	 * @param headers Header definition
+	 * @return HTTP returned results
+	 * @throws IOException Thrown when an IO exception occurs
 	 */
 	public static String postForm(String url, Map<String, String> params, Map<String, String> headers)
 			throws IOException {
@@ -119,60 +119,60 @@ public class HttpUtil {
 	}
 
 	/**
-	 * 执行一个put请求
+	 * Execute a put request
 	 *
-	 * @param url 网址
-	 * @param body 请求的参数
-	 * @param headers header定义
-	 * @return http返回的结果
-	 * @throws IOException 发生IO异常时抛出
+	 * @param url Website url
+	 * @param body Requested parameters
+	 * @param headers Header definition
+	 * @return HTTP returned results
+	 * @throws IOException Thrown when an IO exception occurs
 	 */
 	public static String put(String url, String body, Map<String, String> headers) throws IOException {
 		return fetch("PUT", url, body, headers);
 	}
 
 	/**
-	 * 执行一个put请求
+	 * Execute a put request
 	 *
-	 * @param url 网址
-	 * @param body 请求的参数
-	 * @return http返回的结果
-	 * @throws IOException 发生IO异常时抛出
+	 * @param url Website url
+	 * @param body Requested parameters
+	 * @return HTTP returned results
+	 * @throws IOException Thrown when an IO exception occurs
 	 */
 	public static String put(String url, String body) throws IOException {
 		return put(url, body, null);
 	}
 
 	/**
-	 * 执行一个delete请求
+	 * Execute a delete request
 	 *
-	 * @param url 网址
-	 * @param headers header定义
-	 * @return http返回的结果
-	 * @throws IOException 发生IO异常时抛出
+	 * @param url Website url
+	 * @param headers Header definition
+	 * @return HTTP returned results
+	 * @throws IOException Thrown when an IO exception occurs
 	 */
 	public static String delete(String url, Map<String, String> headers) throws IOException {
 		return fetch("DELETE", url, null, headers);
 	}
 
 	/**
-	 * 执行一个delete请求
+	 * Execute a delete request
 	 *
-	 * @param url 网址
-	 * @return http返回的结果
-	 * @throws IOException 发生IO异常时抛出
+	 * @param Website url
+	 * @return HTTP returned results
+	 * @throws IOException Thrown when an IO exception occurs
 	 */
 	public static String delete(String url) throws IOException {
 		return delete(url, null);
 	}
 
 	/**
-	 * 在URL上添加参数
+	 * Add parameters on URL
 	 *
-	 * @param url 网址
-	 * @param params 参数集合
-	 * @return 带有参数的网址
-	 * @throws IOException 发生IO异常时抛出
+	 * @param url Website url
+	 * @param params Parameter set
+	 * @return URL with parameters
+	 * @throws IOException Thrown when an IO exception occurs
 	 */
 	public static String appendQueryParams(String url, Map<String, String> params) throws IOException {
 		String fullUrl = url;
@@ -193,11 +193,11 @@ public class HttpUtil {
 	}
 
 	/**
-	 * 获取URL上的所有参数
+	 * Gets all parameters on the URL
 	 *
-	 * @param url 网址
-	 * @return 参数集合
-	 * @throws IOException 发生IO异常时抛出
+	 * @param url Website url
+	 * @return Parameter set
+	 * @throws IOException Thrown when an IO exception occurs
 	 */
 	public static Map<String, String> getQueryParams(String url) throws IOException {
 		Map<String, String> params = new HashMap<>();
@@ -231,11 +231,11 @@ public class HttpUtil {
 	}
 
 	/**
-	 * 删除URL上的所有参数
+	 * Delete all parameters on URL
 	 *
-	 * @param url 网址
-	 * @return 已删除参数的网址
-	 * @throws IOException 发生IO异常时抛出
+	 * @param url Website url
+	 * @return URL of deleted parameter
+	 * @throws IOException Thrown when an IO exception occurs
 	 */
 	public static String removeQueryParams(String url) throws IOException {
 		int q = url.indexOf('?');
@@ -247,14 +247,14 @@ public class HttpUtil {
 	}
 
 	/**
-	 * 执行一个请求
+	 * Execute a request
 	 *
-	 * @param method http方法, 例如 "GET" 或 "POST"
-	 * @param url 网址
-	 * @param body 参数
-	 * @param headers 头部信息
-	 * @return 返回的结果
-	 * @throws IOException 发生IO异常时抛出
+	 * @param method HTTP methods, such as "get" or "post"
+	 * @param url Website url
+	 * @param body parameter
+	 * @param headers Header information
+	 * @return Returned results
+	 * @throws IOException Thrown when an IO exception occurs
 	 */
 	public static String fetch(String method, String url, String body, Map<String, String> headers) throws IOException {
 		// connection
@@ -384,11 +384,11 @@ public class HttpUtil {
 	}
 
 	/**
-	 * 从输入流中读取内容
+	 * Read content from input stream
 	 *
-	 * @param in 输入流
-	 * @return 读取的string
-	 * @throws IOException 发生IO异常时抛出
+	 * @param in Input stream
+	 * @return Read string
+	 * @throws IOException Thrown when an IO exception occurs
 	 */
 	public static String streamToString(InputStream in) throws IOException {
 		StringBuffer out = new StringBuffer();

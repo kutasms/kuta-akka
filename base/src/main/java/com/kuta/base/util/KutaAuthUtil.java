@@ -10,25 +10,30 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.auth0.jwt.interfaces.JWTVerifier;
 
 public class KutaAuthUtil {
-	//设置过期时间
+	//Expiration time
     private static final long EXPIRE_DATE=30*60*1000;
-    //token秘钥
+    //Token secret key
     private static final String TOKEN_SECRET = "QCEQIUBFKSABFBZ2021BQFE";
     
     
-    
+    /**
+     * Generate token
+     * @param key1 First data
+     * @param key2 Second data
+     * @return Authorized token
+     */
     public static String token(String key1,String key2){
         String token = "";
         try {
-            //过期时间
+            
             Date date = new Date(System.currentTimeMillis()+EXPIRE_DATE);
-            //秘钥及加密算法
+            
             Algorithm algorithm = Algorithm.HMAC256(TOKEN_SECRET);
-            //设置头部信息
+            
             Map<String,Object> header = new HashMap<>();
             header.put("typ","JWT");
             header.put("alg","HS256");
-            //携带hex，password信息,生成签名
+            
             token = JWT.create()
                     .withHeader(header)
                     .withClaim("key1",key1)
@@ -41,12 +46,14 @@ public class KutaAuthUtil {
         }
         return token;
     }
+    
+    
+    /**
+     * Validate token
+     * @param token Authorized token
+     * @return Validation results
+     */
     public static boolean verify(String token){
-        /**
-         * @desc   验证token，通过返回true
-         * @create 2019/1/18/018 9:39
-         * @params [token]需要校验的串
-         **/
         try {
             Algorithm algorithm = Algorithm.HMAC256(TOKEN_SECRET);
             JWTVerifier verifier = JWT.require(algorithm).build();
@@ -57,7 +64,11 @@ public class KutaAuthUtil {
             return  false;
         }
     }
-    
+    /**
+     * Decode the token to obtain the data object in the token
+     * @param token Authorized token
+     * @return Data object
+     */
     public static DecodedJWT decode(String token) {
     	return JWT.decode(token);
     }

@@ -20,18 +20,18 @@ import com.alibaba.fastjson.JSONObject;
 import akka.protobufv3.internal.Value;
 
 /**
- * Java实体对象序列化工具
+ * Java entity objects serialization and deserialization tool
  * */
 public class KutaBeanUtil {
 	/**
-	 * 日志接口
+	 * logger
 	 * */
 	private static final Logger logger = LoggerFactory.getLogger(KutaBeanUtil.class);
 	
 	/**
-	 * 获取对象的所有字段，包括所有上层父类
-	 * @param o 实体对象
-	 * @return 字段包装数组
+	 * Get all fields of the object, including all upper parent classes
+	 * @param o Entity object
+	 * @return Field wrapper array
 	 * */
 	public static Field[] getAllFields(Object o){
 	    return getAllFields(o.getClass());
@@ -48,10 +48,10 @@ public class KutaBeanUtil {
 	}
 	
 	/**
-	 * 实体对象转成Map
+	 * Convert entity object to map
 	 *
-	 * @param obj 实体对象
-	 * @return map对象
+	 * @param obj Entity object
+	 * @return Map object
 	 */
 	public static Map<String, String> bean2Map(Object obj) {
 		Map<String, String> map = new HashMap<>();
@@ -105,13 +105,11 @@ public class KutaBeanUtil {
 	}
 
 	/**
-	 * Map转成实体对象
-	 * @param <T> 实体泛型
-	 * @param map
-	 *            实体对象包含属性
-	 * @param clazz
-	 *            实体Java类型
-	 * @return 实体对象
+	 * Convert map to entity object
+	 * @param <T> Entity generics
+	 * @param map Attribute Collection map
+	 * @param Clazz Entity Java type
+	 * @return Entity object
 	 */
 	public static <T> T map2Bean(Map<String, String> map, Class<T> clazz) {
 		if (map == null) {

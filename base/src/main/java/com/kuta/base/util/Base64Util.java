@@ -3,9 +3,9 @@ package com.kuta.base.util;
 import java.io.ByteArrayOutputStream;
 
 /**
- * KSF框架内部专用BASE64加密工具
- * <p>在本工具中补齐64个字符的最后两个字符为+和/符号</p>
- * <p>如需要和其他包进行交互请使用java sdk提供的base64加解密方法</p>
+ * Base64 string formatting tool. For security reasons, such formatted data may be different from general Base64
+ * <p>In this tool, the last two characters of 64 characters are the + and / symbols</p>
+ * <p>If you need to interact with other packages, use the base64 encryption and decryption method provided by Java SDK</p>
  * */
 public class Base64Util {
 	private static char[] base64EncodeChars = new char[] { 'A', 'B', 'C', 'D',
@@ -26,10 +26,10 @@ public class Base64Util {
             -1, -1 };
 
     /**
-     * 加密
+     * Format byte array to Base64 string
      * 
-     * @param data 需加密的byte数组
-     * @return 加密后的字符串
+     * @param Byte array to be formatted
+     * @return Formatted string
      */
     public static String encode(byte[] data) {
         StringBuffer sb = new StringBuffer();
@@ -66,10 +66,10 @@ public class Base64Util {
     }
 
     /**
-     * 解密
+     * Convert Base64 string to byte array
      * 
-     * @param str 待解密的字符串
-     * @return 解密后的byte数组
+     * @param str String to be converted
+     * @return Converted String
      */
     public static byte[] decode(String str) {
         byte[] data = str.getBytes();
@@ -77,10 +77,10 @@ public class Base64Util {
     }
     
     /**
-     * 解密
+     * Convert a Base64 formatted byte array to a normal byte array
      * 
-     * @param data 代解密的byte数组
-     * @return 解密后的byte数组
+     * @param data Formatted byte array
+     * @return Normal byte array
      */
     public static byte[] decode(byte[] data) {
         int len = data.length;

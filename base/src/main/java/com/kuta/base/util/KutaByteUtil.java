@@ -1,13 +1,13 @@
 package com.kuta.base.util;
 
 /**
- * 二进制相关工具
+ * Binary data formatting tool
  * */
 public class KutaByteUtil {
 	/**
-	 * 将byte数组转换为16进制字符串
-	 * @param src 待转换的byte数组
-	 * @return 16进制字符串
+	 * Convert byte array to hexadecimal string
+	 * @param src Byte array to be converted
+	 * @return Hexadecimal string
 	 * */
 	public static String bytesToHexString(byte[] src){  
 		if (src == null || src.length <= 0) {  
@@ -27,10 +27,10 @@ public class KutaByteUtil {
 	}
 	
 	/**
-	 * 将int类型转换为byte数组，并且只取前length个byte
-	 * @param target 目标int值
-	 * @param length 前length个byte
-	 * @return 转换后的byte数组
+	 * Convert int type to byte array, and only take the first length bytes
+	 * @param target Target int value
+	 * @param length The length of the value to get
+	 * @return Converted byte array
 	 * */
 	public static byte[] intHex(int target, int length) {
 	    byte[] array = new byte[length];
@@ -42,9 +42,9 @@ public class KutaByteUtil {
 	}
 	
 	/**
-	 * byte数组转换为long类型
-	 * @param bytes 目标byte数组
-	 * @return long值
+	 * Convert byte array to long type
+	 * @param bytes Target byte array
+	 * @return Long value
 	 * */
 	public static long bytesToLong(byte[] bytes) {
 		 long  values = 0;   
@@ -54,10 +54,10 @@ public class KutaByteUtil {
 		    return values; 
     }
 	/**
-	 * 将long类型转换为byte数组，并且只取前length个byte
-	 * @param target 目标long值
-	 * @param length 前length个byte
-	 * @return 转换后的byte数组
+	 * Convert long type to byte array, and only take the first length bytes
+	 * @param target Target long value
+	 * @param length The length of the value to get
+	 * @return Converted byte array
 	 * */
 	public static byte[] longHex(long target, int length) {
 	    byte[] array = new byte[length];

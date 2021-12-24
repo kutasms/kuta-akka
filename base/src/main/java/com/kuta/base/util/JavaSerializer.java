@@ -8,20 +8,19 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
 /**
- * java序列化工具
+ * Java serialization tool
  * */
 public class JavaSerializer {
 	/**
-	 * JavaObj转换为序列化二进制对象
-	 * @param src 实现了Serializable 接口的对象
-	 * @return 序列化后的byte数组
+	 * Convert Java objects to serialized binary objects
+	 * @param src An object that implements the serializable interface
+	 * @return Serialized byte array
 	 */
 	public static byte[] serialize(Serializable src) {
 		ByteArrayOutputStream baos = null;
 		ObjectOutputStream oos = null;
 		byte[] bytes = null;
 		try {
-			// 序列化
 			baos = new ByteArrayOutputStream();
 			oos = new ObjectOutputStream(baos);
 			oos.writeObject(src);
@@ -42,16 +41,15 @@ public class JavaSerializer {
 	}
 
 	/**
-	 * 反序列化，二进制数据转换为javaObj
-	 * @param src 待反序列化的byte数组
-	 * @return 反序列化后的java对象
+	 * Deserialization, converting binary data to Java objects
+	 * @param src Byte array to be deserialized
+	 * @return Deserialized Java object
 	 */
 	@SuppressWarnings("unchecked")
 	public static <T> T deserialize(byte[] src) {
 		ByteArrayInputStream bais = null;
 		ObjectInputStream ois = null;
 		try {
-			// 反序列化
 			bais = new ByteArrayInputStream(src);
 			ois = new ObjectInputStream(bais);
 			return (T)ois.readObject();

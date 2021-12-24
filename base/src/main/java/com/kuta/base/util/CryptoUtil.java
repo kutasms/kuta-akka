@@ -8,7 +8,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
 /**
- * 加密工具类
+ * Encryption tool class
  * */
 public class CryptoUtil {
 
@@ -22,7 +22,7 @@ public class CryptoUtil {
 	    public static final String KEY_MD5 = "MD5";
 	 
 	    /**
-	     * MAC算法可选以下多种算法
+	     * The MAC algorithm can be selected from the following algorithms:
 	     * 
 	     * <pre>
 	     * HmacMD5 
@@ -36,11 +36,11 @@ public class CryptoUtil {
 	 
 	 
 	    /**
-	     * SHA加密
+	     * Sha encryption
 	     * 
-	     * @param data 待加密的byte数组
-	     * @return 加密后的byte数组
-	     * @throws Exception 发生异常时抛出
+	     * @param data Byte array to be encrypted
+	     * @return Encrypted byte array
+	     * @throws Exception Thrown when an exception occurs
 	     */
 	    public static byte[] encryptSHA(byte[] data) throws Exception {
 	        MessageDigest sha = MessageDigest.getInstance(KEY_SHA);
@@ -49,10 +49,10 @@ public class CryptoUtil {
 	    }
 	 
 	    /**
-	     * 初始化HMAC密钥
+	     * Initialize HMAC key
 	     * 
-	     * @return HMAC密钥
-	     * @throws Exception 发生异常时抛出
+	     * @return HMAC key
+	     * @throws Exception Thrown when an exception occurs
 	     */
 	    public static String initMacKey() throws Exception {
 	        KeyGenerator keyGenerator = KeyGenerator.getInstance(KEY_MAC);
@@ -61,12 +61,12 @@ public class CryptoUtil {
 	    }
 	 
 	    /**
-	     * HMAC加密
+	     * HMAC encryption
 	     * 
-	     * @param data 待加密的byte数组
-	     * @param key 秘钥
-	     * @return 加密后的byte数组
-	     * @throws Exception 发生异常时抛出
+	     * @param data Byte array to be encrypted
+	     * @param key Secret key
+	     * @return Encrypted byte array
+	     * @throws Exception Thrown when an exception occurs
 	     */
 	    public static byte[] encryptHMAC(byte[] data, String key) throws Exception {
 	 
