@@ -2,6 +2,7 @@ package com.kuta.base.util;
 
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -37,6 +38,31 @@ public class KutaMathUtil {
 		}
 		int num = random.nextInt(100) + 1;
         for(int y=0;y<probArr.length;y++) {
+        	if(num <= targetMap.get(y)) {
+        		return y;
+        	}
+        }
+		return -1;
+	}
+	/**
+	 * Get results by specifying probability
+	 * */
+	public static int probability(List<Double> probArr) {
+		double total = 0;
+		Map<Integer, Double> targetMap = new HashMap<Integer, Double>();
+		double value = 0;
+		Double[] probs = new Double[1];
+		probs = probArr.toArray(probs);
+		for(int i=0;i<probs.length;i++) {
+			targetMap.put(i, probs[i] + value);
+			total += probs[i];
+			value += probs[i];
+		}
+		if(total > 100) {
+			throw new KutaIllegalArgumentException("Total probability of exceeding 100%");
+		}
+		double num = random.nextDouble() * 100;
+        for(int y=0;y<probs.length;y++) {
         	if(num <= targetMap.get(y)) {
         		return y;
         	}
