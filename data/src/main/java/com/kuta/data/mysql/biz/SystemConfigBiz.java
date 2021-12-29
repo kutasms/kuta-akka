@@ -74,8 +74,6 @@ public class SystemConfigBiz extends KutaConfigAbstractBiz<SystemConfig> {
 
 	public SystemConfig get(String key, SqlSession session) {
 		SystemConfigMapper mapper = session.getMapper(SystemConfigMapper.class);
-		SystemConfigExample example = new SystemConfigExample();
-		example.createCriteria().andKeyEqualTo(key);
 		return mapper.selectByPrimaryKey(key);
 	}
 
@@ -389,14 +387,7 @@ public class SystemConfigBiz extends KutaConfigAbstractBiz<SystemConfig> {
 		if(entity.getKey() == null) {
 			throw new KutaIllegalArgumentException("must input config.key");
 		}
-		try {
-			int result = session.getMapper(SystemConfigMapper.class).updateWithOptimisticLock(entity);
-			return result;
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return 0;
-		}
+		return session.getMapper(SystemConfigMapper.class).updateWithOptimisticLock(entity);
 	}
 
 }

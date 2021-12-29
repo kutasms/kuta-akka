@@ -1,8 +1,11 @@
 package com.kuta.base.database;
 
+import java.lang.reflect.Field;
 import java.util.Map;
 
 import org.apache.ibatis.session.SqlSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.kuta.base.cache.JedisClient;
 import com.kuta.base.common.KutaCommonSettings;
@@ -301,13 +304,34 @@ public abstract class KutaConfigAbstractBiz<T extends KutaDBEntity> {
 		jedis.expire(CACHE_KEY, expire);
 		update(session,map);
 	}
-	
-	public int dbCacheWithOptimisticLock(SqlSession session,JedisClient jedis, T entity, int expire) {
-		int result = updateWithOptimisticLock(session, entity);
+	public int dbCacheWithOptimisticLock(DataSessionFactory f, T entity) {
+		return dbCacheWithOptimisticLock(f, entity, 30 * 60);
+	}
+	public int dbCacheWithOptimisticLock(DataSessionFactory f, T entity, int expire) {
+		
+		Field[] fields = KutaBeanUtil.getAllFields(entity);
+		for(Field field : fields) {
+			field.setAccessible(true);
+			if(field.getName().equals("opVersion")) {
+				try {
+					long opVersion = Long.parseLong(field.get(entity).toString());
+					field.set(entity, opVersion + 1L);
+				} catch (IllegalArgumentException e) {
+					// TODO Auto-generated catch block
+					logger.error("The opversion parameter must be of type long",e);
+				} catch (IllegalAccessException e) {
+					// TODO Auto-generated catch block
+					logger.error("havn't permission to operate on the opversion field.");
+				}
+			}
+		}
+		int result = updateWithOptimisticLock(f.getSqlSession(), entity);
 		if(result > 0) {
-			jedis.hset(CACHE_KEY, KutaBeanUtil.bean2Map(entity));
-			jedis.expire(CACHE_KEY, expire);
+			f.getJedis(true).hset(CACHE_KEY, KutaBeanUtil.bean2Map(entity));
+			f.getJedis(true).expire(CACHE_KEY, expire);
 		}
 		return result;
 	}
+	
+	Logger logger = LoggerFactory.getLogger(KutaConfigAbstractBiz.class);
 }

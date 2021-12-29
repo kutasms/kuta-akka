@@ -20,7 +20,7 @@
 		<!-- mysql驱动版本号 -->
 		<mysql-driver.version>5.1.29</mysql-driver.version>
 		<!-- log4j2版本号 -->
-		<log4j-version>2.7</log4j-version>
+		<log4j-version>2.15.0</log4j-version>
 	</properties>
 
 	<dependencies>
